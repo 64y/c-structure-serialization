@@ -3,8 +3,7 @@
 
 #include <stdio.h>
 
-#include "serialization/registrate.h"
-#include "serialization/serialize.h"
+#include <c_structure_serialization/serializer.h>
 
 
 #include "structures/parrot.h"
@@ -12,17 +11,16 @@
 void example_of_structure_with_string_member() {
 	puts(" = = = Example of Structure with String Member  = = = ");
 	
-	Serialize_registrate_structure("Parrot", "structures/parrot.h");
-	Serialize *parrot_serialize = Serialize_create("Parrot");
+	Serializer *parrot_serializer = Serializer_create("Parrot");
 	
 	Parrot parrot = {"Tom", 5};
 	
 	puts("TO_STRING:");
-	char *parrot_string = parrot_serialize->to_string(&parrot);
+	char *parrot_string = parrot_serializer->to_string(&parrot);
 	puts(parrot_string);
 	
 	{
-		Serialize_free(parrot_serialize);
+		Serializer_free(parrot_serializer);
 		
 		free(parrot_string);
 	}

@@ -159,8 +159,8 @@ void test_utils_tabs() {
 	printf("\"%s\"\n", tabs_get);
 	Tabs_decrement(tabs); Tabs_decrement(tabs); Tabs_decrement(tabs); Tabs_decrement(tabs);
 	{
-		free(tabs_string);
 		Tabs_free(tabs);
+		free(tabs_string);
 	}
 	puts("\n");
 }

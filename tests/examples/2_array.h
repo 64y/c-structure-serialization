@@ -1,10 +1,9 @@
-#ifndef _H
-#define _H
+#ifndef ARRAY_H
+#define ARRAY_H
 
 #include <stdio.h>
 
-#include "serialization/registrate.h"
-#include "serialization/serialize.h"
+#include <c_structure_serialization/serializer.h>
 
 
 #include "structures/array.h"
@@ -12,8 +11,7 @@
 void example_of_structure_with_array() {
 	puts(" = = = Example of Structure with Array = = = ");
 	
-	Serialize_registrate_structure("Array", "structures/array.h");
-	Serialize *array_serialize = Serialize_create("Array");
+	Serializer *array_serializer = Serializer_create("Array");
 	
 	size_t array_arr_n = 5;
 	Array *array;
@@ -30,11 +28,11 @@ void example_of_structure_with_array() {
 	}
 	
 	puts("TO_STRING:");
-	char *array_string = array_serialize->to_string(array);
+	char *array_string = array_serializer->to_string(array);
 	puts(array_string);
 	
 	{
-		Serialize_free(array_serialize);
+		Serializer_free(array_serializer);
 		
 		array->arr_n = 0;
 		free(array->arr);

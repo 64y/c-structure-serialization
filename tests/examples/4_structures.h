@@ -3,8 +3,7 @@
 
 #include <stdio.h>
 
-#include "serialization/registrate.h"
-#include "serialization/serialize.h"
+#include <c_structure_serialization/serializer.h>
 
 
 #include "structures/pets.h"
@@ -12,11 +11,7 @@
 void example_of_structure_with_structures_and_structures_pointers() {
 	puts(" = = = Example of Structure with Structures and Structures Pointers = = = ");
 	
-	Serialize_registrate_structure("Cat", "structures/pets.h");
-	Serialize_registrate_structure("Dog", "structures/pets.h");
-	Serialize_registrate_structure("PetsSizes", "structures/pets.h");
-	Serialize_registrate_structure("Pets", "structures/pets.h");
-	Serialize *pets_serialize = Serialize_create("Pets");
+	Serializer *pets_serializer = Serializer_create("Pets");
 	
 	Pets *pets;
 	{
@@ -40,11 +35,11 @@ void example_of_structure_with_structures_and_structures_pointers() {
 	}
 		
 	puts("TO_STRING:");
-	char *pets_string = pets_serialize->to_string(pets);
+	char *pets_string = pets_serializer->to_string(pets);
 	puts(pets_string);
 	
 	{
-		Serialize_free(pets_serialize);
+		Serializer_free(pets_serializer);
 		
 		Pets_free(pets);
 		

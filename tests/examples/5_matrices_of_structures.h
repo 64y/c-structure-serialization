@@ -3,22 +3,15 @@
 
 #include <stdio.h>
 
-#include "serialization/registrate.h"
-#include "serialization/serialize.h"
+#include <c_structure_serialization/serializer.h>
 
 
 #include "structures/figures.h"
 
 void example_of_structure_with_matrices_of_structures() {
 	puts(" = = = Example of Structure with Matrices of Structures = = = "); // 9 bytes in 3 blocks
-	
-	Serialize_registrate_structure("Point", "structures/figures.h");
-	Serialize_registrate_structure("Circle", "structures/figures.h");
-	Serialize_registrate_structure("Triangle", "structures/figures.h");
-	Serialize_registrate_structure("Rectangle", "structures/figures.h");
-	Serialize_registrate_structure("Figures", "structures/figures.h");
-	
-	Serialize *figures_serialize = Serialize_create("Figures");
+		
+	Serializer *figures_serializer = Serializer_create("Figures");
 	
 	Figures *figures;
 	{
@@ -71,11 +64,11 @@ void example_of_structure_with_matrices_of_structures() {
 	}
 	
 	puts("TO_STRING:");
-	char *figures_string = figures_serialize->to_string(figures);
+	char *figures_string = figures_serializer->to_string(figures);
 	puts(figures_string);
 	
 	{
-		Serialize_free(figures_serialize);
+		Serializer_free(figures_serializer);
 		
 		for (int i=0; i<figures->circles_0; i++) {
 			for (int j=0; j<figures->circles_1; j++) {

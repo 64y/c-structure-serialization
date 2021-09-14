@@ -4,9 +4,7 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "utils/basic_defines.h"
-#include "serialization/registrate.h"
-#include "serialization/serialize.h"
+#include <c_structure_serialization/serializer.h>
 
 
 #include "structures/matrix3d.h"
@@ -14,8 +12,7 @@
 void example_of_structure_with_matrix() {
 	puts(" = = = Example of Structure with Matrix = = = ");
 	
-	Serialize_registrate_structure("Matrix3D", "structures/matrix3d.h");
-	Serialize *matrix3D_serialize = Serialize_create("Matrix3D");
+	Serializer *matrix3D_serializer = Serializer_create("Matrix3D");
 	
 	Matrix3D *matrix3D;
 	{
@@ -37,11 +34,11 @@ void example_of_structure_with_matrix() {
 	
 	puts("TO_STRING:");
 	char *matrix3D_string;
-	matrix3D_string = matrix3D_serialize->to_string(matrix3D);
+	matrix3D_string = matrix3D_serializer->to_string(matrix3D);
 	puts(matrix3D_string);
 	
 	{
-		Serialize_free(matrix3D_serialize);
+		Serializer_free(matrix3D_serializer);
 		
 		for (int o=0; o<matrix3D->matrix_o; o++) {
 			for (int n=0; n<matrix3D->matrix_n; n++) {
@@ -66,8 +63,7 @@ void example_of_structure_with_matrix() {
 void example_of_structure_with_matrices() {
 	puts(" = = = Example of Structure with Matrices = = = "); // 13 bytes in 5 blocks in Serialize_registrate_structure
 	
-	Serialize_registrate_structure("Arrays", "structures/arrays.h");
-	Serialize *arrays_serialize = Serialize_create("Arrays");
+	Serializer *arrays_serializer = Serializer_create("Arrays");
 	
 	Arrays *arrays;
 	{
@@ -136,11 +132,11 @@ void example_of_structure_with_matrices() {
 	}
 	
 	puts("TO_STRING:");
-	char *arrays_string = arrays_serialize->to_string(arrays);
+	char *arrays_string = arrays_serializer->to_string(arrays);
 	puts(arrays_string);
 	
 	{
-		Serialize_free(arrays_serialize);
+		Serializer_free(arrays_serializer);
 		
 		for (int ia=0; ia<arrays->arr_a; ia++) {
 			free(arrays->arr[ia]);
@@ -188,11 +184,21 @@ void example_of_structure_with_matrices() {
 
 #include "structures/strings.h"
 
+char * string_random(size_t string_length_min, size_t string_length_max) {
+	size_t string_printable_length = 96;
+	char *string_printable = "0123456789qwertyuiopasdfgghjklzxcvbnmQWERTYUIOPASDFGHJKLZXCVBNM`~!@#$%%^&*()-_=+[{]}\\|;:\'\",<.>/?";
+	size_t string_length = string_length_min + random()%(string_length_max+1-string_length_min);
+	char *string = (char *)calloc(string_length+1, sizeof(char));
+	for (int i=0; i<string_length; i++) {
+		string[i] = string_printable[random() % string_printable_length];
+	}
+	return string;
+}
+
 void example_of_structure_with_matrices_of_strings() {
 	puts(" = = = Example of Structure with Matrices of Strings = = = "); // 16 bytes in 5 blocks in Serialize_registrate_structure
 	
-	Serialize_registrate_structure("Strings", "structures/strings.h");
-	Serialize *strings_serialize = Serialize_create("Strings");
+	Serializer *strings_serializer = Serializer_create("Strings");
 	
 	
 	Strings *strings;
@@ -254,10 +260,10 @@ void example_of_structure_with_matrices_of_strings() {
 	}
 	
 	puts("TO_STRING:");
-	char *strings_string = strings_serialize->to_string(strings);
+	char *strings_string = strings_serializer->to_string(strings);
 	puts(strings_string);
 	{
-		Serialize_free(strings_serialize);
+		Serializer_free(strings_serializer);
 		
 		for (int ia=0; ia<strings->stra_0; ia++) {
 			for (int ib=0; ib<strings->stra_1; ib++) {
