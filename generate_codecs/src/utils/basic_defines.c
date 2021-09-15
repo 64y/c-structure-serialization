@@ -47,9 +47,9 @@ char * string_to_upper(char *string) {
 	return string_upper;
 }
 
-char * string_make_shortcut(char *str) {
-	char *shortcut = (char *)calloc(strlen(str)+1, sizeof(char));
-	strcpy(shortcut, str);
+char * string_make_shortcut(char *string) {
+	char *shortcut = (char *)calloc(strlen(string)+1, sizeof(char));
+	strcpy(shortcut, string);
 	shortcut[0] = tolower(shortcut[0]);
 	return shortcut;
 }

@@ -69,7 +69,7 @@ void Structure_add(Structure *structure, Attribute *attribute) {
 	}
 }
 
-int Structure_delete(Structure *structure, Attribute *attribute) {
+Boolean Structure_delete(Structure *structure, Attribute *attribute) {
 	if (structure->head==NULL || attribute==NULL) {
 		return false;
 	}
@@ -95,8 +95,8 @@ int Structure_delete(Structure *structure, Attribute *attribute) {
 	return false;
 }
 
-int Structure_has_structure_attributes(Structure *structure) {
-	int has = 0;
+Boolean Structure_has_structure_attributes(Structure *structure) {
+	Boolean has = 0;
 	for (Attribute *curr=structure->head; curr!=NULL; curr=curr->next) {
 		has |= curr->type==STRUCTURE || curr->type==STRUCTURE_POINTER || curr->type==STRUCTURE_ARRAY || curr->type==STRUCTURE_POINTER_ARRAY;
 	}

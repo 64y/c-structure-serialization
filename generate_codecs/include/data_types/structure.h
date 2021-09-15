@@ -17,7 +17,7 @@ void Structure_free(Structure *structure);
 char * Structure_to_string(Structure *structure);
 
 void Structure_add(Structure *structure, Attribute *attribute);
-int Structure_delete(Structure *structure, Attribute *attribute);
-int Structure_has_structure_attributes(Structure *structure);
+Boolean Structure_delete(Structure *structure, Attribute *attribute);
+Boolean Structure_has_structure_attributes(Structure *structure);
 
 #endif

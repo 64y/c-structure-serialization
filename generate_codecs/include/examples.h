@@ -1,8 +1,13 @@
 #ifndef EXAMPLES_H
 #define EXAMPLES_H
 
+
 void example_utils_basic_defines();
-void test_utils_tabs();
+void example_utils_tabs();
+void example_data_types_data_type();
+void example_data_types_dimension();
+void example_data_types_attribute();
+void example_data_types_structure();
 
 
 #include "utils/basic_defines.h"
@@ -117,7 +122,7 @@ void example_utils_basic_defines() {
 #include "utils/tabs.h"
 
 void example_utils_tabs() {
-	puts("utils/Tabs\n");
+	puts("utils/tabs\n");
 	Tabs *tabs = Tabs_create();
 	Tabs_increment(tabs); Tabs_increment(tabs); Tabs_increment(tabs);
 	char *tabs_string = Tabs_to_string(tabs);
@@ -133,5 +138,87 @@ void example_utils_tabs() {
 }
 
 
+#include "data_types/data_type.h"
+
+void example_data_types_data_type() {
+	puts("data_types/data_type\n");
+	BasicType *basicType = get_basic_type_by_name("string");
+	char *basicType_string = BasicType_to_string(basicType);
+	puts(basicType_string);
+	{
+		free(basicType_string);
+	}
+	puts("\n");
+}
+
+
+#include "data_types/dimension.h"
+
+void example_data_types_dimension() {
+	puts("data_types/dimension\n");
+	Dimension *dimension = Dimension_create(2, 2);
+	Dimension_set_dimension(dimension, 0, "40");
+	Dimension_set_dimension(dimension, 1, "50");
+	Dimension_set_dimension(dimension, 2, "n");
+	Dimension_set_dimension(dimension, 2, "m");
+	char *dimension_string = Dimension_to_string(dimension);
+	puts(dimension_string);
+	{
+		Dimension_free(dimension);
+		free(dimension_string);
+	}
+	puts("\n");
+}
+
+
+#include "data_types/attribute.h"
+
+void example_data_types_attribute() {
+	puts("data_types/attribute\n");
+	Attribute *attribute = Attribute_create(STRUCTURE_POINTER, "Cat", "cat", NULL); // Cat *cat;
+	char *attribute_string = Attribute_to_string(attribute);
+	puts(attribute_string);
+	{
+		Attribute_free(attribute);
+		free(attribute_string);
+	}
+	puts("\n");
+}
+
+
+#include "data_types/structure.h"
+
+void example_data_types_structure() {
+	puts("data_types/structure\n");
+	Attribute *color;
+	Structure *structure;
+	{
+		color = Attribute_create(STRING, "char", "color", NULL);
+		
+		structure = Structure_create("Cat", "structures/cat.h");
+		Structure_add(structure, Attribute_create(STRING, "char", "name", NULL));
+		Structure_add(structure, Attribute_create(PRIMITIVE, "int", "age", NULL));
+		Structure_add(structure, color);
+		Structure_add(structure, Attribute_create(STRUCTURE_POINTER, "Cat", "next", NULL));
+	}
+	printf("Structure has structure\'s attributes: %s!\n", Boolean_to_string(Structure_has_structure_attributes(structure)));
+	
+	char *structure_string_before_delete = Structure_to_string(structure);
+	puts("Structure before delete:");
+	puts(structure_string_before_delete);
+	
+	Structure_delete(structure, color);
+	char *structure_string_after_delete = Structure_to_string(structure);
+	puts("Structure after delete:");
+	puts(structure_string_after_delete);
+	
+	{
+		color = NULL;
+		Structure_free(structure);
+		free(structure_string_before_delete);
+		free(structure_string_after_delete);
+	}
+	puts("\n");
+}
 
 #endif
