@@ -10,7 +10,7 @@
 #include "data_types/dimension.h"
 #include "data_types/attribute.h"
 #include "data_types/structure.h"
-#include "data_types/structures_regular_expressions.h"
+#include "data_types/structure_regular_expressions.h"
 
 #include "serialization/structure_info.h"
 #include "serialization/registrate.h"
@@ -32,7 +32,7 @@ void Serialize_registrate_structure(char *structure_name, char *structure_file_n
 			return;
 		}
 	}
-	Structure *structure = RegularExpressions_parse_structure(structure_name, structureInfo->path_structure_h);
+	Structure *structure = NULL;//RegularExpressions_parse_structure(structure_name, structureInfo->path_structure_h);
 	// create *_library.h
 	{
 		char * (*methods[])(Structure *) = {

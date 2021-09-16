@@ -26,7 +26,7 @@ then
 fi
 
 
-/home/pavel/Workspace/c-structure-serialization/generate_codecs/bin/generate_codecs ${target_bin_library_dir_src} ${structures_dir}
+valgrind -s --leak-check=full --track-origins=yes /home/pavel/Workspace/c-structure-serialization/generate_codecs/bin/generate_codecs ${target_bin_library_dir_src} ${structures_dir}
 
-echo "END"
+echo "OK"
 

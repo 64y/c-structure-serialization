@@ -42,15 +42,19 @@ char * Attribute_to_string(Attribute *attribute) {
 		FILE *attribute_string_stream = open_memstream(&attribute_string, &attribute_string_length);
 		char *dimension_string = Dimension_to_string(attribute->dimension);
 		fprintf(attribute_string_stream,
-			"Attribute:\n"
-			"type: \'%s\'\n"
-			"data Type: \'%s\'\n"
-			"name: \'%s\'\n"
-			"%s\n",
-			ATTRIBUTE_TYPE_STRING[attribute->type], attribute->data_type, attribute->name, dimension_string
+			"Attribute @%lx:\n"
+			"type: \'%s\';\n"
+			"data type: \'%s\';\n"
+			"name: \'%s\';\n"
+			"dimension: @%lx;\n"
+			"next: @%lx\'.\n"
+			"%s",
+			(long)(void *) attribute, ATTRIBUTE_TYPE_STRING[attribute->type], attribute->data_type, attribute->name, (long)(void *) attribute->dimension, (long)(void *) attribute->next, dimension_string
 		);
-		free(dimension_string);
-		fclose(attribute_string_stream);
+		{
+			free(dimension_string);
+			fclose(attribute_string_stream);
+		}
 	}
 	return attribute_string;
 }

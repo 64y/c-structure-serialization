@@ -6,16 +6,16 @@
 
 Tabs * Tabs_create() {
 	Tabs *tabs = (Tabs *)malloc(sizeof(Tabs));
-	tabs->string_length_max = 32;
 	tabs->string_length = 0;
+	tabs->string_length_max = 32;
 	tabs->string = (char *)calloc(tabs->string_length_max+1, sizeof(char));
 	return tabs;
 }
 
 void Tabs_free(Tabs *tabs) {
 	if (tabs != NULL) {
-		tabs->string_length_max = 0;
 		tabs->string_length = 0;
+		tabs->string_length_max = 0;
 		if (tabs->string != NULL) {
 			free(tabs->string);
 			tabs->string = NULL;
@@ -30,8 +30,17 @@ char * Tabs_to_string(Tabs *tabs) {
 	{
 		size_t tabs_string_length;
 		FILE *tabs_string_stream = open_memstream(&tabs_string, &tabs_string_length);
-		fprintf(tabs_string_stream, "Tabs [%ld/%ld]: \'%s\'", tabs->string_length, tabs->string_length_max, tabs->string);
-		fclose(tabs_string_stream);
+		fprintf(
+			tabs_string_stream,
+			"Tabs:\n"
+			"string length: \'%ld\';\n"
+			"string length max: \'%ld\';\n"
+			"string: \'%s\'.",
+			tabs->string_length, tabs->string_length_max, tabs->string
+		);
+		{
+			fclose(tabs_string_stream);
+		}
 	}
 	return tabs_string;
 }

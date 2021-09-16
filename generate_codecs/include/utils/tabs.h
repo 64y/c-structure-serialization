@@ -3,8 +3,8 @@
 
 
 typedef struct Tabs {
-	size_t string_length_max;
 	size_t string_length;
+	size_t string_length_max;
 	char *string;
 } Tabs;
 

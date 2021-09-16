@@ -4,10 +4,27 @@
 
 void example_utils_basic_defines();
 void example_utils_tabs();
+void example_utils_array();
 void example_data_types_data_type();
 void example_data_types_dimension();
 void example_data_types_attribute();
 void example_data_types_structure();
+void example_data_types_structures_regular_expression();
+void example_data_types_structures_regular_expressions();
+void example_all();
+
+
+void example_all() {
+	example_utils_basic_defines();
+	example_utils_tabs();
+	example_utils_array();
+	example_data_types_data_type();
+	example_data_types_dimension();
+	example_data_types_attribute();
+	example_data_types_structure();
+	example_data_types_structures_regular_expression();
+	example_data_types_structures_regular_expressions();
+}
 
 
 #include "utils/basic_defines.h"
@@ -97,7 +114,7 @@ void example_utils_basic_defines() {
 	}
 	{ // example file_write & file_read
 		puts("basic_defines: file_write & file_read");
-		file_write("a.txt", "Sorry, it is empty!");
+		file_write("a.txt", "Sorry, it is empty!\nReally it is empty and test for memmory leaks!\nKAPPAD\n...");
 		char *text = file_read("a.txt");
 		puts(text);
 		{
@@ -105,14 +122,14 @@ void example_utils_basic_defines() {
 		}
 		puts("\n");
 	}
-	{ // example path_get_dir
-		puts("basic_defines: path_get_dir");
-		char *file_name = string_copy("src/main.c");
-		char *dir = path_get_dir(file_name);
-		printf("\"%s\" in \"%s\"\n", file_name, dir);
+	{ // example file_get_directory_path
+		puts("basic_defines: file_get_directory_path");
+		char *file_path = string_copy("main.c");
+		char *directory_path = file_get_directory_path(file_path);
+		printf("\"%s\" in \"%s\"\n", file_path, directory_path);
 		{
-			free(file_name);
-			free(dir);
+			free(file_path);
+			free(directory_path);
 		}
 		puts("\n");
 	}
@@ -138,11 +155,60 @@ void example_utils_tabs() {
 }
 
 
+#include "utils/array.h"
+
+
+
+void example_utils_array() {
+	void * array_string_create(void *element) {
+		return string_copy((char *) element);
+	}
+	char * array_string_to_string(void *element) {
+		return string_copy((char *) element);
+	}
+	void array_string_free(void *element) {
+		free((char *)element);
+	}
+
+	Array * Array_of_string_create() {
+		return Array_create(array_string_create, array_string_to_string, array_string_free);
+	}
+	puts("utils/array\n");
+	/*{
+		Array *a = Array_of_Structure_create();
+		Array_add(a, array_Structure_arguments("structure/cat.h", "Cat"));
+		Array_add(a, array_Structure_arguments("structure/dog.h", "Dog"));
+		Array_add(a, array_Structure_arguments("structure/Pets.h", "Pets"));
+		char *a_string = Array_to_string(a);
+		puts(a_string);
+		{
+			Array_free(a);
+			free(a_string);
+		}
+	}*/
+	{
+		Array *s = Array_of_string_create();
+		Array_add(s, "qwer");
+		Array_add(s, "asdf");
+		Array_add(s, "zxcv");
+		Array_add(s, "tyui");
+		Array_add(s, "ghjk");
+		Array_add(s, "bnml");
+		Array_add(s, "op");
+		char *s_string = Array_to_string(s);
+		puts(s_string);
+		{
+			Array_free(s);
+			free(s_string);
+		}
+	}
+}
+
 #include "data_types/data_type.h"
 
 void example_data_types_data_type() {
 	puts("data_types/data_type\n");
-	BasicType *basicType = get_basic_type_by_name("string");
+	BasicType *basicType = get_basic_type_by_name("char *");
 	char *basicType_string = BasicType_to_string(basicType);
 	puts(basicType_string);
 	{
@@ -160,7 +226,7 @@ void example_data_types_dimension() {
 	Dimension_set_dimension(dimension, 0, "40");
 	Dimension_set_dimension(dimension, 1, "50");
 	Dimension_set_dimension(dimension, 2, "n");
-	Dimension_set_dimension(dimension, 2, "m");
+	Dimension_set_dimension(dimension, 3, "m");
 	char *dimension_string = Dimension_to_string(dimension);
 	puts(dimension_string);
 	{
@@ -175,7 +241,19 @@ void example_data_types_dimension() {
 
 void example_data_types_attribute() {
 	puts("data_types/attribute\n");
-	Attribute *attribute = Attribute_create(STRUCTURE_POINTER, "Cat", "cat", NULL); // Cat *cat;
+	Attribute *attribute;
+	{
+		// int cat_n;
+		// int cat_m;
+		// Cat ***cat[10][20][30];
+		Dimension *dimension = Dimension_create(3, 2);
+		Dimension_set_dimension(dimension, 0, "10");
+		Dimension_set_dimension(dimension, 1, "15");
+		Dimension_set_dimension(dimension, 2, "20");
+		Dimension_set_dimension(dimension, 3, "n");
+		Dimension_set_dimension(dimension, 4, "m");
+		attribute = Attribute_create(STRUCTURE_POINTER, "Cat", "cat", dimension);
+	}
 	char *attribute_string = Attribute_to_string(attribute);
 	puts(attribute_string);
 	{
@@ -195,7 +273,7 @@ void example_data_types_structure() {
 	{
 		color = Attribute_create(STRING, "char", "color", NULL);
 		
-		structure = Structure_create("Cat", "structures/cat.h");
+		structure = Structure_create_by_file_path_and_name("structures/cat.h", "Cat");
 		Structure_add(structure, Attribute_create(STRING, "char", "name", NULL));
 		Structure_add(structure, Attribute_create(PRIMITIVE, "int", "age", NULL));
 		Structure_add(structure, color);
@@ -204,12 +282,12 @@ void example_data_types_structure() {
 	printf("Structure has structure\'s attributes: %s!\n", Boolean_to_string(Structure_has_structure_attributes(structure)));
 	
 	char *structure_string_before_delete = Structure_to_string(structure);
-	puts("Structure before delete:");
+	puts("\nStructure before delete:");
 	puts(structure_string_before_delete);
 	
 	Structure_delete(structure, color);
 	char *structure_string_after_delete = Structure_to_string(structure);
-	puts("Structure after delete:");
+	puts("\nStructure after delete:");
 	puts(structure_string_after_delete);
 	
 	{
@@ -220,5 +298,120 @@ void example_data_types_structure() {
 	}
 	puts("\n");
 }
+
+
+#include "data_types/structure_regular_expressions.h"
+
+void example_data_types_structures_regular_expression() {
+	puts("data_types/RegularExpression\n");
+	{
+		size_t lines_size = 3;
+		char *lines[] = {
+			"\tint a;",
+			"\tchar *b;",
+			"\tCat *c;"
+		};
+		for (int i=0; i<lines_size; i++) {
+			puts("          /RegularExpression");
+			puts(lines[i]);
+			char *line = string_copy(lines[i]);
+			RegularExpression *primitive = RegularExpression_create("(char|unsighed\\schar|byte|short|int|long|float|double)\\s([0-9a-zA-Z_]+);", 2);
+			{
+				puts("          /RegularExpression: to_string");
+				char *primitive_string = RegularExpression_to_string(primitive);
+				puts(primitive_string);
+				free(primitive_string);
+				puts("\n");
+			}
+			{
+				puts("          /RegularExpression: RegularExpression_match");
+				printf("- Does \"%s\" primitive?\n%s\n", line, (RegularExpression_match(primitive, line)) ? "YES" : "NO");
+				puts("\n");
+			}
+			{
+				puts("          /RegularExpression: RegularExpression_parse");
+				char **matches = RegularExpression_parse(primitive, line);
+				if (matches != NULL) {
+					printf("Match #1: \'%s\', match #2: \'%s\'.\n", matches[0], matches[1]);
+					free(matches[0]);
+					free(matches[1]);
+					free(matches);
+				} else {
+					puts("No Matches!");
+				}
+				puts("\n");
+			}
+			{
+				free(line);
+				RegularExpression_free(primitive);
+			}
+			puts("\n");
+		}
+	}
+}
+
+size_t code_lines_size = 31;
+char *code_lines[] = {
+	// primitives
+	"	char a;",
+	"	unsigned char b;",
+	"	byte c;",
+	"	short d;",
+	"	int e;",
+	"	unsigned f;",
+	"	long g;",
+	"	float h;",
+	"	double i;",
+	// strings
+	"	char *j;",
+	"	char k[32];",
+	// structures
+	"	struct Parrot parrot;",
+	"	Cat cat;",
+	"	struct Dog*dogA;",
+	"	struct Dog *dogB;",
+	"	struct Dog* dogC;",
+	"	struct Dog * dogD;",
+	"	Pet*petA;",
+	"	Pet *petB;",
+	"	Pet* petC;",
+	"	Pet * petD;",
+	// arrays
+	"	byte***l;",
+	"	short***** m;",
+	"	int **n;",
+	"	unsigned ***** o;",
+	"	long p[10][20][30][40];",
+	"	float q[8][16][32][3][4][5];",
+	"	double****r[1];",
+	"	byte****** s[11][22][33][44][55][66];",
+	"	short ***t[51][52][53][54];",
+	"	int ** u[1][1][2][3];"
+	
+};
+
+void example_data_types_structures_regular_expressions() {
+	puts("data_types/RegularExpressions\n");
+	
+	RegularExpression *re = structureRegularExpressions->attribute;
+	puts("attribute:");
+	for (int i=0; i<code_lines_size; i++) {
+		Boolean ok = RegularExpression_match(re, code_lines[i]);
+		printf("%s - %s\n", code_lines[i], Boolean_to_string(ok));
+		if (ok) {
+			char **matches = RegularExpression_parse(re, code_lines[i]);
+			printf("\'%s\' \'%s\' \'%s\' \'%s\'\n", matches[0], matches[1], matches[2], matches[3]);
+			for (int j=0; j<4; j++) {
+				free(matches[j]);
+			}
+			free(matches);
+		}
+	}
+	char *re_string = RegularExpression_to_string(re);
+	puts(re_string);
+	free(re_string);
+	
+}
+
 
 #endif

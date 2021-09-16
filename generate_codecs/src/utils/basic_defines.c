@@ -1,4 +1,5 @@
 #include <ctype.h>
+#include <limits.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -80,19 +81,21 @@ char * string_random(size_t string_length_min, size_t string_length_max) {
 }
 
 
-void file_write(char *path, char *source_code) {
-	FILE *file_stream = fopen(path, "w");
+void file_write(char *file_path, char *source_code) {
+	FILE *file_stream = fopen(file_path, "w");
 	fprintf(file_stream, "%s", source_code);
-	fclose(file_stream);
+	{
+		fclose(file_stream);
+	}
 }
 
-char * file_read(char *path) {
+char * file_read(char *file_path) {
 	char *string;
 	{
 		size_t string_length;
 		FILE *string_stream = open_memstream(&string, &string_length);
 		FILE *file_stream = NULL;
-		if ((file_stream = fopen(path, "r"))==NULL) {
+		if ((file_stream = fopen(file_path, "r"))==NULL) {
 			error("open file in \'file_read\' function");
 		}
 		ssize_t read;
@@ -100,6 +103,10 @@ char * file_read(char *path) {
 		size_t line_length = 0;
 		while ((read = getline(&line, &line_length, file_stream)) != -1) {
 			fprintf(string_stream, "%s", line);
+			{
+				free(line);
+				line = NULL;
+			}
 		}
 		{
 			fclose(string_stream);
@@ -110,14 +117,17 @@ char * file_read(char *path) {
 	return string;
 }
 
-char * path_get_dir(char *path) {
-	size_t length;
-	for (length=strlen(path)-1; length>=0; length--) {
-		if (path[length] == '/') {
+char * file_get_directory_path(char *file_path) {
+	ssize_t directory_path_length;
+	for (directory_path_length=strlen(file_path)-1; directory_path_length>=0; directory_path_length--) {
+		if (file_path[directory_path_length] == '/') {
 			break;
 		}
 	}
-	char *path_dir = (char *)calloc(length+1, sizeof(char));
-	strncpy(path_dir, path, length);
-	return path_dir;
+	if (directory_path_length==-1) {
+		return NULL;
+	}
+	char *directory_path = (char *)calloc(directory_path_length+1, sizeof(char));
+	strncpy(directory_path, file_path, directory_path_length);
+	return directory_path;
 }

@@ -3,6 +3,7 @@
 
 #include <stdlib.h>
 
+
 #define error(ERROR_MESSAGE)\
 	fprintf(stderr, "ERROR [%s:%d]: to %s\n", __FILE__, __LINE__, ERROR_MESSAGE);\
 	exit(-1);
@@ -28,9 +29,8 @@ char * string_appends(char *strings[]);
 char * string_random(size_t string_length_min, size_t string_length_max);
 
 
-void file_write(char *path, char *source_code);
-char * file_read(char *path);
-
-char * path_get_dir(char *path);
+void file_write(char *file_path, char *source_code);
+char * file_read(char *file_path);
+char * file_get_directory_path(char *file_path);
 
 #endif
