@@ -11,7 +11,7 @@ target_bin_library_dir_src_structures="${target_bin_library_dir_src}/"${structur
 
 rm ${target_bin_library_dir_src} -rf
 mkdir ${target_bin_library_dir_src} -p
-cp res/* ${target_bin_library_dir} -r
+cp /hoeme/pavel/Workspace/c-structure-serialization/generate_codecs/res/* ${target_bin_library_dir} -r
 if [ -d "include/${structures_dir}" ];
 then
 	cp include/${structures_dir}/* "${target_bin_library_dir_src}/${structures_dir}" -r

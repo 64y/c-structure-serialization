@@ -151,8 +151,8 @@ Structure * Structure_create_by_file_path_and_source_code(char *file_path, Array
 						free(buff);
 					}
 				}
-				int index=((attribute_static_sizes>0 && attribute_dynamic_sizes==0 && attribute_sizes_names==attribute_static_sizes)||(attribute_static_sizes>0 && attribute_dynamic_sizes==0 && attribute_sizes_names==attribute_static_sizes+attribute_dynamic_sizes)) ? 0 : attribute_static_sizes;
-				for (Attribute *curr=structure->head, *to_delete=NULL; index<attribute_sizes_names && curr!=NULL; curr=curr->next, Structure_delete(structure, to_delete), to_delete=NULL) {
+				int index=((attribute_static_sizes>0 && attribute_dynamic_sizes==0 && attribute_sizes_names==attribute_static_sizes)||(attribute_static_sizes>0 && attribute_dynamic_sizes>0 && attribute_sizes_names==attribute_static_sizes+attribute_dynamic_sizes)) ? 0 : attribute_static_sizes;
+				for (Attribute *curr=structure->head, *to_delete=NULL; curr!=NULL; curr=curr->next, Structure_delete(structure, to_delete), to_delete=NULL) {
 					if (strlen(attribute_name)<strlen(curr->name) && strncmp(attribute_name, curr->name, strlen(attribute_name))==0) {
 						to_delete = curr;
 						Dimension_set_dimension(dimension, index, curr->name);

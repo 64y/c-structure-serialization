@@ -1,6 +1,8 @@
 #ifndef ARRAY_H
 #define ARRAY_H
 
+#include <stdio.h>
+
 
 typedef struct Array {
 	size_t a_size;

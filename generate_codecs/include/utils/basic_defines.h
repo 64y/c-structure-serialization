@@ -3,6 +3,8 @@
 
 #include <stdlib.h>
 
+#include "utils/array.h"
+
 
 #define error(ERROR_MESSAGE)\
 	fprintf(stderr, "ERROR [%s:%d]: to %s\n", __FILE__, __LINE__, ERROR_MESSAGE);\
@@ -32,5 +34,6 @@ char * string_random(size_t string_length_min, size_t string_length_max);
 void file_write(char *file_path, char *source_code);
 char * file_read(char *file_path);
 char * file_get_directory_path(char *file_path);
+Array * directory_path_scan_for_h_files(char *directory_path);
 
 #endif

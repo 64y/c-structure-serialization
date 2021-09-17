@@ -1,4 +1,5 @@
 #include <ctype.h>
+#include <dirent.h>
 #include <limits.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -6,6 +7,8 @@
 #include <unistd.h>
 
 #include "utils/basic_defines.h"
+#include "utils/array.h"
+#include "utils/array_of.h"
 
 
 char * Boolean_to_string(Boolean bool) {
@@ -130,4 +133,23 @@ char * file_get_directory_path(char *file_path) {
 	char *directory_path = (char *)calloc(directory_path_length+1, sizeof(char));
 	strncpy(directory_path, file_path, directory_path_length);
 	return directory_path;
+}
+
+Array * directory_path_scan_for_h_files(char *directory_path) {
+	Array *h_files = Array_of_string_create();
+	DIR *directory;
+	struct dirent *file;
+	if ((directory = opendir(directory_path)) != NULL) {
+		while((file = readdir(directory)) != NULL) {
+			if (
+				!string_equals(file->d_name, ".") &&
+				!string_equals(file->d_name, "..") &&
+				file->d_name[strlen(file->d_name)-1]=='h'
+			) {
+				Array_add(h_files, file->d_name);
+			}
+		}
+		closedir(directory);
+	}
+	return h_files;
 }

@@ -5,41 +5,84 @@
 #include <unistd.h>
 
 #include "utils/basic_defines.h"
-#include "utils/tabs.h"
+#include "utils/array.h"
+#include "utils/array_of.h"
 #include "data_types/data_type.h"
 #include "data_types/dimension.h"
 #include "data_types/attribute.h"
 #include "data_types/structure.h"
 #include "data_types/structure_regular_expressions.h"
 
-#include "serialization/structure_info.h"
-#include "serialization/registrate.h"
+#include "serialization/generate_library.h"
+#include "serialization/generate_to_string_method.h"
+#include "serialization/generate_json_codec.h"
 
 
-char * serialize_attribute_with_loop(Tabs *tabs, Structure *structure, Attribute *attribute, Boolean slash_n);
-char * serialize_attribute_pointer(Structure *structure, Attribute *attribute);
+void generate_libraries(char *project_path, char *structures_path) {
+	char *path = string_copy(project_path);
+	char *path_libraries = string_appends((char *[]){path, "/libraries", NULL});
+	char *path_structures = string_appends((char *[]){path, "/", structures_path, NULL});
 
-
-void Serialize_registrate_structure(char *structure_name, char *structure_file_name) {
+	Array *h_files = directory_path_scan_for_h_files(path_structures);
+	Array_sort(h_files, array_string_cmp);
 	
-	StructureInfo *structureInfo = StructureInfo_create(structure_name, structure_file_name);
-	{
-		if (
-			access(structureInfo->path_structure_serialize_h, F_OK)==0 &&
-			access(structureInfo->path_structure_serialize_c, F_OK)==0
-		) {
-			StructureInfo_free(structureInfo);
-			return;
+	Array *structures = Array_of_Structure_create();
+	
+	Array *structure_source_code = NULL;
+	for (int h_files_i=0; h_files_i<Array_size(h_files); h_files_i++) {
+		char *h_file_path = string_appends((char *[]){path_structures, "/", Array_get(h_files, h_files_i), NULL});
+		char *h_file_source_code = file_read(h_file_path);
+		for (char *code_line=strtok(h_file_source_code, "\n"); code_line!=NULL; code_line=strtok(NULL, "\n")) {
+			if (RegularExpression_match(structureRegularExpressions->structureStart, code_line)) {
+				structure_source_code = Array_of_string_create();
+				Array_add(structure_source_code, code_line);
+			} else if (RegularExpression_match(structureRegularExpressions->attribute, code_line)) {
+				Array_add(structure_source_code, code_line);
+			} else if (RegularExpression_match(structureRegularExpressions->structureEnd, code_line)) {
+				Array_add(structure_source_code, code_line);
+				Array_add(structures, array_Structure_arguments(h_file_path, structure_source_code));
+				{
+					Array_free(structure_source_code);
+					structure_source_code = NULL;
+				}
+			}
+		}
+		{
+			free(h_file_path);
+			free(h_file_source_code);
 		}
 	}
-	Structure *structure = NULL;//RegularExpressions_parse_structure(structure_name, structureInfo->path_structure_h);
+	
+	// TODO: 
+	
+	char *structures_string = Array_to_string(structures);
+	puts(structures_string);
+	
+	{
+		free(path);
+		free(path_libraries);
+		free(path_structures);
+		
+		Array_free(h_files);
+		Array_free(structures);
+		free(structures_string);
+	}
+}
+
+void generate_structure_library_and_dependencies(char *project_path, char *structures_path, Structure *structure) {
+	
+	char *name_upper=NULL;
+	char *path_structure_serialize_h=NULL;
+	char *path_structure_serialize_c=NULL;
+	char *PATH_ALL_INCLUDED_C=NULL;
+	char *PATH_INCLUDES_H=NULL;
 	// create *_library.h
 	{
 		char * (*methods[])(Structure *) = {
-			serialize_method_pass_declaration,
-			serialize_method_to_string_declaration,
-			serialize_method_json_encode_declaration,
-			serialize_method_json_decode_declaration,
+			generate_pass_method_declaration,
+			generate_to_string_method_declaration,
+			generate_json_encode_declaration,
+			generate_json_decode_declaration,
 			NULL
 		};
 		
@@ -47,8 +90,8 @@ void Serialize_registrate_structure(char *structure_name, char *structure_file_n
 		{
 			size_t source_code_length;
 			FILE *source_code_stream = open_memstream(&source_code, &source_code_length);
-			fprintf(source_code_stream, "#ifndef %s_LIBRARY_H\n", structureInfo->name_upper);
-			fprintf(source_code_stream, "#define %s_LIBRARY_H\n", structureInfo->name_upper);
+			fprintf(source_code_stream, "#ifndef %s_LIBRARY_H\n", name_upper);
+			fprintf(source_code_stream, "#define %s_LIBRARY_H\n", name_upper);
 			fprintf(source_code_stream, "\n");
 			fprintf(source_code_stream, "#include \"includes.h\"\n");
 			fprintf(source_code_stream, "\n");
@@ -62,17 +105,17 @@ void Serialize_registrate_structure(char *structure_name, char *structure_file_n
 			fprintf(source_code_stream, "#endif");
 			fclose(source_code_stream);
 		}
-		file_write(structureInfo->path_structure_serialize_h, source_code);
+		file_write(path_structure_serialize_h, source_code);
 		free(source_code);
 	}
 	
 	// create *_library.c
 	{
 		char * (*methods[])(Structure *) = {
-			serialize_method_pass_definition,
-			serialize_method_to_string_definition,
-			serialize_method_json_encode_definition,
-			serialize_method_json_decode_definition,
+			generate_pass_method_definition,
+			generate_to_string_method_definition,
+			generate_json_encode_definition,
+			generate_json_decode_definition,
 			NULL
 		};
 		
@@ -91,7 +134,7 @@ void Serialize_registrate_structure(char *structure_name, char *structure_file_n
 			}
 			fclose(source_code_stream);
 		}
-		file_write(structureInfo->path_structure_serialize_c, source_code);
+		file_write(path_structure_serialize_c, source_code);
 		free(source_code);
 	}
 	
@@ -203,12 +246,12 @@ void Serialize_registrate_structure(char *structure_name, char *structure_file_n
 	}
 	
 	{
-		StructureInfo_free(structureInfo);
 		Structure_free(structure);
 	}
 }
 
-char * serialize_method_pass_declaration(Structure *structure) {
+
+char * generate_pass_method_declaration(Structure *structure) {
 	char *code;
 	{
 		size_t code_length;
@@ -219,7 +262,7 @@ char * serialize_method_pass_declaration(Structure *structure) {
 	return code;
 }
 
-char * serialize_method_pass_definition(Structure *structure) {
+char * generate_pass_method_definition(Structure *structure) {
 	char *code;
 	{
 		Tabs *tabs = Tabs_create();
@@ -229,7 +272,7 @@ char * serialize_method_pass_definition(Structure *structure) {
 		fprintf(code_stream, "%sStructureUsageSet_get(structureUsageSet, \"%s\", %s)->usage = 1;\n", Tabs_get(tabs), structure->name, structure->shortcut);
 		for (Attribute *curr=structure->head; curr!=NULL; curr=curr->next) {
 			if (curr->type==STRUCTURE || curr->type==STRUCTURE_POINTER || curr->type==STRUCTURE_ARRAY || curr->type==STRUCTURE_POINTER_ARRAY) {
-				char *attribute_pointer = serialize_attribute_pointer(structure, curr);
+				char *attribute_pointer = generate_attribute_pointer(structure, curr);
 				
 				fprintf(
 					code_stream,
@@ -247,7 +290,7 @@ char * serialize_method_pass_definition(Structure *structure) {
 					fclose(code_add_pointer_stream);
 					code_add_pointer_stream = open_memstream(&code_add_pointer, &code_add_pointer_length);
 					if (curr->type==STRUCTURE_ARRAY || curr->type==STRUCTURE_POINTER_ARRAY) {
-						char *code_loop_format = serialize_attribute_with_loop(tabs, structure, curr, false);
+						char *code_loop_format = generate_attribute_with_loop(tabs, structure, curr, false);
 						char *code_loop;
 						{
 							size_t code_loop_length;
@@ -284,200 +327,22 @@ char * serialize_method_pass_definition(Structure *structure) {
 	return code;
 }
 
-char * serialize_method_to_string_declaration(Structure *structure) {
-	char *code;
+
+char * generate_attribute_pointer(Structure *structure, Attribute *attribute) {
+	char *pointer;
 	{
-		size_t code_length;
-		FILE *code_stream = open_memstream(&code, &code_length);
-		fprintf(code_stream, "char * %s_to_string(void *pointer);", structure->name);
-		fclose(code_stream);
-	}
-	return code;
-}
-
-char * serialize_method_to_string_definition(Structure *structure) {
-	char *code;
-	{
-		Tabs *tabs = Tabs_create();
-		size_t code_length;
-		FILE *code_stream = open_memstream(&code, &code_length);
-		
-		fprintf(code_stream, "%schar * %s_to_string(void *pointer) {\n", Tabs_get(tabs), structure->name); Tabs_increment(tabs);
-		fprintf(code_stream, "%s%s *%s = (%s *) pointer;\n", Tabs_get(tabs), structure->name, structure->shortcut, structure->name);
-		fprintf(code_stream, "%ssize_t string_length;\n", Tabs_get(tabs));
-		fprintf(code_stream, "%schar *string;\n", Tabs_get(tabs));
-		fprintf(code_stream, "%sFILE *string_stream = open_memstream(&string, &string_length);\n", Tabs_get(tabs));
-		fprintf(code_stream, "%sfprintf(string_stream, \"%s [@%%lx]:\\n\", (long)(void *)%s);\n", Tabs_get(tabs), structure->name, structure->shortcut);
-		
-		for (Attribute *curr=structure->head; curr!=NULL; curr=curr->next) {
-			char *attribute_name = string_copy(curr->name);
-			char *attribute_pointer = serialize_attribute_pointer(structure, curr);
-			char *attribute_format = NULL;
-			char *attribute_delimeter = NULL;
-			switch (curr->type) {
-				case PRIMITIVE: case STRING: case STRUCTURE: case STRUCTURE_POINTER: {
-					// attribute_format
-					attribute_format = string_copy("%sfprintf(string_stream, \"%s%s%s\\n\",%s%s);\n");
-					// attribute_delimeter
-					attribute_delimeter = string_copy((curr->type==PRIMITIVE||curr->type==STRING)?": ":"->");
-					break;
-				}
-				case PRIMITIVE_ARRAY: case STRING_ARRAY: case STRUCTURE_ARRAY: case STRUCTURE_POINTER_ARRAY: {
-					// attribute_format
-					{
-						char *attribute_array_format = serialize_attribute_with_loop(tabs, structure, curr, true);
-						// free(attribute_format);
-						size_t attribute_format_length;
-						FILE *attribute_format_stream = open_memstream(&attribute_format, &attribute_format_length);
-						fprintf(
-							attribute_format_stream,
-							attribute_array_format,
-							"%sfprintf(string_stream, \"%s %s);\n",
-							/* for {*/
-							"fprintf(string_stream, \"%s \",%s%s", /*[...]*/ ");"
-							/* } */
-						);
-						fclose(attribute_format_stream);
-						free(attribute_array_format);
-					}
-					// attribute_delimeter
-					{
-						size_t attribute_delimeter_length;
-						FILE *attribute_delimeter_stream = open_memstream(&attribute_delimeter, &attribute_delimeter_length);
-
-						fprintf(attribute_delimeter_stream, "[");
-						for (int i=0; i<curr->dimension->size; i++) {
-							fprintf(attribute_delimeter_stream, "%%d%s", (i+1 < curr->dimension->size) ? " x " : "");
-						}
-						fprintf(attribute_delimeter_stream, "]");
-						fprintf(attribute_delimeter_stream, "\\n\", ");
-
-						for (int i=0; i<curr->dimension->size; i++) {
-							fprintf(
-								attribute_delimeter_stream,
-								"%s%s%s%s",
-								(i<curr->dimension->static_size) ? "" : structure->shortcut,
-								(i<curr->dimension->static_size) ? "" : "->",
-								curr->dimension->dimensions[i],
-								(i+1<curr->dimension->size) ? ", ": ""
-							);
-						}
-						fclose(attribute_delimeter_stream);
-					}
-					break;
-				}
-				case NO_TYPE:
-					error("work with no typed attribute!");
-			}
-			char *attribute_format_specifier = NULL;
-			char *attribute_cast = NULL;
-			switch (curr->type) {
-				case PRIMITIVE:	case STRING: case PRIMITIVE_ARRAY: case STRING_ARRAY: {
-					// attribute_format_specifier
-					{
-						size_t attribute_format_specifier_length;
-						FILE *attribute_format_specifier_stream = open_memstream(&attribute_format_specifier, &attribute_format_specifier_length);
-						fprintf(attribute_format_specifier_stream, "\\\'%s\\\'", get_basic_type_by_name(curr->data_type)->format_specifier);
-						fclose(attribute_format_specifier_stream);
-					}
-					// attribute_cast
-					attribute_cast = string_copy(" ");
-					break;
-				}
-				case STRUCTURE: case STRUCTURE_POINTER: case STRUCTURE_ARRAY: case STRUCTURE_POINTER_ARRAY: {
-					// attribute_format_specifier
-					attribute_format_specifier = string_copy("@%lx");
-					// attribute_cast
-					attribute_cast = string_copy(" (long)(void *)");
-					break;
-				}
-				case NO_TYPE:
-					error("work with no typed attribute!");
-			}
-			
-			fprintf(
-				code_stream,
-				attribute_format,
-				Tabs_get(tabs), attribute_name, attribute_delimeter, attribute_format_specifier, attribute_cast, attribute_pointer
-			);
-			
-			{
-				free(attribute_name);
-				free(attribute_pointer);
-				free(attribute_format);
-				free(attribute_delimeter);
-				free(attribute_format_specifier);
-				free(attribute_cast);
-			}
+		size_t pointer_length;
+		FILE *pointer_stream = open_memstream(&pointer, &pointer_length);
+		if (attribute->type==STRUCTURE || attribute->type==STRUCTURE_ARRAY) {
+			fprintf(pointer_stream, "&");
 		}
-		if (Structure_has_structure_attributes(structure)) {
-			fprintf(code_stream, "%schar *pointers_string = pointers_to_string(\"%s\", %s);\n", Tabs_get(tabs), structure->name, structure->shortcut);
-			fprintf(code_stream, "%sif (pointers_string != NULL) {\n", Tabs_get(tabs));	Tabs_increment(tabs);
-			fprintf(code_stream, "%sfprintf(string_stream, \"%%s\", pointers_string);\n", Tabs_get(tabs));
-			fprintf(code_stream, "%sfree(pointers_string);\n", Tabs_get(tabs));	Tabs_decrement(tabs);
-			fprintf(code_stream, "%s}\n", Tabs_get(tabs));
-		}
-		fprintf(code_stream, "%sfclose(string_stream);\n", Tabs_get(tabs));
-		fprintf(code_stream, "%sreturn string;\n", Tabs_get(tabs));	Tabs_decrement(tabs);
-		fprintf(code_stream, "%s}", Tabs_get(tabs));
-		{
-			Tabs_free(tabs);
-			fclose(code_stream);
-		}
+		fprintf(pointer_stream, "%s->%s", structure->shortcut, attribute->name);
+		fclose(pointer_stream);
 	}
-	return code;
+	return pointer;
 }
 
-char * serialize_method_json_encode_declaration(Structure *structure) {
-	char *code;
-	{
-		size_t code_length;
-		FILE *code_stream = open_memstream(&code, &code_length);
-		fprintf(code_stream, "char * %s_json_encode(void *pointer);", structure->name);
-		fclose(code_stream);
-	}
-	return code;
-}
-
-char * serialize_method_json_encode_definition(Structure *structure) {
-	char *code;
-	{
-		size_t code_length;
-		FILE *code_stream = open_memstream(&code, &code_length);
-		fprintf(code_stream, "char * %s_json_encode(void *pointer) {\n", structure->name);
-		fprintf(code_stream, "\treturn NULL;\n");
-		fprintf(code_stream, "}");
-		fclose(code_stream);
-	}
-	return code;
-}
-
-char * serialize_method_json_decode_declaration(Structure *structure) {
-	char *code;
-	{
-		size_t code_length;
-		FILE *code_stream = open_memstream(&code, &code_length);
-		fprintf(code_stream, "void * %s_json_decode(char *json);", structure->name);
-		fclose(code_stream);
-	}
-	return code;
-}
-
-char * serialize_method_json_decode_definition(Structure *structure) {
-	char *code;
-	{
-		size_t code_length;
-		FILE *code_stream = open_memstream(&code, &code_length);
-		fprintf(code_stream, "void * %s_json_decode(char *json) {\n", structure->name);
-		fprintf(code_stream, "\treturn NULL;\n");
-		fprintf(code_stream, "}");
-		fclose(code_stream);
-	}
-	return code;
-}
-
-
-char * serialize_attribute_with_loop(Tabs *tabs, Structure *structure, Attribute *attribute, Boolean slash_n) {
+char * generate_attribute_with_loop(Tabs *tabs, Structure *structure, Attribute *attribute, Boolean slash_n) {
 	char *code_loop_start;
 	{
 		size_t code_loop_start_length;
@@ -543,16 +408,3 @@ char * serialize_attribute_with_loop(Tabs *tabs, Structure *structure, Attribute
 	return code_loop;
 }
 
-char * serialize_attribute_pointer(Structure *structure, Attribute *attribute) {
-	char *pointer;
-	{
-		size_t pointer_length;
-		FILE *pointer_stream = open_memstream(&pointer, &pointer_length);
-		if (attribute->type==STRUCTURE || attribute->type==STRUCTURE_ARRAY) {
-			fprintf(pointer_stream, "&");
-		}
-		fprintf(pointer_stream, "%s->%s", structure->shortcut, attribute->name);
-		fclose(pointer_stream);
-	}
-	return pointer;
-}
