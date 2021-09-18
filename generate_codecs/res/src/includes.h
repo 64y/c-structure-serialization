@@ -8,12 +8,9 @@
 #include "utils/structure_usage.h"
 #include "utils/structure_usage_set.h"
 
-#include "structures/test_2.h"
+// %s - include structures here
 
-#include "libraries/cat_library.h"
-#include "libraries/dog_library.h"
-#include "libraries/pets_library.h"
-#include "libraries/petssizes_library.h"
+// %s - include libraries here
 
 #include "utils/all_included.h"
 

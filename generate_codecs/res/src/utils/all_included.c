@@ -25,7 +25,7 @@ char * pointers_to_string(char *structure_name, void *pointer) {
 	FILE *string_stream = open_memstream(&string, &string_length);
 	for (StructureUsage *curr=structureUsageSet->head->next; curr!=NULL; curr=curr->next) {
 		char *structure_string = NULL;
-		// %s to_string
+		// %s use to_string here
 		fflush(string_stream);
 		if (structure_string!=NULL && strstr(string, structure_string)==NULL) {
 			fprintf(string_stream, "|_ %s", structure_string);
@@ -41,5 +41,5 @@ void StructureUsageSet_pass(StructureUsageSet *structureUsageSet, StructureUsage
 	if (structureUsage->usage==1) {
 		return;
 	}
-	// %s StructureUsageSet_pass_\'Structure\' cast and call
+	// %s use StructureUsageSet_pass_\'Structure\' cast and call here
 }
