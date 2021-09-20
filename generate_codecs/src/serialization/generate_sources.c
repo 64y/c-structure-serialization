@@ -13,12 +13,17 @@
 #include "data_types/structure.h"
 #include "data_types/structure_regular_expressions.h"
 
-#include "serialization/generate_library.h"
+#include "serialization/generate_sources.h"
 #include "serialization/generate_to_string_method.h"
 #include "serialization/generate_json_codec.h"
 
 
-void generate_libraries(char *project_path, char *structures_path) {
+void generate_structure_name(char *project_path, Array *structures);
+void generate_structure_methods(char *project_path, Array *structures);
+void generate_includes(char *project_path, char *structures_path, Array *structures);
+
+
+void generate_sources(char *project_path, char *structures_path) {
 	char *path = string_copy(project_path);
 	char *path_libraries = string_appends((char *[]){path, "/libraries", NULL});
 	char *path_structures = string_appends((char *[]){path, "/", structures_path, NULL});
@@ -40,7 +45,7 @@ void generate_libraries(char *project_path, char *structures_path) {
 				Array_add(structure_source_code, code_line);
 			} else if (RegularExpression_match(structureRegularExpressions->structureEnd, code_line)) {
 				Array_add(structure_source_code, code_line);
-				Array_add(structures, array_Structure_arguments(h_file_path, structure_source_code));
+				Array_add(structures, array_Structure_arguments(Array_get(h_files, h_files_i), structure_source_code));
 				{
 					Array_free(structure_source_code);
 					structure_source_code = NULL;
@@ -53,10 +58,13 @@ void generate_libraries(char *project_path, char *structures_path) {
 		}
 	}
 	
+	generate_structure_name(project_path, structures);
+	generate_structure_methods(project_path, structures);
+	generate_includes(project_path, structures_path, structures);
 	// TODO: 
 	
-	char *structures_string = Array_to_string(structures);
-	puts(structures_string);
+	// char *structures_string = Array_to_string(structures);
+	// puts(structures_string);
 	
 	{
 		free(path);
@@ -65,9 +73,169 @@ void generate_libraries(char *project_path, char *structures_path) {
 		
 		Array_free(h_files);
 		Array_free(structures);
-		free(structures_string);
+		// free(structures_string);
 	}
 }
+
+void generate_structure_name(char *project_path, Array *structures) {
+	size_t structures_size = Array_size(structures);
+	char *names, *names_strings;
+	{
+		size_t names_length, names_strings_length;
+		FILE *names_stream = open_memstream(&names, &names_length), *names_strings_stream = open_memstream(&names_strings, &names_strings_length);
+		for (int i=0; i<structures_size; i++) {
+			char *structure_name = ((Structure *) Array_get(structures, i))->name;
+			char *structure_name_upper = string_to_upper(structure_name);
+			fprintf(names_stream, "%s%s", structure_name_upper, (i<structures_size-1)?",\n\t":"");
+			fprintf(names_strings_stream, "\"%s\"%s", structure_name, (i<structures_size-1)?",\n\t":"");
+			{
+				structure_name = NULL;
+				free(structure_name_upper);
+			}
+		}
+		{
+			fclose(names_stream);
+			fclose(names_strings_stream);
+		}
+	}
+	
+	char *structure_name_h_path = string_appends((char *[]){project_path, "/structure/structure_name.h", NULL});
+	char *structure_name_h_format = file_read(structure_name_h_path);
+	char *structure_name_h_source_code;
+	{
+		size_t structure_name_h_source_code_length;
+		FILE *structure_name_h_source_code_stream = open_memstream(&structure_name_h_source_code, &structure_name_h_source_code_length);
+		fprintf(structure_name_h_source_code_stream, structure_name_h_format, names);
+		{
+			fclose(structure_name_h_source_code_stream);
+		}
+	}
+	file_write(structure_name_h_path, structure_name_h_source_code);
+	
+	char *structure_name_c_path = string_appends((char *[]){project_path, "/structure/structure_name.c", NULL});
+	char *structure_name_c_format = file_read(structure_name_c_path);
+	char *structure_name_c_source_code;
+	{
+		size_t structure_name_c_source_code_length;
+		FILE *structure_name_c_source_code_stream = open_memstream(&structure_name_c_source_code, &structure_name_c_source_code_length);
+		fprintf(structure_name_c_source_code_stream, structure_name_c_format, structures_size, names_strings);
+		{
+			fclose(structure_name_c_source_code_stream);
+		}
+	}
+	file_write(structure_name_c_path, structure_name_c_source_code);
+	{
+		free(names);
+		free(names_strings);
+		free(structure_name_h_path);
+		free(structure_name_h_format);
+		free(structure_name_h_source_code);
+		free(structure_name_c_path);
+		free(structure_name_c_format);
+		free(structure_name_c_source_code);
+	}
+}
+
+void generate_structure_methods(char *project_path, Array *structures) {
+	size_t structures_size = Array_size(structures);
+	char *pass_methods, *to_string_methods, *json_encode_methods, *json_decode_methods;
+	{
+		size_t pass_methods_length, to_string_methods_length, json_encode_methods_length, json_decode_methods_length;
+		FILE *pass_methods_stream = open_memstream(&pass_methods, &pass_methods_length), *to_string_methods_stream = open_memstream(&to_string_methods, &to_string_methods_length), *json_encode_methods_stream = open_memstream(&json_encode_methods, &json_encode_methods_length), *json_decode_methods_stream = open_memstream(&json_decode_methods, &json_decode_methods_length);
+		for (int i=0; i<structures_size; i++) {
+			char *structure_name = ((Structure *) Array_get(structures, i))->name;
+			fprintf(pass_methods_stream, "%s_pass%s", structure_name, (i<structures_size-1)?",\n\t":"");
+			fprintf(to_string_methods_stream, "%s_to_string%s", structure_name, (i<structures_size-1)?",\n\t":"");
+			fprintf(json_encode_methods_stream, "%s_json_encode%s", structure_name, (i<structures_size-1)?",\n\t":"");
+			fprintf(json_decode_methods_stream, "%s_json_decode%s", structure_name, (i<structures_size-1)?",\n\t":"");
+		}
+		{
+			fclose(pass_methods_stream);
+			fclose(to_string_methods_stream);
+			fclose(json_encode_methods_stream);
+			fclose(json_decode_methods_stream);
+		}
+	}
+	
+	char *structure_methods_c_path = string_appends((char *[]){project_path, "/structure/structure_methods.c", NULL});
+	char *structure_methods_c_format = file_read(structure_methods_c_path);
+	char *structure_methods_c_source_code;
+	{
+		size_t structure_methods_c_source_code_length;
+		FILE *structure_methods_c_source_code_stream = open_memstream(&structure_methods_c_source_code, &structure_methods_c_source_code_length);
+		fprintf(structure_methods_c_source_code_stream, structure_methods_c_format, pass_methods, to_string_methods, json_encode_methods, json_decode_methods);
+		{
+			fclose(structure_methods_c_source_code_stream);
+		}
+	}
+	file_write(structure_methods_c_path, structure_methods_c_source_code);
+	{
+		free(pass_methods);
+		free(to_string_methods);
+		free(json_encode_methods);
+		free(json_decode_methods);
+		free(structure_methods_c_path);
+		free(structure_methods_c_format);
+		free(structure_methods_c_source_code);
+	}
+}
+
+void generate_includes(char *project_path, char *structures_path, Array *structures) {
+	size_t structures_size = Array_size(structures);
+	char *include_structures, *include_libraries;
+	{
+		size_t include_structures_length, include_libraries_strings_length;
+		FILE *include_structures_stream = open_memstream(&include_structures, &include_structures_length), *include_libraries_stream = open_memstream(&include_libraries, &include_libraries_strings_length);
+		for (int i=0; i<structures_size; i++) {
+			Structure *structure = (Structure *) Array_get(structures, i);
+			char *include_structure;
+			{
+				size_t include_structure_length;
+				FILE *include_structure_stream = open_memstream(&include_structure, &include_structure_length);
+				fprintf(include_structure_stream, "#include \"%s/%s\"", structures_path, structure->file_path);
+				{
+					fclose(include_structure_stream);
+				}
+			}
+			fflush(include_structures_stream);
+			if (strstr(include_structures, include_structure)==NULL) {
+				fprintf(include_structures_stream, "%s\n", include_structure);
+
+			}
+			char *structure_name_lower = string_to_lower(structure->name);
+			fprintf(include_libraries_stream, "#include \"libraries/%s_library.h\"\n", structure_name_lower);
+			{
+				free(include_structure);
+				free(structure_name_lower);
+			}
+		}
+		{
+			fclose(include_structures_stream);
+			fclose(include_libraries_stream);
+		}
+	}
+	char *structure_includes_h_path = string_appends((char *[]){project_path, "/includes.h", NULL});
+	char *structure_includes_h_format = file_read(structure_includes_h_path);
+	char *structure_includes_h_source_code;
+	{
+		size_t structure_includes_h_source_code_length;
+		FILE *structure_includes_h_source_code_stream = open_memstream(&structure_includes_h_source_code, &structure_includes_h_source_code_length);
+		fprintf(structure_includes_h_source_code_stream, structure_includes_h_format, include_structures, include_libraries);
+		{
+			fclose(structure_includes_h_source_code_stream);
+		}
+	}
+	file_write(structure_includes_h_path, structure_includes_h_source_code);
+	{
+		free(include_structures);
+		free(include_libraries);
+		
+		free(structure_includes_h_path);
+		free(structure_includes_h_format);
+		free(structure_includes_h_source_code);
+	}
+}
+
 
 void generate_structure_library_and_dependencies(char *project_path, char *structures_path, Structure *structure) {
 	

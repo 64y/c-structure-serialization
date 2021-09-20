@@ -8,16 +8,16 @@ void * array_string_create(void *element) {
 	return string_copy((char *) element);
 }
 
-char * array_string_to_string(void *element) {
-	return string_copy((char *) element);
-}
-
 void array_string_free(void *element) {
 	free((char *)element);
 }
 
+char * array_string_to_string(void *element) {
+	return string_copy((char *) element);
+}
+
 Array * Array_of_string_create() {
-	return Array_create(array_string_create, array_string_to_string, array_string_free);
+	return Array_create(array_string_create, array_string_free, array_string_to_string);
 }
 
 int array_string_cmp(const void *a, const void *b) {
@@ -39,15 +39,16 @@ void * array_Structure_create(void *element) {
 	return structure;
 }
 
-char * array_Structure_to_string(void *element) {
-	return Structure_to_string((Structure *) element);
-}
-
 void array_Structure_free(void *element) {
 	Structure_free((Structure *) element);
 }
 
+char * array_Structure_to_string(void *element) {
+	return Structure_to_string((Structure *) element);
+}
+
+
 Array * Array_of_Structure_create() {
-	return Array_create(array_Structure_create, array_Structure_to_string, array_Structure_free);
+	return Array_create(array_Structure_create, array_Structure_free, array_Structure_to_string);
 }
 

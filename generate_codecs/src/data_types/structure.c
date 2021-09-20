@@ -102,6 +102,7 @@ Structure * Structure_create_by_file_path_and_source_code(char *file_path, Array
 				attribute_is_char && (attribute_static_sizes+attribute_dynamic_sizes==1) && (attribute_sizes_names==0)
 			) {
 				type = STRING;
+				attribute_data_type = "char *";
 				attribute_static_sizes = 0;
 				attribute_dynamic_sizes = 0;
 			} else if (
@@ -122,12 +123,20 @@ Structure * Structure_create_by_file_path_and_source_code(char *file_path, Array
 				(attribute_static_sizes>0 && attribute_dynamic_sizes>0 && attribute_sizes_names==attribute_dynamic_sizes-1) ||
 				(attribute_static_sizes>0 && attribute_dynamic_sizes>0 && attribute_sizes_names==attribute_static_sizes+attribute_dynamic_sizes-1)
 			) {
-				type = (attribute_is_char) ? STRING_ARRAY : (attribute_is_primitive) ? NO_TYPE : STRUCTURE_POINTER_ARRAY;
+				if (attribute_is_char) {
+					type = STRING_ARRAY;
+					attribute_data_type = "char *";					
+				} else if (!attribute_is_primitive) {
+					type = STRUCTURE_POINTER_ARRAY;
+				} else {
+					type = NO_TYPE;
+				}
 				attribute_dynamic_sizes = attribute_dynamic_sizes - 1;
 			} else if (
 				attribute_is_char && attribute_static_sizes>0 && attribute_dynamic_sizes==0 && attribute_sizes_names==attribute_static_sizes-1
 			) {
 				type = STRING_ARRAY;
+				attribute_data_type = "char *";
 				attribute_static_sizes = attribute_static_sizes - 1;
 			} else {
 				type = NO_TYPE;

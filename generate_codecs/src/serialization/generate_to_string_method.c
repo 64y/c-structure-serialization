@@ -3,7 +3,7 @@
 
 #include "utils/basic_defines.h"
 #include "utils/tabs.h"
-#include "serialization/generate_library.h"
+#include "serialization/generate_sources.h"
 #include "serialization/generate_to_string_method.h"
 
 

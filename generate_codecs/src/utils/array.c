@@ -3,7 +3,7 @@
 #include "utils/array.h"
 
 
-Array * Array_create(void * (*create) (void *element), char * (*to_string) (void *element), void (*free) (void *element)) {
+Array * Array_create(void * (*create) (void *element), void (*free) (void *element), char * (*to_string) (void *element)) {
 	Array *array = (Array *)malloc(sizeof(Array));
 	array->a_size = 0;
 	array->a = (void **)calloc(array->a_size, sizeof(void *));
@@ -68,7 +68,7 @@ void * Array_get(Array *array, int index) {
 	return array->a[index];
 }
 
-int Array_size(Array *array) {
+size_t Array_size(Array *array) {
 	return array->a_size;
 }
 
