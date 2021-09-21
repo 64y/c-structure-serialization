@@ -236,7 +236,7 @@ void generate_includes(char *project_path, char *structures_path, Array *structu
 	}
 }
 
-
+/*
 void generate_structure_library_and_dependencies(char *project_path, char *structures_path, Structure *structure) {
 	
 	char *name_upper=NULL;
@@ -416,7 +416,7 @@ void generate_structure_library_and_dependencies(char *project_path, char *struc
 	{
 		Structure_free(structure);
 	}
-}
+}*/
 
 
 char * generate_pass_method_declaration(Structure *structure) {
