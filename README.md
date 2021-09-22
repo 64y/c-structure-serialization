@@ -1,5 +1,9 @@
 # C Structure Serialization
 
+It is a library to serialize structure which contains: primitives, strings, structures or their multi dimentional types.
+
+## Example
+
 Example of running `main_primitives`:
 1. Compile code:
 ```bash
