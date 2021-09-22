@@ -1,8 +1,27 @@
 # C Structure Serialization
 
-It is contains from two parts:
-1. User static library from `serialize` folder in you code.
-2. Run `program.sh` from `generate_codecs` to generate code and create shared library.
+Example of running `main_primitives`:
+1. Compile code:
+```bash
+make all
+```
+2. Compile library:
+```bash
+make library -f MakefileLib
+```
+3. Compile `main`:
+```bash
+cd tests
+gcc main_primitives.c -o main -I structures/ -I ../include/ -L ../lib -lcstructureserialization -ldl -lcrypto -g
+```
+4. Generate files for structures in directory `structures` and compiling library:
+``` bash
+bash ../program.sh main structures
+```
+5. Run program:
+```bash
+./main
+```
 
 ## TODO
  - [x] Implement **to_string** method.
