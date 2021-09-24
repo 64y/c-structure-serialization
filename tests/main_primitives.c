@@ -10,7 +10,7 @@
 int main(int argc, char *argv[]) {
 	puts(" = = = Example of Structure with Primitives Members = = = ");
 	
-	Serializer *all_primitives_serializer = Serializer_create("AllPrimitives");
+	Serializer *all_primitives_serializer = Serializer_create("/home/pavel/Workspace/c-structure-serialization/tests/asdf.so", "AllPrimitives");
 	
 	AllPrimitives allPrimitives = {'D', 0xFF, 0x00, 1, 2, 3l, 4.0f, 5.5};
 	

@@ -65,19 +65,7 @@ $(OBJECT_DIR)/%.o: $(SOURCE_DIR)/%.c
 	@sed -e 's/.*://' -e 's/\\$$//' < $(OBJECT_DIR)/$*.d.tmp | fmt -1 | sed -e 's/^ *//' -e 's/$$/:/' >> $(OBJECT_DIR)/$*.d
 	@rm -f $(OBJECT_DIR)/$*.d.tmp
 
+tests:
+	gcc tests/main_primitives.c -o bin/tests -I tests -I $$C_STRUCTURE_SERIALIZATION_HOME/include -L $$C_STRUCTURE_SERIALIZATION_HOME -lcstructureserialization -ldl -lcrypto
 
-PROJECT_NAME := c_structure_serialization
-INSTALL_PATH := ~/.$(PROJECT_NAME)
-NAME := $(addsufix $(echo $(PROJECT_NAME)) | tr '[:lower:]' '[:upper:]', _PATH)
-	
-install: build
-	@echo "\nCreating directory and copy files: to $(INSTALL_PATH)"
-	mkdir -p $(INSTALL_PATH)
-	mkdir -p $(INSTALL_PATH)/$(INCLUDE_DIR)/$(PROJECT_NAME)
-	cp $(INCLUDE_DIR)/$(PROJECT_NAME)/serializer.h $(INSTALL_PATH)/$(INCLUDE_DIR)/$(PROJECT_NAME)/serializer.h -r
-	cp $(LIBRARY_DIR)/$(LIBRARY) $(INSTALL_PATH)/$(LIBRARY)
-	cp $(TARGET_DIR)/$(TARGET) $(INSTALL_PATH)/$(TARGET)
-	bash $(export C_STRUCTURE_SERIALIZATION_PATH=$(INSTALL_PATH))
-	make clean
-
-.PHONY: clean directories build library echo_compiling_objects install
+.PHONY: clean directories build library echo_compiling_objects tests
