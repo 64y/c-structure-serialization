@@ -1,7 +1,8 @@
-#ifndef STRUCTURES_H
-#define STRUCTURES_H
+#ifndef $4_STRUCTURES_H
+#define $4_STRUCTURES_H
 
 #include <stdio.h>
+#include <stdlib.h>
 
 #include <c_structure_serialization/serializer.h>
 
@@ -11,7 +12,7 @@
 void example_of_structure_with_structures_and_structures_pointers() {
 	puts(" = = = Example of Structure with Structures and Structures Pointers = = = ");
 	
-	Serializer *pets_serializer = Serializer_create("Pets");
+	Serializer *pets_serializer = Serializer_create("./my_lib", "Pets");
 	
 	Pets *pets;
 	{
@@ -40,9 +41,7 @@ void example_of_structure_with_structures_and_structures_pointers() {
 	
 	{
 		Serializer_free(pets_serializer);
-		
 		Pets_free(pets);
-		
 		free(pets_string);
 	}
 }

@@ -57,6 +57,7 @@ void generate_sources(char *project_path, char *structures_path) {
 			free(h_file_source_code);
 		}
 	}
+	// TODO: edit ^ to scan directories
 	generate_structure_name_file(project_path, structures);
 	generate_structure_methods_file(project_path, structures);
 	generate_includes_file(project_path, structures_path, structures);
@@ -68,11 +69,6 @@ void generate_sources(char *project_path, char *structures_path) {
 		free(path_libraries);
 		free(path_structures);
 		Array_free(h_files);
-		{
-			char *s = Array_to_string(structures);
-			puts(s);
-			free(s);
-		}
 		Array_free(structures);
 	}
 }

@@ -62,7 +62,9 @@ char * get_serializer_method_name(char *structure_name, char *method_name) {
 		size_t serializer_method_name_length;
 		FILE *serializer_method_name_stream = open_memstream(&serializer_method_name, &serializer_method_name_length);
 		fprintf(serializer_method_name_stream, "%s_%s", structure_name, method_name);
-		fclose(serializer_method_name_stream);
+		{
+			fclose(serializer_method_name_stream);
+		}
 	}
 	return serializer_method_name;
 }

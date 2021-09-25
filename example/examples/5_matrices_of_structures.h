@@ -1,7 +1,8 @@
-#ifndef MATRICES_OF_STRUCTURES_H
-#define MATRICES_OF_STRUCTURES_H
+#ifndef $5_MATRICES_OF_STRUCTURES_H
+#define $5_MATRICES_OF_STRUCTURES_H
 
 #include <stdio.h>
+#include <stdlib.h>
 
 #include <c_structure_serialization/serializer.h>
 
@@ -9,9 +10,9 @@
 #include "structures/figures.h"
 
 void example_of_structure_with_matrices_of_structures() {
-	puts(" = = = Example of Structure with Matrices of Structures = = = "); // 9 bytes in 3 blocks
+	puts(" = = = Example of Structure with Matrices of Structures = = = ");
 		
-	Serializer *figures_serializer = Serializer_create("Figures");
+	Serializer *figures_serializer = Serializer_create("./my_lib", "Figures");
 	
 	Figures *figures;
 	{

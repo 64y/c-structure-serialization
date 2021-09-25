@@ -14,6 +14,7 @@
 
 %s
 %s
+
 #include "structure/structure_methods.h"
 
 #endif

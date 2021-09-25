@@ -18,7 +18,7 @@ LFLAGS :=
 INC := -I $(INCLUDE_DIR)
 INC_DEP := -I $(INCLUDE_DIR)
 
-TARGET := generate_codecs
+TARGET := generate_library
 
 
 LIBRARY_SOURCE := $(SOURCE_DIR)/c_structure_serialization/serializer.c
@@ -29,6 +29,15 @@ LIBRARY_LFLAGS := -ldl
 LIBRARY_INC := -I $(INCLUDE_DIR)
 
 LIBRARY := libcstructureserialization.a
+
+
+EXAMPLE_DIR := example
+EXAMPLE_TARGET := example
+EXAMPLE_LIBRARY_NAME := my_lib
+
+
+TESTS_DIR := tests
+TESTS_TARGET := test
 
 
 build: clean directories library echo_compiling_objects $(TARGET)
@@ -65,7 +74,13 @@ $(OBJECT_DIR)/%.o: $(SOURCE_DIR)/%.c
 	@sed -e 's/.*://' -e 's/\\$$//' < $(OBJECT_DIR)/$*.d.tmp | fmt -1 | sed -e 's/^ *//' -e 's/$$/:/' >> $(OBJECT_DIR)/$*.d
 	@rm -f $(OBJECT_DIR)/$*.d.tmp
 
-tests:
-	gcc tests/main_primitives.c -o bin/tests -I tests -I $$C_STRUCTURE_SERIALIZATION_HOME/include -L $$C_STRUCTURE_SERIALIZATION_HOME -lcstructureserialization -ldl -lcrypto
+example:
+	@mkdir -p $(TARGET_DIR)
+	@$$C_STRUCTURE_SERIALIZATION_HOME/generate_library $(EXAMPLE_DIR) "structures" $(TARGET_DIR)/$(EXAMPLE_LIBRARY_NAME)
+	@$(CC) $(shell find $(EXAMPLE_DIR) -type f -name "*.c") -o $(TARGET_DIR)/$(EXAMPLE_TARGET) -I $(EXAMPLE_DIR) -I $$C_STRUCTURE_SERIALIZATION_HOME/include -L $$C_STRUCTURE_SERIALIZATION_HOME -lcstructureserialization -ldl
 
-.PHONY: clean directories build library echo_compiling_objects tests
+test:
+	@mkdir -p $(TARGET_DIR)
+	@$(CC) -o $(TARGET_DIR)/$(TESTS_TARGET) -I $(INCLUDE_DIR) $(LFLAGS) $(shell find $(SOURCE_DIR) -type f -name "*.c" ! -name "main.c" ! -name "serializer.c") $(TESTS_DIR)/main.c 
+
+.PHONY: clean directories build library echo_compiling_objects example test
