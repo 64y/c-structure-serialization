@@ -8,7 +8,7 @@
 
 int main(int argc, char *argv[]) {
 
-	// example_of_structure_with_primitives_members();
+	example_of_structure_with_primitives_members();
 	
 	// example_of_structure_with_string_member();
 	
@@ -18,7 +18,7 @@ int main(int argc, char *argv[]) {
 	// example_of_structure_with_matrices();
 	// example_of_structure_with_matrices_of_strings();
 	
-	example_of_structure_with_structures_and_structures_pointers();
+	// example_of_structure_with_structures_and_structures_pointers();
 	
 	// example_of_structure_with_matrices_of_structures();
 	return 0;

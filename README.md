@@ -62,11 +62,10 @@ make example
 3. Come to `bin` directory and call `./example`:
 ```bash
 cd bin
-valgrind ./example
+./example
 cd ../
 ```
 
-Some examples work only with ``valgrind`` program.
 
 ## How To
 
@@ -139,7 +138,5 @@ cd bin
 If you want to call `bin/main` you need to use "./bin/my_lib" library path in `main.c`.
 
 ## TODO
- - [x] Implement **to_string** method.
- - [ ] There is no json or bin codecs yet, only **to_string** method. So it is not a serialization for now.
- - [ ] There is a lot of memory leaks, so it only rush with `valgrind` support.
- - [ ] Also it is possible to parse structure from binary itself, but I do not know how to do such a stuff.
+ - [x] Implement **to_string**;
+ - [ ] Implement **json_codec.

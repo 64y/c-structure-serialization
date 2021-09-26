@@ -1,4 +1,4 @@
-#include "structure/structure_status.h"
+#include "_structure/structure_status.h"
 
 
 const int STRUCTURE_STATUS_SIZE = 2;

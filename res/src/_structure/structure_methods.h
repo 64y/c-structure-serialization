@@ -12,6 +12,8 @@ extern char * (*json_encode_methods[]) (void *structure);
 
 extern void * (*json_decode_methods[]) (char *structure_json);
 
-char * to_string_method(StructureUsage *structureUsage);
+StructureUsageSet * walk_through_pointer(StructureName structureName, void *pointer);
+
+char * to_string_method(StructureName structureName, void *pointer);
 
 #endif

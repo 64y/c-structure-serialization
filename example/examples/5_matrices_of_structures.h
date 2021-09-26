@@ -23,7 +23,7 @@ void example_of_structure_with_matrices_of_structures() {
 		for (int i=0; i<figures->circles_0; i++) {
 			figures->circles[i] = (Circle **)calloc(figures->circles_1, sizeof(Circle *));
 			for (int j=0; j<figures->circles_1; j++) {
-				figures->circles[i][j] = (Circle *)malloc(sizeof(Circle));
+				figures->circles[i][j] = (Circle *)calloc(1, sizeof(Circle));
 				Point c = {random()%50-25, random()%50-25};
 				figures->circles[i][j]->c = c;
 				figures->circles[i][j]->r = random()%5;
@@ -52,7 +52,7 @@ void example_of_structure_with_matrices_of_structures() {
 						for (int m=0; m<figures->rectangles_e; m++) {
 							Point a = {random()%50-25, random()%50-25};
 							Point b = {random()%50-25, random()%50-25};
-							figures->rectangles[i][j][k][l][m] = (Rectangle *)malloc(sizeof(Rectangle));
+							figures->rectangles[i][j][k][l][m] = (Rectangle *)calloc(1, sizeof(Rectangle));
 							figures->rectangles[i][j][k][l][m]->a = a;
 							figures->rectangles[i][j][k][l][m]->a = b;
 						}

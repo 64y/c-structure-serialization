@@ -12,14 +12,14 @@ char *md5_of_files_in_structures_path(char *full_path_to_structures) {
 	{
 		size_t command_length;
 		FILE *command_stream = open_memstream(&command, &command_length);
-		fprintf(command_stream, "md5sum %s/* | awk '{ print $1 }' | md5sum | awk '{ print $1 }'", full_path_to_structures);
+		fprintf(command_stream, "echo -n `md5sum %s/* | awk \'{ print $1 }\' | md5sum | awk \'{ print $1 }\'`;echo -n \"_\"; echo -n `date +%%F_%%T`", full_path_to_structures);
 		{
 			fclose(command_stream);
 		}
 	}
 	char *md5;
 	{
-		size_t md5_length = 32;
+		size_t md5_length = 32+20;
 		md5 = (char *)calloc(md5_length+1, sizeof(char));
 		FILE *md5_stream = popen(command, "r");
 		fread(md5, sizeof(char), md5_length, md5_stream);

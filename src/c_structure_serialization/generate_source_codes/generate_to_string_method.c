@@ -15,7 +15,9 @@ char * generate_to_string_method_declaration(Structure *structure) {
 	{
 		size_t code_length;
 		FILE *code_stream = open_memstream(&code, &code_length);
-		fprintf(code_stream, "char * %s_to_string(void *pointer);", structure->name);
+		fprintf(code_stream, "char * %s_to_string(void *pointer);\n", structure->name);
+		fprintf(code_stream, "\n");
+		fprintf(code_stream, "char * %s_to_string_overall(void *pointer);", structure->name);
 		fclose(code_stream);
 	}
 	return code;
@@ -30,8 +32,8 @@ char * generate_to_string_method_definition(Structure *structure) {
 		
 		fprintf(code_stream, "%schar * %s_to_string(void *pointer) {\n", Tabs_get(tabs), structure->name); Tabs_increment(tabs);
 		fprintf(code_stream, "%s%s *%s = (%s *) pointer;\n", Tabs_get(tabs), structure->name, structure->shortcut, structure->name);
-		fprintf(code_stream, "%ssize_t string_length;\n", Tabs_get(tabs));
 		fprintf(code_stream, "%schar *string;\n", Tabs_get(tabs));
+		fprintf(code_stream, "%ssize_t string_length;\n", Tabs_get(tabs));
 		fprintf(code_stream, "%sFILE *string_stream = open_memstream(&string, &string_length);\n", Tabs_get(tabs));
 		fprintf(code_stream, "%sfprintf(string_stream, \"%s [@%%lx]:\\n\", (long)(void *)%s);\n", Tabs_get(tabs), structure->name, structure->shortcut);
 		for (Attribute *curr=structure->head; curr!=NULL; curr=curr->next) {
@@ -138,7 +140,7 @@ char * generate_to_string_method_definition(Structure *structure) {
 				free(attribute_cast);
 			}
 		}
-		if (Structure_has_structure_attributes(structure)) {
+		/*if (Structure_has_structure_attributes(structure)) {
 			char *structure_name_upper = string_to_upper(structure->name);
 			fprintf(code_stream, "%schar *pointers_string = to_string_method(StructureUsage_create(%s, %s));\n", Tabs_get(tabs), structure_name_upper, structure->shortcut);
 			fprintf(code_stream, "%sif (pointers_string != NULL) {\n", Tabs_get(tabs));	Tabs_increment(tabs);
@@ -148,10 +150,21 @@ char * generate_to_string_method_definition(Structure *structure) {
 			{
 				free(structure_name_upper);
 			}
+		}*/
+			fprintf(code_stream, "%sfclose(string_stream);\n", Tabs_get(tabs));
+			fprintf(code_stream, "%sreturn string;\n", Tabs_get(tabs));	Tabs_decrement(tabs);
+			fprintf(code_stream, "%s}\n", Tabs_get(tabs));
+		{
+			char *structure_name_upper = string_to_upper(structure->name);
+			fprintf(code_stream, "%s\n", Tabs_get(tabs));
+			fprintf(code_stream, "%schar * %s_to_string_overall(void *pointer) {\n", Tabs_get(tabs), structure->name); 	Tabs_increment(tabs);
+			fprintf(code_stream, "%sreturn to_string_method(%s, pointer);\n", Tabs_get(tabs), structure_name_upper); 	Tabs_decrement(tabs);
+			fprintf(code_stream, "%s}", Tabs_get(tabs));
+			{
+				free(structure_name_upper);
+			}
 		}
-		fprintf(code_stream, "%sfclose(string_stream);\n", Tabs_get(tabs));
-		fprintf(code_stream, "%sreturn string;\n", Tabs_get(tabs));	Tabs_decrement(tabs);
-		fprintf(code_stream, "%s}", Tabs_get(tabs));
+		
 		{
 			Tabs_free(tabs);
 			fclose(code_stream);

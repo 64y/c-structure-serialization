@@ -71,6 +71,10 @@ void StructureUsageSet_add(StructureUsageSet *structureUsageSet, StructureUsage 
 	}
 }
 
+void StructureUsageSet_next_stage(StructureUsageSet *structureUsageSet) {
+	structureUsageSet->stage = structureUsageSet->stage + 1;
+}
+
 StructureUsage * StructureUsageSet_get_by_hashCode(StructureUsageSet *structureUsageSet, char *hashCode) {
 	for (StructureUsage *curr=structureUsageSet->head; curr!=NULL; curr=curr->next) {
 		if (strcmp(curr->hashCode, hashCode)==0) {
@@ -78,10 +82,6 @@ StructureUsage * StructureUsageSet_get_by_hashCode(StructureUsageSet *structureU
 		}
 	}
 	return NULL;
-}
-
-void StructureUsageSet_stage_next(StructureUsageSet *structureUsageSet) {
-	structureUsageSet->stage = structureUsageSet->stage + 1;
 }
 
 StructureStatus StructureUsageSet_is_all_used(StructureUsageSet *structureUsageSet) {

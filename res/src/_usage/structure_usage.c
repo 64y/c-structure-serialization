@@ -2,7 +2,7 @@
 
 
 StructureUsage * StructureUsage_create(StructureName structureName, void *pointer) {
-	StructureUsage *structureUsage = (StructureUsage *)malloc(sizeof(StructureUsage));
+	StructureUsage *structureUsage = (StructureUsage *)calloc(1, sizeof(StructureUsage));
 	structureUsage->name = structureName;
 	structureUsage->pointer = pointer;
 	structureUsage->hashCode = NULL;

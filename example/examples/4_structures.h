@@ -44,6 +44,7 @@ void example_of_structure_with_structures_and_structures_pointers() {
 		Pets_free(pets);
 		free(pets_string);
 	}
+	puts(" = = = = = = = = = = = = = = = = = = = = = = = = = = = = = \n");
 }
 
 #endif

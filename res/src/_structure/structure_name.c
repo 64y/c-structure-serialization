@@ -1,4 +1,4 @@
-#include "structure/structure_name.h"
+#include "_structure/structure_name.h"
 
 
 const int STRUCTURE_NAME_SIZE = %d;
