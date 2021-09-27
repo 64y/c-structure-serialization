@@ -6,6 +6,9 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "_utils/data.h"
+#include "_utils/base64.h"
+
 #include "_structure/structure_name.h"
 #include "_structure/structure_status.h"
 
