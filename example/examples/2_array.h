@@ -1,7 +1,8 @@
-#ifndef ARRAY_H
-#define ARRAY_H
+#ifndef $2_ARRAY_H
+#define $2_ARRAY_H
 
 #include <stdio.h>
+#include <stdlib.h>
 
 #include <c_structure_serialization/serializer.h>
 
@@ -11,7 +12,7 @@
 void example_of_structure_with_array() {
 	puts(" = = = Example of Structure with Array = = = ");
 	
-	Serializer *array_serializer = Serializer_create("Array");
+	Serializer *array_serializer = Serializer_create("./my_lib", "Array");
 	
 	size_t array_arr_n = 5;
 	Array *array;

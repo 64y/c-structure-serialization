@@ -6,34 +6,64 @@ INCLUDE_DIR := include
 SOURCE_DIR := src
 OBJECT_DIR := obj
 TARGET_DIR := bin
-
-TARGET := generate_codecs
+LIBRARY_DIR := lib
 
 
 SOURCES := $(shell find $(SOURCE_DIR) -type f -name *.c ! -name "serializer.c")
 OBJECTS := $(patsubst $(SOURCE_DIR)/%, $(OBJECT_DIR)/%, $(SOURCES:.c=.o))
+-include $(OBJECTS:.o=.d)
 
 CFLAGS := -Wall -g
 LFLAGS := 
 INC := -I $(INCLUDE_DIR)
 INC_DEP := -I $(INCLUDE_DIR)
 
-all: directories $(TARGET)
+TARGET := generate_library
 
-remake: clean all
+
+LIBRARY_SOURCE := $(SOURCE_DIR)/c_structure_serialization/serializer.c
+LIBRARY_OBJECT := $(OBJECT_DIR)/c_structure_serialization/serializer.o
+
+LIBRARY_CFLAGS := -Wall -fPIC
+LIBRARY_LFLAGS := -ldl
+LIBRARY_INC := -I $(INCLUDE_DIR)
+
+LIBRARY := libcstructureserialization.a
+
+
+EXAMPLE_DIR := example
+EXAMPLE_TARGET := example
+EXAMPLE_LIBRARY_NAME := my_lib
+
+
+TESTS_DIR := tests
+TESTS_TARGET := test
+
+
+build: clean directories library echo_compiling_objects $(TARGET)
 
 clean:
 	@$(RM) -rf $(OBJECT_DIR)
 	@$(RM) -rf $(TARGET_DIR)
+	@$(RM) -rf $(LIBRARY_DIR)
 
 directories:
 	@mkdir -p $(OBJECT_DIR)
 	@mkdir -p $(TARGET_DIR)
+	@mkdir -p $(LIBRARY_DIR)
 
--include $(OBJECTS:.o=.d)
-
+library:
+	@echo "Compiling library:"
+	@mkdir -p $(dir $(LIBRARY_OBJECT))
+	$(CC) $(LIBRARY_CFLAGS) $(LIBRARY_LFLAGS) $(LIBRARY_INC) -c -o $(LIBRARY_OBJECT) $(LIBRARY_SOURCE)
+	ar -cvq $(LIBRARY_DIR)/$(LIBRARY) $(LIBRARY_OBJECT)
+	
 $(TARGET): $(OBJECTS)
+	@echo "\nCompiling target:"
 	$(CC) -o $(TARGET_DIR)/$(TARGET) $^ $(LFLAGS)
+
+echo_compiling_objects:
+	@echo "\nCompiling objects:"
 
 $(OBJECT_DIR)/%.o: $(SOURCE_DIR)/%.c
 	@mkdir -p $(dir $@)
@@ -44,4 +74,13 @@ $(OBJECT_DIR)/%.o: $(SOURCE_DIR)/%.c
 	@sed -e 's/.*://' -e 's/\\$$//' < $(OBJECT_DIR)/$*.d.tmp | fmt -1 | sed -e 's/^ *//' -e 's/$$/:/' >> $(OBJECT_DIR)/$*.d
 	@rm -f $(OBJECT_DIR)/$*.d.tmp
 
-.PHONY: all remake clean directories
+example:
+	@mkdir -p $(TARGET_DIR)
+	@$$C_STRUCTURE_SERIALIZATION_HOME/generate_library $(EXAMPLE_DIR) "structures" $(TARGET_DIR)/$(EXAMPLE_LIBRARY_NAME)
+	@$(CC) $(shell find $(EXAMPLE_DIR) -type f -name "*.c") -o $(TARGET_DIR)/$(EXAMPLE_TARGET) -I $(EXAMPLE_DIR) -I $$C_STRUCTURE_SERIALIZATION_HOME/include -L $$C_STRUCTURE_SERIALIZATION_HOME -lcstructureserialization -ldl
+
+test:
+	@mkdir -p $(TARGET_DIR)
+	@$(CC) -o $(TARGET_DIR)/$(TESTS_TARGET) -I $(INCLUDE_DIR) $(LFLAGS) $(shell find $(SOURCE_DIR) -type f -name "*.c" ! -name "main.c" ! -name "serializer.c") $(TESTS_DIR)/main.c 
+
+.PHONY: clean directories build library echo_compiling_objects example test

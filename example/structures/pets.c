@@ -4,6 +4,7 @@
 
 #include "structures/pets.h"
 
+
 Cat * Cat_create(int age, char *name, double cute) {
 	Cat *cat = (Cat *)malloc(sizeof(Cat));
 	cat->age = age;

@@ -1,7 +1,8 @@
-#ifndef STRING_H
-#define STRING_H
+#ifndef $1_STRING_H
+#define $1_STRING_H
 
 #include <stdio.h>
+#include <stdlib.h>
 
 #include <c_structure_serialization/serializer.h>
 
@@ -11,7 +12,7 @@
 void example_of_structure_with_string_member() {
 	puts(" = = = Example of Structure with String Member  = = = ");
 	
-	Serializer *parrot_serializer = Serializer_create("Parrot");
+	Serializer *parrot_serializer = Serializer_create("./my_lib", "Parrot");
 	
 	Parrot parrot = {"Tom", 5};
 	
@@ -21,7 +22,6 @@ void example_of_structure_with_string_member() {
 	
 	{
 		Serializer_free(parrot_serializer);
-		
 		free(parrot_string);
 	}
 	puts(" = = = = = = = = = = = = = = = = = = = = = = = = = = =\n");

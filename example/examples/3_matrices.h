@@ -1,7 +1,8 @@
-#ifndef MATRICES_H
-#define MATRICES_H
+#ifndef $3_MATRICES_H
+#define $3_MATRICES_H
 
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 
 #include <c_structure_serialization/serializer.h>
@@ -12,7 +13,7 @@
 void example_of_structure_with_matrix() {
 	puts(" = = = Example of Structure with Matrix = = = ");
 	
-	Serializer *matrix3D_serializer = Serializer_create("Matrix3D");
+	Serializer *matrix3D_serializer = Serializer_create("./my_lib", "Matrix3D");
 	
 	Matrix3D *matrix3D;
 	{
@@ -63,7 +64,7 @@ void example_of_structure_with_matrix() {
 void example_of_structure_with_matrices() {
 	puts(" = = = Example of Structure with Matrices = = = "); // 13 bytes in 5 blocks in Serialize_registrate_structure
 	
-	Serializer *arrays_serializer = Serializer_create("Arrays");
+	Serializer *arrays_serializer = Serializer_create("./my_lib", "Arrays");
 	
 	Arrays *arrays;
 	{
@@ -185,8 +186,8 @@ void example_of_structure_with_matrices() {
 #include "structures/strings.h"
 
 char * string_random(size_t string_length_min, size_t string_length_max) {
-	size_t string_printable_length = 96;
-	char *string_printable = "0123456789qwertyuiopasdfgghjklzxcvbnmQWERTYUIOPASDFGHJKLZXCVBNM`~!@#$%%^&*()-_=+[{]}\\|;:\'\",<.>/?";
+	size_t string_printable_length = 62;
+	char *string_printable = "123456789qwertyuiopasdfgghjklzxcvbnmQWERTYUIOPASDFGHJKLZXCVBNM";
 	size_t string_length = string_length_min + random()%(string_length_max+1-string_length_min);
 	char *string = (char *)calloc(string_length+1, sizeof(char));
 	for (int i=0; i<string_length; i++) {
@@ -198,7 +199,7 @@ char * string_random(size_t string_length_min, size_t string_length_max) {
 void example_of_structure_with_matrices_of_strings() {
 	puts(" = = = Example of Structure with Matrices of Strings = = = "); // 16 bytes in 5 blocks in Serialize_registrate_structure
 	
-	Serializer *strings_serializer = Serializer_create("Strings");
+	Serializer *strings_serializer = Serializer_create("./my_lib", "Strings");
 	
 	
 	Strings *strings;
@@ -213,11 +214,13 @@ void example_of_structure_with_matrices_of_strings() {
 				strings->stra[ia][ib] = string_random(5, 10);
 			}
 		}
-		for (int i=0; i<4; i++) {
-			for (int j=0; j<4; j++) {
-				char *string = string_random(5, 10);
-				strcpy(strings->strb[i][j], string);
-				free(string);
+		for (int i=0; i<5; i++) {
+			for (int j=0; j<5; j++) {
+				for (int k=0; k<32; k++) {
+					char *string = string_random(5, 10);
+					strings->strb[i][j][k] = string[0];
+					free(string);
+				}
 			}
 		}
 		strings->strc_0 = 3;

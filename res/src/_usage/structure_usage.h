@@ -2,8 +2,8 @@
 #define STRUCTURE_USAGE_H
 
 
-#include "structure/structure_name.h"
-#include "structure/structure_status.h"
+#include "_structure/structure_name.h"
+#include "_structure/structure_status.h"
 
 typedef struct StructureUsage {
 	StructureName name;

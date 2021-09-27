@@ -8,7 +8,7 @@ typedef struct Strings {
 	int stra_1;
 	char ***stra;
 	
-	char strb[5][5][10];
+	char strb[5][5][32];
 	
 	int strc_0;
 	int strc_1;

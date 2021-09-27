@@ -57,6 +57,7 @@ void generate_sources(char *project_path, char *structures_path) {
 			free(h_file_source_code);
 		}
 	}
+	// TODO: edit ^ to scan directories
 	generate_structure_name_file(project_path, structures);
 	generate_structure_methods_file(project_path, structures);
 	generate_includes_file(project_path, structures_path, structures);
@@ -68,11 +69,6 @@ void generate_sources(char *project_path, char *structures_path) {
 		free(path_libraries);
 		free(path_structures);
 		Array_free(h_files);
-		{
-			char *s = Array_to_string(structures);
-			puts(s);
-			free(s);
-		}
 		Array_free(structures);
 	}
 }
@@ -86,12 +82,11 @@ void generate_library_for_structure(char *project_path, Structure *structure) {
 	char *structure_library_c_file_name = string_appends((char *[]){path_libraries, "/", structure_name_lower, "_library.c", NULL});
 	char *code_h;
 	{
-		size_t generate_code_size = 4;
+		size_t generate_code_size = 3;
 		char * (*generate_code[]) (Structure *structure) = {
 			generate_pass_method_declaration,
 			generate_to_string_method_declaration,
-			generate_json_encode_declaration,
-			generate_json_decode_declaration
+			generate_json_codec_declaration
 		};
 		
 		size_t code_h_length;
@@ -114,12 +109,11 @@ void generate_library_for_structure(char *project_path, Structure *structure) {
 	file_write(structure_library_h_file_name, code_h);
 	char *code_c;
 	{
-		size_t generate_code_size = 4;
+		size_t generate_code_size = 3;
 		char * (*generate_code[]) (Structure *structure) = {
 			generate_pass_method_definition,
 			generate_to_string_method_definition,
-			generate_json_encode_definition,
-			generate_json_decode_definition
+			generate_json_codec_definition
 		};
 		
 		size_t code_c_length;
@@ -170,7 +164,7 @@ void generate_structure_name_file(char *project_path, Array *structures) {
 		}
 	}
 	
-	char *structure_name_h_path = string_appends((char *[]){project_path, "/structure/structure_name.h", NULL});
+	char *structure_name_h_path = string_appends((char *[]){project_path, "/_structure/structure_name.h", NULL});
 	char *structure_name_h_format = file_read(structure_name_h_path);
 	char *structure_name_h_source_code;
 	{
@@ -183,7 +177,7 @@ void generate_structure_name_file(char *project_path, Array *structures) {
 	}
 	file_write(structure_name_h_path, structure_name_h_source_code);
 	
-	char *structure_name_c_path = string_appends((char *[]){project_path, "/structure/structure_name.c", NULL});
+	char *structure_name_c_path = string_appends((char *[]){project_path, "/_structure/structure_name.c", NULL});
 	char *structure_name_c_format = file_read(structure_name_c_path);
 	char *structure_name_c_source_code;
 	{
@@ -228,7 +222,7 @@ void generate_structure_methods_file(char *project_path, Array *structures) {
 		}
 	}
 	
-	char *structure_methods_c_path = string_appends((char *[]){project_path, "/structure/structure_methods.c", NULL});
+	char *structure_methods_c_path = string_appends((char *[]){project_path, "/_structure/structure_methods.c", NULL});
 	char *structure_methods_c_format = file_read(structure_methods_c_path);
 	char *structure_methods_c_source_code;
 	{

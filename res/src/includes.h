@@ -6,14 +6,18 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "structure/structure_name.h"
-#include "structure/structure_status.h"
+#include "_utils/data.h"
+#include "_utils/base64.h"
 
-#include "usage/structure_usage.h"
-#include "usage/structure_usage_set.h"
+#include "_structure/structure_name.h"
+#include "_structure/structure_status.h"
+
+#include "_usage/structure_usage.h"
+#include "_usage/structure_usage_set.h"
 
 %s
 %s
-#include "structure/structure_methods.h"
+
+#include "_structure/structure_methods.h"
 
 #endif

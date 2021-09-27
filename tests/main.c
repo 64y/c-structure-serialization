@@ -1,36 +1,31 @@
-#ifndef EXAMPLES_H
-#define EXAMPLES_H
+#include <stddef.h>
+#include <stdio.h>
+#include <stdlib.h>
+
+void test_utils_array();
+void test_utils_boolean();
+void test_utils_files();
+void test_utils_strings();
+void test_utils_tabs();
+void test_data_types_basic_type();
+void test_data_types_dimension();
+void test_data_types_attribute();
+void test_data_types_structure();
+void test_data_types_structures_regular_expression();
+void test_data_types_structures_regular_expressions();
+void test_all();
 
 
-void example_utils_basic_defines();
-void example_utils_tabs();
-void example_utils_array();
-void example_data_types_data_type();
-void example_data_types_dimension();
-void example_data_types_attribute();
-void example_data_types_structure();
-void example_data_types_structures_regular_expression();
-void example_data_types_structures_regular_expressions();
-void example_all();
-
-
-void example_all() {
-	example_utils_basic_defines();
-	example_utils_tabs();
-	example_utils_array();
-	example_data_types_data_type();
-	example_data_types_dimension();
-	example_data_types_attribute();
-	example_data_types_structure();
-	example_data_types_structures_regular_expression();
-	example_data_types_structures_regular_expressions();
+int main(int argc, char *argv[]) {
+	test_all();
+	return 0;
 }
 
 
-#include "utils/basic_defines.h"
+#include "c_structure_serialization/utils/boolean.h"
 
-void example_utils_basic_defines() {
-	puts("utils/basic_defines\n");
+void test_utils_boolean() {
+	puts("utils/boolean\n");
 	{ // example Boolean_to_string
 		puts("basic_defines: Boolean_to_string");
 		Boolean b = true;
@@ -38,6 +33,13 @@ void example_utils_basic_defines() {
 		printf("b (%d) = \"%s\"\n", b, b_string);
 		puts("\n");
 	}
+}
+
+
+#include "c_structure_serialization/utils/strings.h"
+
+void test_utils_strings() {
+	puts("utils/strings\n");
 	{ // example string_copy
 		puts("basic_defines: string_copy");
 		char *string = string_copy("the very first string");
@@ -112,6 +114,13 @@ void example_utils_basic_defines() {
 		}
 		puts("\n");
 	}
+}
+
+
+#include "c_structure_serialization/utils/files.h"
+
+void test_utils_files() {
+	puts("utils/files\n");
 	{ // example file_write & file_read
 		puts("basic_defines: file_write & file_read");
 		file_write("a.txt", "Sorry, it is empty!\nReally it is empty and test for memmory leaks!\nKAPPAD\n...");
@@ -136,9 +145,9 @@ void example_utils_basic_defines() {
 }
 
 
-#include "utils/tabs.h"
+#include "c_structure_serialization/utils/tabs.h"
 
-void example_utils_tabs() {
+void test_utils_tabs() {
 	puts("utils/tabs\n");
 	Tabs *tabs = Tabs_create();
 	Tabs_increment(tabs); Tabs_increment(tabs); Tabs_increment(tabs);
@@ -155,23 +164,21 @@ void example_utils_tabs() {
 }
 
 
-#include "utils/array.h"
+#include "c_structure_serialization/utils/array.h"
 
-
-
-void example_utils_array() {
+void test_utils_array() {
 	void * array_string_create(void *element) {
-		return string_copy((char *) element);
-	}
-	char * array_string_to_string(void *element) {
 		return string_copy((char *) element);
 	}
 	void array_string_free(void *element) {
 		free((char *)element);
 	}
+	char * array_string_to_string(void *element) {
+		return string_copy((char *) element);
+	}
 
 	Array * Array_of_string_create() {
-		return Array_create(array_string_create, array_string_to_string, array_string_free);
+		return Array_create(array_string_create, array_string_free, array_string_to_string);
 	}
 	puts("utils/array\n");
 	/*{
@@ -204,9 +211,10 @@ void example_utils_array() {
 	}
 }
 
-#include "data_types/data_type.h"
 
-void example_data_types_data_type() {
+#include "c_structure_serialization/data_types/basic_type.h"
+
+void test_data_types_basic_type() {
 	puts("data_types/data_type\n");
 	BasicType *basicType = get_basic_type_by_name("char *");
 	char *basicType_string = BasicType_to_string(basicType);
@@ -218,9 +226,9 @@ void example_data_types_data_type() {
 }
 
 
-#include "data_types/dimension.h"
+#include "c_structure_serialization/data_types/dimension.h"
 
-void example_data_types_dimension() {
+void test_data_types_dimension() {
 	puts("data_types/dimension\n");
 	Dimension *dimension = Dimension_create(2, 2);
 	Dimension_set_dimension(dimension, 0, "40");
@@ -237,9 +245,9 @@ void example_data_types_dimension() {
 }
 
 
-#include "data_types/attribute.h"
+#include "c_structure_serialization/data_types/attribute.h"
 
-void example_data_types_attribute() {
+void test_data_types_attribute() {
 	puts("data_types/attribute\n");
 	Attribute *attribute;
 	{
@@ -264,9 +272,9 @@ void example_data_types_attribute() {
 }
 
 
-#include "data_types/structure.h"
+#include "c_structure_serialization/data_types/structure.h"
 
-void example_data_types_structure() {
+void test_data_types_structure() {
 	puts("data_types/structure\n");
 	Attribute *color;
 	Structure *structure;
@@ -300,9 +308,9 @@ void example_data_types_structure() {
 }
 
 
-#include "data_types/structure_regular_expressions.h"
+#include "c_structure_serialization/data_types/structure_regular_expressions.h"
 
-void example_data_types_structures_regular_expression() {
+void test_data_types_structures_regular_expression() {
 	puts("data_types/RegularExpression\n");
 	{
 		size_t lines_size = 3;
@@ -390,7 +398,7 @@ char *code_lines[] = {
 	
 };
 
-void example_data_types_structures_regular_expressions() {
+void test_data_types_structures_regular_expressions() {
 	puts("data_types/RegularExpressions\n");
 	
 	RegularExpression *re = structureRegularExpressions->attribute;
@@ -413,5 +421,16 @@ void example_data_types_structures_regular_expressions() {
 	
 }
 
-
-#endif
+void test_all() {
+	test_utils_array();
+	test_utils_boolean();
+	test_utils_files();
+	test_utils_strings();
+	test_utils_tabs();
+	test_data_types_basic_type();
+	test_data_types_dimension();
+	test_data_types_attribute();
+	test_data_types_structure();
+	test_data_types_structures_regular_expression();
+	test_data_types_structures_regular_expressions();
+}
