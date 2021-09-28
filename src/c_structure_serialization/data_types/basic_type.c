@@ -38,7 +38,7 @@ BasicType * get_basic_type_by_name(char *name) {
 const size_t BASIC_TYPES_SIZE = 10;
 
 BasicType BASIC_TYPES[] = {
-	{"char", 1, "%c", ""},
+	{"char", 1, "%02hhx", ""},
 	{"unsigned char", 1, "%hhu", ""},
 	{"byte", 1, "%hhu", ""},
 	{"short", 2, "%hd", ""},

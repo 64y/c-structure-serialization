@@ -3,8 +3,9 @@
 
 #include <stddef.h>
 
-#include "utils/data.h"
+#include "_utils/data.h"
 
+#define JSON_LENGTH_MAX 2048
 
 char * base64_encode(Data *data);
 Data * base64_decode(char *data_base64_code);

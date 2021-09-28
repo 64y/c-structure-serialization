@@ -7,6 +7,7 @@
 
 
 char * string_copy(char *string);
+char * string_repeat_char(char c, size_t times);
 Boolean string_equals(char *string0, char *string1);
 Boolean string_equals_r(char *string0, char *string1);
 char * string_to_lower(char *string);

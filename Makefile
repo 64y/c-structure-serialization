@@ -11,6 +11,7 @@ LIBRARY_DIR := lib
 
 SOURCES := $(shell find $(SOURCE_DIR) -type f -name *.c ! -name "serializer.c")
 OBJECTS := $(patsubst $(SOURCE_DIR)/%, $(OBJECT_DIR)/%, $(SOURCES:.c=.o))
+
 -include $(OBJECTS:.o=.d)
 
 CFLAGS := -Wall -g

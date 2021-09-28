@@ -13,6 +13,16 @@ char * string_copy(char *string) {
 	return string_copy;
 }
 
+char * string_repeat_char(char c, size_t times) {
+	if (times==0) {
+		return string_copy("");
+	}
+	char *string = (char *)calloc(1+times+1, sizeof(char));
+	string[0] = ' '; 
+	memset(string+1, c, times);
+	return string;
+}
+
 Boolean string_equals(char *string0, char *string1) {
 	return (strcmp(string0, string1)==0)? true : false;
 }
