@@ -9,17 +9,21 @@
 #include "c_structure_serialization/data_types/dimension.h"
 #include "c_structure_serialization/data_types/attribute.h"
 #include "c_structure_serialization/data_types/structure.h"
-#include "c_structure_serialization/generate_source_codes/generate_attribute.h"
 #include "c_structure_serialization/generate_source_codes/generate_json_codec.h"
-
+#include "c_structure_serialization/generate_source_codes/generate_libraries.h"
 
 char * generate_json_codec_declaration(Structure *structure) {
 	char *code;
 	{
 		size_t code_length;
 		FILE *code_stream = open_memstream(&code, &code_length);
-		fprintf(code_stream, "char * %s_json_encode(void *pointer);", structure->name);
-		fprintf(code_stream, "void * %s_json_decode(char *json);", structure->name);
+		fprintf(code_stream, "char * %s_json_encode_process(PointerDictionary *pointerDictionary, void *structure);\n", structure->name);
+		fprintf(code_stream, "\n");
+		fprintf(code_stream, "void * %s_json_decode_process(PointerDictionary *pointerDictionary, char *structure_json, void *structure);\n", structure->name);
+		fprintf(code_stream, "\n");
+		fprintf(code_stream, "char *%s_json_encode(void *structure);\n", structure->name);
+		fprintf(code_stream, "\n");
+		fprintf(code_stream, "char *%s_json_decode(char *structure_json);", structure->name);
 		fclose(code_stream);
 	}
 	return code;
@@ -28,21 +32,23 @@ char * generate_json_codec_declaration(Structure *structure) {
 
 void printf_primitive_value(FILE *stream, Tabs *tabs, Structure *structure, Attribute *attribute, char *indexes);
 void scanf_primitive_value(FILE *stream, Tabs *tabs, Structure *structure, Attribute *attribute, char *indexes);
+
 void printf_string_value(FILE *stream, Tabs *tabs, Structure *structure, Attribute *attribute, char *indexes);
 void scanf_string_value(FILE *stream, Tabs *tabs, Structure *structure, Attribute *attribute, char *indexes);
+
 void printf_structure_value(FILE *stream, Tabs *tabs, Structure *structure, Attribute *attribute, char *indexes);
 void scanf_structure_value(FILE *stream, Tabs *tabs, Structure *structure, Attribute *attribute, char *indexes);
 
 
 char * generate_json_codec_definition(Structure *structure) {
-	void (*array_of_printf_value[]) (FILE *, Tabs *, Structure *, Attribute *, char *) = { NULL,
+	/*void (*array_of_printf_value[]) (FILE *, Tabs *, Structure *, Attribute *, char *) = { NULL,
 		printf_primitive_value, printf_string_value, printf_structure_value, printf_structure_value,
 		printf_primitive_value, printf_string_value, printf_structure_value, printf_structure_value
 	};
 	void (*array_of_scanf_value[]) (FILE *, Tabs *, Structure *, Attribute *, char *) = { NULL,
 		scanf_primitive_value, scanf_string_value, scanf_structure_value, scanf_structure_value,
 		scanf_primitive_value, scanf_string_value, scanf_structure_value, scanf_structure_value
-	};
+	};*/
 	char *encode, *decode;
 	{
 		Tabs *encode_tabs = Tabs_create(), *decode_tabs = Tabs_create();
@@ -63,7 +69,7 @@ char * generate_json_codec_definition(Structure *structure) {
 		fprintf(decode_stream, "%sFILE *json_stream = fmemopen(json, strlen(json), \"r\");\n", Tabs_get(decode_tabs));
 		fprintf(decode_stream, "%sfscanf(json_stream, \"{\\n\");\n", Tabs_get(decode_tabs));
 		// structure
-		for (Attribute *curr=structure->head; curr!=NULL; curr=curr->next) {
+		/*for (Attribute *curr=structure->head; curr!=NULL; curr=curr->next) {
 			char *attribute_pointer = generate_attribute_pointer(structure, curr);
 			void (*printf_value) (FILE *, Tabs *, Structure *, Attribute *, char *) = array_of_printf_value[curr->type];
 			void (*scanf_value) (FILE *, Tabs *, Structure *, Attribute *, char *) = array_of_scanf_value[curr->type];
@@ -179,7 +185,7 @@ char * generate_json_codec_definition(Structure *structure) {
 				printf_value = NULL;
 				scanf_value = NULL;
 			}
-		}
+		}*/
 		// end
 		//     encode
 		fprintf(encode_stream, "%sfprintf(json_stream, \"}\");\n", Tabs_get(encode_tabs));
@@ -214,7 +220,7 @@ void printf_primitive_value(FILE *stream, Tabs *tabs, Structure *structure, Attr
 		stream,
 		"%sfprintf(json_stream, \"%s\", %s->%s%s);\n",
 		Tabs_get(tabs),
-		get_basic_type_by_name(attribute->data_type)->format_specifier,
+		BasicType_get_by_name(attribute->data_type)->format_specifier,
 		structure->shortcut, attribute->name, attribute_suffix
 	);
 	attribute_suffix = NULL;
@@ -226,7 +232,7 @@ void scanf_primitive_value(FILE *stream, Tabs *tabs, Structure *structure, Attri
 		stream,
 		"%sfscanf(json_stream, \"%s, \", &%s->%s%s);\n", // scanfing for ", " for free
 		Tabs_get(tabs),
-		get_basic_type_by_name(attribute->data_type)->format_specifier,
+		BasicType_get_by_name(attribute->data_type)->format_specifier,
 		structure->shortcut, attribute->name, attribute_suffix
 	);
 	attribute_suffix = NULL;

@@ -6,169 +6,182 @@
 #include "c_structure_serialization/utils/strings.h"
 #include "c_structure_serialization/data_types/attribute_type.h"
 #include "c_structure_serialization/data_types/basic_type.h"
-#include "c_structure_serialization/generate_source_codes/generate_attribute.h"
 #include "c_structure_serialization/generate_source_codes/generate_to_string_method.h"
-
+#include "c_structure_serialization/generate_source_codes/generate_libraries.h"
 
 char * generate_to_string_method_declaration(Structure *structure) {
 	char *code;
 	{
 		size_t code_length;
 		FILE *code_stream = open_memstream(&code, &code_length);
-		fprintf(code_stream, "char * %s_to_string(void *pointer);\n", structure->name);
+		fprintf(code_stream, "char * %s_to_string_process(PointerDictionary *pointerDictionary, void *structure);\n", structure->name);
 		fprintf(code_stream, "\n");
-		fprintf(code_stream, "char * %s_to_string_overall(void *pointer);", structure->name);
+		fprintf(code_stream, "char * %s_to_string(void *structure);", structure->name);
 		fclose(code_stream);
 	}
 	return code;
 }
 
+void printf_primitive(FILE *stream, Tabs *tabs, Structure *structure, Attribute *attribute, char *indexes);
+void printf_structure(FILE *stream, Tabs *tabs, Structure *structure, Attribute *attribute, char *indexes);
+
 char * generate_to_string_method_definition(Structure *structure) {
-	char *code;
+	void (*printf_methods[]) (FILE *, Tabs *, Structure *, Attribute *, char *) = {
+		NULL, 
+		printf_primitive, printf_primitive, printf_structure, printf_structure,
+		printf_primitive, printf_primitive, printf_structure, printf_structure
+	};
+	char *code_structure_to_string_process;
 	{
-		Tabs *tabs = Tabs_create();
-		size_t code_length;
-		FILE *code_stream = open_memstream(&code, &code_length);
+		size_t code_structure_to_string_process_length;
+		FILE *s = open_memstream(&code_structure_to_string_process, &code_structure_to_string_process_length);
 		
-		fprintf(code_stream, "%schar * %s_to_string(void *pointer) {\n", Tabs_get(tabs), structure->name); Tabs_increment(tabs);
-		fprintf(code_stream, "%s%s *%s = (%s *) pointer;\n", Tabs_get(tabs), structure->name, structure->shortcut, structure->name);
-		fprintf(code_stream, "%schar *string;\n", Tabs_get(tabs));
-		fprintf(code_stream, "%ssize_t string_length;\n", Tabs_get(tabs));
-		fprintf(code_stream, "%sFILE *string_stream = open_memstream(&string, &string_length);\n", Tabs_get(tabs));
-		fprintf(code_stream, "%sfprintf(string_stream, \"%s [@%%lx]:\\n\", (long)(void *)%s);\n", Tabs_get(tabs), structure->name, structure->shortcut);
-		for (Attribute *curr=structure->head; curr!=NULL; curr=curr->next) {
-			char *attribute_name = string_copy(curr->name);
-			char *attribute_pointer = generate_attribute_pointer(structure, curr);
-			char *attribute_format = NULL;
-			char *attribute_delimeter = NULL;
-			switch (curr->type) {
+		Tabs *tabs = Tabs_create();
+		
+		char *stream_name = string_appends((char *[]) {structure->shortcut, "_string_stream", NULL});
+		fprintf(s, "%schar * %s_to_string_process(PointerDictionary *pointerDictionary, void *structure) {\n", Tabs_get(tabs), structure->name); Tabs_increment(tabs);
+		fprintf(s, "%s%s *%s = (%s *) structure;\n", Tabs_get(tabs), structure->name, structure->shortcut, structure->name);
+		fprintf(s, "%schar *%s_string;\n", Tabs_get(tabs), structure->shortcut);
+		fprintf(s, "%s{\n", Tabs_get(tabs)); Tabs_increment(tabs);
+		fprintf(s, "%ssize_t %s_string_length;\n", Tabs_get(tabs), structure->shortcut);
+		fprintf(s, "%sFILE *%s = open_memstream(&%s_string, &%s_string_length);\n", Tabs_get(tabs), stream_name, structure->shortcut, structure->shortcut);
+		//
+		fprintf(s, "%sfprintf(%s, \"%%s@%%lx\", \"%s\", (long)(void *) %s);\n", Tabs_get(tabs), stream_name, structure->name, structure->shortcut);
+		fprintf(s, "%sif (%s != NULL) {\n", Tabs_get(tabs), structure->shortcut); Tabs_increment(tabs);
+		for (Attribute *attribute=structure->head; attribute!=NULL; attribute=attribute->next) {
+			fprintf(s, "%s// %s->%s\n", Tabs_get(tabs), structure->shortcut, attribute->name);
+			fprintf(s, "%sfprintf(%s, \"\\n%%s: \", \"%s\");\n", Tabs_get(tabs), stream_name, attribute->name);
+			switch (attribute->type) {
 				case PRIMITIVE: case STRING: case STRUCTURE: case STRUCTURE_POINTER: {
-					// attribute_format
-					attribute_format = string_copy("%sfprintf(string_stream, \"%s%s%s\\n\",%s%s);\n");
-					// attribute_delimeter
-					attribute_delimeter = string_copy((curr->type==PRIMITIVE||curr->type==STRING)?": ":"->");
+					printf_methods[attribute->type](s, tabs, structure, attribute, "");
 					break;
 				}
 				case PRIMITIVE_ARRAY: case STRING_ARRAY: case STRUCTURE_ARRAY: case STRUCTURE_POINTER_ARRAY: {
-					// attribute_format
+					fprintf(s, "%sfprintf(%s, \"\\n\");\n", Tabs_get(tabs), stream_name);
+					fprintf(s, "%sint is_last_in_%s = 0;\n", Tabs_get(tabs), attribute->name);
+					char *code_loop, *code_indexes, *code_is_last;
 					{
-						char *attribute_array_format = generate_attribute_with_loop(structure, curr, tabs, true);
-						size_t attribute_format_length;
-						FILE *attribute_format_stream = open_memstream(&attribute_format, &attribute_format_length);
-						fprintf(
-							attribute_format_stream,
-							attribute_array_format,
-							"%sfprintf(string_stream, \"%s %s);\n",
-							/* for {*/
-							"fprintf(string_stream, \"%s \",%s%s", /*[...]*/ ");"
-							/* } */
-						);
-						fclose(attribute_format_stream);
-						free(attribute_array_format);
+						size_t code_loop_length, code_indexes_length, code_is_last_length;
+						FILE *code_loop_stream=open_memstream(&code_loop, &code_loop_length), *code_indexes_stream=open_memstream(&code_indexes, &code_indexes_length), *code_is_last_stream=open_memstream(&code_is_last, &code_is_last_length);
+						for (int i=0; i<attribute->dimension->size; i++) {
+							fprintf(code_loop_stream, "%sfor (int i_%d=0; i_%d<%s; i_%d++) {\n", Tabs_get(tabs), i, i, attribute->dimension->dimensions[i], i);
+							fprintf(code_indexes_stream, "[i_%d]", i);
+							fprintf(code_is_last_stream, "i_%d==%s-1%s", i, attribute->dimension->dimensions[i], (i<attribute->dimension->size-1)?" &&":"");
+							Tabs_increment(tabs);
+						}
+						{
+							fclose(code_loop_stream);
+							fclose(code_indexes_stream);
+							fclose(code_is_last_stream);
+						}
 					}
-					// attribute_delimeter
+					fprintf(s, "%s", code_loop);
+					printf_methods[attribute->type](s, tabs, structure, attribute, code_indexes);
+					fprintf(s, "%sfprintf(%s, \"%%s\", (i_%ld<%s-1)?\", \":\"\");\n", Tabs_get(tabs), stream_name, attribute->dimension->size-1, attribute->dimension->dimensions[attribute->dimension->size-1]);
+					fprintf(s, "%sif (%s) {\n", Tabs_get(tabs), code_is_last); Tabs_increment(tabs);
+					fprintf(s, "%sis_last_in_%s = 1;\n", Tabs_get(tabs), attribute->name); Tabs_decrement(tabs);
+					fprintf(s, "%s}\n", Tabs_get(tabs));
+					for (int i=attribute->dimension->size-1; i>=0; i--) {
+						if (i<attribute->dimension->size-1) {
+							fprintf(s, "%sfprintf(%s, \"%%s\", (is_last_in_%s)?\"\":\"\\n\");\n", Tabs_get(tabs), stream_name, attribute->name);
+						}
+						Tabs_decrement(tabs);
+						fprintf(s, "%s}\n", Tabs_get(tabs));
+					}
 					{
-						size_t attribute_delimeter_length;
-						FILE *attribute_delimeter_stream = open_memstream(&attribute_delimeter, &attribute_delimeter_length);
-
-						fprintf(attribute_delimeter_stream, "[");
-						for (int i=0; i<curr->dimension->size; i++) {
-							fprintf(attribute_delimeter_stream, "%%d%s", (i+1 < curr->dimension->size) ? " x " : "");
-						}
-						fprintf(attribute_delimeter_stream, "]");
-						fprintf(attribute_delimeter_stream, "\\n\", ");
-
-						for (int i=0; i<curr->dimension->size; i++) {
-							fprintf(
-								attribute_delimeter_stream,
-								"%s%s%s%s",
-								(i<curr->dimension->static_size) ? "" : structure->shortcut,
-								(i<curr->dimension->static_size) ? "" : "->",
-								curr->dimension->dimensions[i],
-								(i+1<curr->dimension->size) ? ", ": ""
-							);
-						}
-						fclose(attribute_delimeter_stream);
+						free(code_loop);
+						free(code_indexes);
+						free(code_is_last);
 					}
+					// fprintf(s, "%s\n", Tabs_get(tabs));
 					break;
 				}
 				case NO_TYPE: {
-					fprintf(stderr, "\'generate_to_string_method_definition\' method can\'t use \'%s\' type!", ATTRIBUTE_TYPE_STRINGS[NO_TYPE]);
+					fprintf(stderr, "\'generate_to_string_method_definition\' is not allowed to work with \'%s\' attribute type!\n", ATTRIBUTE_TYPE_STRINGS[attribute->type]);
 					exit(1);
 				}
 			}
-			char *attribute_format_specifier = NULL;
-			char *attribute_cast = NULL;
-			switch (curr->type) {
-				case PRIMITIVE:	case STRING: case PRIMITIVE_ARRAY: case STRING_ARRAY: {
-					// attribute_format_specifier
-					{
-						size_t attribute_format_specifier_length;
-						FILE *attribute_format_specifier_stream = open_memstream(&attribute_format_specifier, &attribute_format_specifier_length);
-						fprintf(attribute_format_specifier_stream, "\\\'%s\\\'", get_basic_type_by_name(curr->data_type)->format_specifier);
-						fclose(attribute_format_specifier_stream);
-					}
-					// attribute_cast
-					attribute_cast = string_copy(" ");
-					break;
-				}
-				case STRUCTURE: case STRUCTURE_POINTER: case STRUCTURE_ARRAY: case STRUCTURE_POINTER_ARRAY: {
-					// attribute_format_specifier
-					attribute_format_specifier = string_copy("@%lx");
-					// attribute_cast
-					attribute_cast = string_copy(" (long)(void *)");
-					break;
-				}
-				case NO_TYPE: {
-					fprintf(stderr, "\'generate_to_string_method_definition\' method can\'t use \'%s\' type!", ATTRIBUTE_TYPE_STRINGS[NO_TYPE]);
-					exit(1);
-				}
-			}
-			
-			fprintf(
-				code_stream,
-				attribute_format,
-				Tabs_get(tabs), attribute_name, attribute_delimeter, attribute_format_specifier, attribute_cast, attribute_pointer
-			);
-			
-			{
-				free(attribute_name);
-				free(attribute_pointer);
-				free(attribute_format);
-				free(attribute_delimeter);
-				free(attribute_format_specifier);
-				free(attribute_cast);
-			}
+			fprintf(s, "%sfprintf(%s, \"%c\");\n", Tabs_get(tabs), stream_name, (attribute->next!=NULL)?';':'.');
 		}
-		/*if (Structure_has_structure_attributes(structure)) {
-			char *structure_name_upper = string_to_upper(structure->name);
-			fprintf(code_stream, "%schar *pointers_string = to_string_method(StructureUsage_create(%s, %s));\n", Tabs_get(tabs), structure_name_upper, structure->shortcut);
-			fprintf(code_stream, "%sif (pointers_string != NULL) {\n", Tabs_get(tabs));	Tabs_increment(tabs);
-			fprintf(code_stream, "%sfprintf(string_stream, \"%%s\", pointers_string);\n", Tabs_get(tabs));
-			fprintf(code_stream, "%sfree(pointers_string);\n", Tabs_get(tabs));	Tabs_decrement(tabs);
-			fprintf(code_stream, "%s}\n", Tabs_get(tabs));
-			{
-				free(structure_name_upper);
-			}
-		}*/
-			fprintf(code_stream, "%sfclose(string_stream);\n", Tabs_get(tabs));
-			fprintf(code_stream, "%sreturn string;\n", Tabs_get(tabs));	Tabs_decrement(tabs);
-			fprintf(code_stream, "%s}\n", Tabs_get(tabs));
-		{
-			char *structure_name_upper = string_to_upper(structure->name);
-			fprintf(code_stream, "%s\n", Tabs_get(tabs));
-			fprintf(code_stream, "%schar * %s_to_string_overall(void *pointer) {\n", Tabs_get(tabs), structure->name); 	Tabs_increment(tabs);
-			fprintf(code_stream, "%sreturn to_string_method(%s, pointer);\n", Tabs_get(tabs), structure_name_upper); 	Tabs_decrement(tabs);
-			fprintf(code_stream, "%s}", Tabs_get(tabs));
-			{
-				free(structure_name_upper);
-			}
-		}
+		//
+		Tabs_decrement(tabs);
+		fprintf(s, "%s}\n", Tabs_get(tabs));
+		fprintf(s, "%s{\n", Tabs_get(tabs)); Tabs_increment(tabs);
+		fprintf(s, "%sfclose(%s);\n", Tabs_get(tabs), stream_name); Tabs_decrement(tabs);
+		fprintf(s, "%s}\n", Tabs_get(tabs)); Tabs_decrement(tabs);
+		fprintf(s, "%s}\n", Tabs_get(tabs));
+		fprintf(s, "%sreturn %s_string;\n", Tabs_get(tabs), structure->shortcut); Tabs_decrement(tabs);
+		fprintf(s, "%s}", Tabs_get(tabs));
 		
 		{
+			fclose(s);
 			Tabs_free(tabs);
-			fclose(code_stream);
+			free(stream_name);
 		}
 	}
+	char *code_structure_to_string;
+	{
+		size_t code_structure_to_string_length;
+		FILE *s = open_memstream(&code_structure_to_string, &code_structure_to_string_length);
+		
+		Tabs *tabs = Tabs_create();
+		
+		fprintf(s, "%schar * %s_to_string(void *structure) {\n", Tabs_get(tabs), structure->name); Tabs_increment(tabs);
+		fprintf(s, "%sreturn to_string(Pointer_create(%s, structure));\n", Tabs_get(tabs), structure->name_upper); Tabs_decrement(tabs);
+		fprintf(s, "%s}", Tabs_get(tabs));
+		{
+			fclose(s);
+			Tabs_free(tabs);
+		}
+	}
+	char * code = string_appends((char *[]) {code_structure_to_string_process, "\n\n", code_structure_to_string, NULL});
+	{
+		free(code_structure_to_string_process);
+		free(code_structure_to_string);
+	}
 	return code;
+}
+
+
+void printf_primitive(FILE *stream, Tabs *tabs, Structure *structure, Attribute *attribute, char *indexes) {
+	fprintf(
+		stream,
+		"%sfprintf(%s_string_stream, \"\\\'%s\\\'\", %s->%s%s);\n",
+		Tabs_get(tabs),
+		structure->shortcut, BasicType_get_by_name(attribute->data_type)->format_specifier,
+		structure->shortcut, attribute->name, indexes
+	);
+}
+
+void printf_structure(FILE *stream, Tabs *tabs, Structure *structure, Attribute *attribute, char *indexes) {
+	char *attribute_pointer = generate_attribute_pointer(structure, attribute);
+	char *attribute_name_upper = string_to_upper(attribute->data_type);
+	
+	fprintf(
+		stream,
+		"%sfprintf(%s_string_stream, \"%%s@%%lx\", \"%s\", (long)(void *) %s%s);\n",
+		Tabs_get(tabs),
+		structure->shortcut,
+		attribute->data_type,
+		attribute_pointer, indexes
+	);
+	fprintf(
+		stream, "%sif (%s%s%s!=NULL) {\n",
+		Tabs_get(tabs),
+		(string_equals(structure->name, attribute->data_type))?"pointerDictionary->stage!=0 && ":"",
+		attribute_pointer, indexes
+	); Tabs_increment(tabs);
+	fprintf(
+		stream,
+		"%sPointerDictionary_put(pointerDictionary, Pointer_create(%s, %s%s));\n",
+		Tabs_get(tabs),
+		attribute_name_upper,
+		attribute_pointer, indexes
+	);
+	Tabs_decrement(tabs);
+	fprintf(stream, "%s}\n", Tabs_get(tabs));
+	{
+		free(attribute_pointer);
+		free(attribute_name_upper);
+	}
 }

@@ -1,5 +1,5 @@
-#ifndef DATA_H
-#define DATA_H
+#ifndef _UTILS_DATA_H
+#define _UTILS_DATA_H
 
 #include <stddef.h>
 

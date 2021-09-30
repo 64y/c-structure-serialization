@@ -14,9 +14,9 @@ Serializer * Serializer_create(char *library_path, char *structure_name) {
 	serializer->handle = dlopen(library_path, RTLD_NOW|RTLD_GLOBAL);
 	if (!serializer->handle) {
 		fprintf(stderr, "\'Serializer_create\' method is not able to open \"%s\" library!\n", library_path);
-		exit(0);
+		exit(1);
 	}
-	char *method_name_to_string = get_serializer_method_name(structure_name, "to_string_overall");
+	char *method_name_to_string = get_serializer_method_name(structure_name, "to_string");
 	*(void **) (&serializer->to_string) = dlsym(serializer->handle, method_name_to_string);
 	if (dlerror()) {
 		fprintf(stderr, "\'Serializer_create\' method can\'t load \'%s\' from \"%s\" library!\n", method_name_to_string, library_path);
