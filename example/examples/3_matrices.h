@@ -37,7 +37,7 @@ void example_of_structure_with_matrices() {
 		"Arrays",
 		Arrays_generate,
 		Arrays_free,
-		DO_TO_STRING // | DO_JSON_ENCODE | DO_JSON_DECODE
+		DO_TO_STRING | DO_JSON_ENCODE | DO_JSON_DECODE
 	);
 }
 
@@ -48,7 +48,7 @@ void example_of_structure_with_matrices_of_strings() {
 		"Strings",
 		Strings_generate,
 		Strings_free,
-		DO_TO_STRING // | DO_JSON_ENCODE | DO_JSON_DECODE
+		DO_TO_STRING | DO_JSON_ENCODE | DO_JSON_DECODE
 	);
 }
 

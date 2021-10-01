@@ -17,7 +17,7 @@ void example_of_structure_with_structures_and_structures_pointers () {
 		"Pets",
 		Pets_generate,
 		Pets_free_generated,
-		DO_TO_STRING
+		DO_TO_STRING | DO_JSON_ENCODE | DO_JSON_DECODE
 	);
 }
 

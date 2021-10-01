@@ -134,7 +134,7 @@ char * generate_to_string_method_definition(Structure *structure) {
 			Tabs_free(tabs);
 		}
 	}
-	char * code = string_appends((char *[]) {code_structure_to_string_process, "\n\n", code_structure_to_string, NULL});
+	char * code = string_appends((char *[]) {code_structure_to_string_process, "\n", code_structure_to_string, NULL});
 	{
 		free(code_structure_to_string_process);
 		free(code_structure_to_string);
