@@ -1,9 +1,12 @@
-#ifndef BASE64_H
-#define BASE64_H
+#ifndef _UTILS_BASE64_H
+#define _UTILS_BASE64_H
 
 #include <stddef.h>
 
-#include "utils/data.h"
+#include "_utils/data.h"
+
+
+#define BASE64_LENGTH_MAX 65536
 
 
 char * base64_encode(Data *data);

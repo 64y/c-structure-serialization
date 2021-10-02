@@ -1,47 +1,48 @@
 #ifndef $2_ARRAY_H
 #define $2_ARRAY_H
 
-#include <stdio.h>
-#include <stdlib.h>
-
-#include <c_structure_serialization/serializer.h>
-
 
 #include "structures/array.h"
+#include "examples/example_template.h"
+
+void * Array_create(void);
+void Array_free(void *structure);
 
 void example_of_structure_with_array() {
-	puts(" = = = Example of Structure with Array = = = ");
-	
-	Serializer *array_serializer = Serializer_create("./my_lib", "Array");
-	
-	size_t array_arr_n = 5;
-	Array *array;
-	{
-		array = (Array *)malloc(sizeof(Array));
-		array->arr_n = array_arr_n;
-		array->arr = ({
-			int *arr = (int *)calloc(array_arr_n, sizeof(int));
-			for (int i=0; i<array_arr_n; i++) {
-				arr[i] = i * 2;
-			}
-			arr;
-		});
+	example(
+		"Structure with Array",
+		"./my_lib",
+		"Array",
+		Array_create,
+		Array_free,
+		DO_TO_STRING | DO_JSON_ENCODE | DO_JSON_DECODE
+	);
+}
+
+void * Array_create(void) {
+	int array_arr_n = 10;
+	Array *array = (Array *)malloc(sizeof(Array));
+	array->arr_n = array_arr_n;
+	array->arr = (int *)calloc(array_arr_n, sizeof(int));
+	array->arr[0] = 1;
+	array->arr[1] = 1;
+	for (int i=2; i<array_arr_n; i++) {
+		array->arr[i] = array->arr[i-2] + array->arr[i-1];
 	}
-	
-	puts("TO_STRING:");
-	char *array_string = array_serializer->to_string(array);
-	puts(array_string);
-	
-	{
-		Serializer_free(array_serializer);
-		
+	return array;
+}
+
+void Array_free(void *structure) {
+	Array *array = (Array *) structure;
+	if (array != NULL) {
 		array->arr_n = 0;
-		free(array->arr);
+		if (array->arr != NULL) {
+			free(array->arr);
+			array->arr = NULL;
+		}
 		free(array);
-		
-		free(array_string);
+		array = NULL;
 	}
-	puts(" = = = = = = = = = = = = = = = = = = = = = = = = = = =\n");
 }
 
 #endif

@@ -1,30 +1,46 @@
 #ifndef $1_STRING_H
 #define $1_STRING_H
 
-#include <stdio.h>
-#include <stdlib.h>
-
-#include <c_structure_serialization/serializer.h>
-
 
 #include "structures/parrot.h"
+#include "examples/example_template.h"
+
+
+void * Parrot_generate(void);
+void Parrot_free(void *structure);
+
 
 void example_of_structure_with_string_member() {
-	puts(" = = = Example of Structure with String Member  = = = ");
-	
-	Serializer *parrot_serializer = Serializer_create("./my_lib", "Parrot");
-	
-	Parrot parrot = {"Tom", 5};
-	
-	puts("TO_STRING:");
-	char *parrot_string = parrot_serializer->to_string(&parrot);
-	puts(parrot_string);
-	
-	{
-		Serializer_free(parrot_serializer);
-		free(parrot_string);
+	example(
+		"Structure with String Member",
+		"./my_lib",
+		"Parrot",
+		Parrot_generate,
+		Parrot_free,
+		DO_TO_STRING | DO_JSON_ENCODE | DO_JSON_DECODE
+	);
+}
+
+
+void * Parrot_generate(void) {
+	Parrot *parrot = (Parrot *)malloc(sizeof(Parrot));
+	parrot->name = (char *)calloc(3+1, sizeof(char));
+	strcpy(parrot->name, "Tom");
+	parrot->age = 99;
+	return parrot;
+}
+
+void Parrot_free(void *structure) {
+	Parrot *parrot = (Parrot *) structure;
+	if (parrot != NULL) {
+		if (parrot->name != NULL) {
+			free(parrot->name);
+			parrot->name = NULL;
+		}
+		parrot->age = 0;
+		free(parrot);
+		parrot = NULL;
 	}
-	puts(" = = = = = = = = = = = = = = = = = = = = = = = = = = =\n");
 }
 
 #endif

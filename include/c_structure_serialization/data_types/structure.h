@@ -12,6 +12,8 @@
 typedef struct Structure {
 	char *file_path;
 	char *name;
+	char *name_lower;
+	char *name_upper;
 	char *shortcut;
 	size_t size;
 	Attribute *head;

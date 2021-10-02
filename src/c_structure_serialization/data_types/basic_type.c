@@ -25,20 +25,11 @@ char * BasicType_to_string(BasicType *basicType) {
 	return basicType_string;
 }
 
-BasicType * get_basic_type_by_name(char *name) {
-	for (int i=0; i<BASIC_TYPES_SIZE; i++) {
-		if (string_equals(BASIC_TYPES[i].name, name)) {
-			return &BASIC_TYPES[i];
-		}
-	}
-	return NULL;
-}
-
 
 const size_t BASIC_TYPES_SIZE = 10;
 
 BasicType BASIC_TYPES[] = {
-	{"char", 1, "%c", ""},
+	{"char", 1, "%02hhx", ""},
 	{"unsigned char", 1, "%hhu", ""},
 	{"byte", 1, "%hhu", ""},
 	{"short", 2, "%hd", ""},
@@ -49,3 +40,12 @@ BasicType BASIC_TYPES[] = {
 	{"double", 8, "%lf", ""},
 	{"char *", 8, "%s", ""}
 };
+
+BasicType * BasicType_get_by_name(char *name) {
+	for (int i=0; i<BASIC_TYPES_SIZE; i++) {
+		if (string_equals(BASIC_TYPES[i].name, name)) {
+			return &BASIC_TYPES[i];
+		}
+	}
+	return NULL;
+}

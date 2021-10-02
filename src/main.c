@@ -93,10 +93,10 @@ int main(int argc, char *argv[]) {
 			"-shared -nostartfiles -fPIC "
 			"-o %s "
 			"-I %s "
-			"$(find %s -type f -name \"*.c\")\n"
-			"rm %s -rf",
+			"$(find %s -type f -name \"*.c\")\n",/*
+			"rm %s -rf",*/
 			path_to_created_library,
-			path_to_temporary_sources, path_to_temporary_sources, path_to_temporary_sources
+			path_to_temporary_sources, path_to_temporary_sources // , path_to_temporary_sources
 		);
 		{
 			fclose(command_to_create_library_stream);

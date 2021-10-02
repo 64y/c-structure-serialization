@@ -1,44 +1,33 @@
 CC := gcc
 LD := gcc
 
-
 INCLUDE_DIR := include
 SOURCE_DIR := src
 OBJECT_DIR := obj
 TARGET_DIR := bin
 LIBRARY_DIR := lib
-
-
 SOURCES := $(shell find $(SOURCE_DIR) -type f -name *.c ! -name "serializer.c")
 OBJECTS := $(patsubst $(SOURCE_DIR)/%, $(OBJECT_DIR)/%, $(SOURCES:.c=.o))
 -include $(OBJECTS:.o=.d)
-
 CFLAGS := -Wall -g
 LFLAGS := 
 INC := -I $(INCLUDE_DIR)
 INC_DEP := -I $(INCLUDE_DIR)
-
 TARGET := generate_library
-
 
 LIBRARY_SOURCE := $(SOURCE_DIR)/c_structure_serialization/serializer.c
 LIBRARY_OBJECT := $(OBJECT_DIR)/c_structure_serialization/serializer.o
-
 LIBRARY_CFLAGS := -Wall -fPIC
 LIBRARY_LFLAGS := -ldl
 LIBRARY_INC := -I $(INCLUDE_DIR)
-
 LIBRARY := libcstructureserialization.a
-
 
 EXAMPLE_DIR := example
 EXAMPLE_TARGET := example
 EXAMPLE_LIBRARY_NAME := my_lib
 
-
 TESTS_DIR := tests
 TESTS_TARGET := test
-
 
 build: clean directories library echo_compiling_objects $(TARGET)
 
@@ -76,7 +65,7 @@ $(OBJECT_DIR)/%.o: $(SOURCE_DIR)/%.c
 
 example:
 	@mkdir -p $(TARGET_DIR)
-	@$$C_STRUCTURE_SERIALIZATION_HOME/generate_library $(EXAMPLE_DIR) "structures" $(TARGET_DIR)/$(EXAMPLE_LIBRARY_NAME)
+	@valgrind --leak-check=full -s $$C_STRUCTURE_SERIALIZATION_HOME/generate_library $(EXAMPLE_DIR) "structures" $(TARGET_DIR)/$(EXAMPLE_LIBRARY_NAME)
 	@$(CC) $(shell find $(EXAMPLE_DIR) -type f -name "*.c") -o $(TARGET_DIR)/$(EXAMPLE_TARGET) -I $(EXAMPLE_DIR) -I $$C_STRUCTURE_SERIALIZATION_HOME/include -L $$C_STRUCTURE_SERIALIZATION_HOME -lcstructureserialization -ldl
 
 test:

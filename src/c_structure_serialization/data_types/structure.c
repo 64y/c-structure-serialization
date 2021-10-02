@@ -16,6 +16,8 @@ Structure * Structure_create_by_file_path_and_name(char *file_path, char *name) 
 	Structure *structure = (Structure *)malloc(sizeof(Structure));
 	structure->file_path = string_copy(file_path);
 	structure->name = string_copy(name);
+	structure->name_lower = string_to_lower(structure->name);
+	structure->name_upper = string_to_upper(structure->name);
 	structure->shortcut = string_make_shortcut(structure->name);
 	structure->size = 0;
 	structure->head = NULL;
@@ -60,6 +62,8 @@ Structure * Structure_create_by_file_path_and_source_code(char *file_path, Array
 		}
 	}
 	structure->name = structure_name;
+	structure->name_lower = string_to_lower(structure->name);
+	structure->name_upper = string_to_upper(structure->name);
 	structure->shortcut = string_make_shortcut(structure->name);
 	structure->size = 0;
 	structure->head = NULL;
@@ -101,7 +105,7 @@ Structure * Structure_create_by_file_path_and_source_code(char *file_path, Array
 				}
 			}
 
-			Boolean attribute_is_primitive = (get_basic_type_by_name(attribute_data_type)!=NULL) ? true : false;
+			Boolean attribute_is_primitive = (BasicType_get_by_name(attribute_data_type)!=NULL) ? true : false;
 			Boolean attribute_is_char = string_equals(attribute_data_type, "char");
 			
 			if (
@@ -170,9 +174,10 @@ Structure * Structure_create_by_file_path_and_source_code(char *file_path, Array
 					}
 				}
 				int index=((attribute_static_sizes>0 && attribute_dynamic_sizes==0 && attribute_sizes_names==attribute_static_sizes)||(attribute_static_sizes>0 && attribute_dynamic_sizes>0 && attribute_sizes_names==attribute_static_sizes+attribute_dynamic_sizes)) ? 0 : attribute_static_sizes;
+				// TODO: remove to_dellete 0, 1, 2, 3 occurrences
 				for (Attribute *curr=structure->head, *to_delete=NULL; curr!=NULL; curr=curr->next, Structure_delete(structure, to_delete), to_delete=NULL) {
 					if (strlen(attribute_name)<strlen(curr->name) && strncmp(attribute_name, curr->name, strlen(attribute_name))==0) {
-						to_delete = curr;
+						//to_delete = curr;
 						Dimension_set_dimension(dimension, index, curr->name);
 						index = index + 1;
 					}
@@ -181,12 +186,20 @@ Structure * Structure_create_by_file_path_and_source_code(char *file_path, Array
 					dimension->static_size = 0;
 					dimension->dynamic_size = attribute_static_sizes+attribute_dynamic_sizes;
 				}
+				for (int j=dimension->static_size; j<dimension->size; j++) {
+					char *dimension_old = dimension->dimensions[j];
+					char *dimension_new = string_appends((char *[]) {structure->shortcut, "->", dimension_old, NULL});
+					Dimension_set_dimension(dimension, j, dimension_new);
+					{
+						dimension_old = NULL;
+						free(dimension_new);
+					}
+				}
 			} else {
 				dimension = NULL;
 			}
 			
 			Attribute *attribute = Attribute_create(type, attribute_data_type, attribute_name, dimension);
-			
 			Structure_add(structure, attribute);			
 			
 			{
@@ -220,6 +233,14 @@ void Structure_free(Structure *structure) {
 			free(structure->name);
 			structure->name = NULL;
 		}
+		if (structure->name_lower != NULL) {
+			free(structure->name_lower);
+			structure->name_lower = NULL;
+		}
+		if (structure->name_upper != NULL) {
+			free(structure->name_upper);
+			structure->name_upper = NULL;
+		}
 		if (structure->shortcut != NULL) {
 			free(structure->shortcut);
 			structure->shortcut = NULL;
@@ -240,13 +261,15 @@ char * Structure_to_string(Structure *structure) {
 		FILE *structure_string_stream = open_memstream(&structure_string, &structure_string_length);
 		fprintf(
 			structure_string_stream,
-			"Structure @%lx:\n"
+			"Structure@%016lx\n"
 			"file path: \'%s\';\n"
 			"name: \'%s\';\n"
+			"name_lower: \'%s\';\n"
+			"name_upper: \'%s\';\n"
 			"shortcut: \'%s\';\n"
 			"size: \'%ld\';\n"
-			"head: @%lx",
-			(long)(void *)structure, structure->file_path, structure->name, structure->shortcut, structure->size, (long)(void *) structure->head
+			"head: @%016lx",
+			(long)(void *)structure, structure->file_path, structure->name, structure->name_lower, structure->name_upper, structure->shortcut, structure->size, (long)(void *) structure->head
 		);
 		for (Attribute *curr=structure->head; curr!=NULL; curr=curr->next) {
 			char *attribute_string = Attribute_to_string(curr);

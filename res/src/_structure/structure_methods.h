@@ -1,19 +1,15 @@
-#ifndef STRUCTURE_METHODS_H
-#define STRUCTURE_METHODS_H
+#ifndef _STRUCTURE_STRUCTURE_METHODS_H
+#define _STRUCTURE_STRUCTURE_METHODS_H
 
 #include "includes.h"
 
 
-extern void (*pass_methods[]) (StructureUsageSet *structureUsageSet, StructureUsage *structureUsage); 
+extern char * (*to_string_process_methods[]) (PointerDictionary *pointerDictionary, void *structure);
+extern char * (*json_encode_process_methods[]) (PointerDictionary *pointerDictionary, void *structure);
+extern void (*json_decode_process_methods[]) (PointerDictionary *pointerDictionary, FILE *structure_json_stream, void *structure);
 
-extern char * (*to_string_methods[]) (void *structure);
-
-extern char * (*json_encode_methods[]) (void *structure);
-
-extern void * (*json_decode_methods[]) (char *structure_json);
-
-StructureUsageSet * walk_through_pointer(StructureName structureName, void *pointer);
-
-char * to_string_method(StructureName structureName, void *pointer);
+char * to_string(Pointer *pointer);
+char * json_encode(Pointer *pointer);
+void * json_decode(char *structure_json, Pointer *pointer);
 
 #endif

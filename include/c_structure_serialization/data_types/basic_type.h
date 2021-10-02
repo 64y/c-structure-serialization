@@ -13,10 +13,10 @@ typedef struct BasicType {
 } BasicType;
 
 char * BasicType_to_string(BasicType *basicType);
-BasicType * get_basic_type_by_name(char *name);
 
 
 extern const size_t BASIC_TYPES_SIZE;
 extern BasicType BASIC_TYPES[];
+BasicType * BasicType_get_by_name(char *name);
 
 #endif

@@ -8,7 +8,9 @@
 typedef struct Dimension {
 	size_t size;
 	size_t static_size;
+	size_t static_size_source;
 	size_t dynamic_size;
+	size_t dynamic_size_source;
 	char **dimensions;
 } Dimension;
 

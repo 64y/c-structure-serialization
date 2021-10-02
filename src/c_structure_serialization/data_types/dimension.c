@@ -9,7 +9,9 @@ Dimension * Dimension_create(size_t static_size, size_t dynamic_size) {
 	 Dimension *dimension = (Dimension *)malloc(sizeof(Dimension));
 	 dimension->size = static_size + dynamic_size;
 	 dimension->static_size = static_size;
+	 dimension->static_size_source = static_size;
 	 dimension->dynamic_size = dynamic_size;
+	 dimension->dynamic_size_source = dynamic_size;
 	 dimension->dimensions = (char **)calloc(dimension->size, sizeof(char *));
 	 return dimension;
 }
@@ -28,7 +30,9 @@ void Dimension_free(Dimension *dimension) {
 		}
 		dimension->size = 0;
 		dimension->static_size = 0;
+		dimension->static_size_source = 0;
 		dimension->dynamic_size = 0;
+		dimension->dynamic_size_source = 0;
 		free(dimension);
 		dimension = NULL;
 	}
@@ -48,8 +52,10 @@ char * Dimension_to_string(Dimension *dimension) {
 			"Dimension @%lx:\n"
 			"size: \'%ld\';\n"
 			"static_size: \'%ld\';\n"
-			"dynamic_size: \'%ld\';\n",
-			(long)(void *) dimension, dimension->size, dimension->static_size, dimension->dynamic_size
+			"static_size_source: \'%ld\';\n"
+			"dynamic_size: \'%ld\';\n"
+			"dynamic_size_source: \'%ld\';\n",
+			(long)(void *) dimension, dimension->size, dimension->static_size, dimension->static_size_source, dimension->dynamic_size, dimension->dynamic_size_source
 		);
 		fprintf(dimension_string_stream, "dimensions: [");
 		for (int i=0; i<dimension->size; i++) {

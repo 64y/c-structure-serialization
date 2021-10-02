@@ -4,7 +4,7 @@
 
 #include "c_structure_serialization/data_types/structure.h"
 
-// TODO: change string_to_upper to string_to_upper_safe
+char * generate_attribute_pointer(Structure *structure, Attribute *attribute);
 
 void generate_sources(char *project_path, char *structures_path);
 
