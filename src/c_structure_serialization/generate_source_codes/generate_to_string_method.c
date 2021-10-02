@@ -173,7 +173,7 @@ void printf_structure(FILE *stream, Tabs *tabs, Structure *structure, Attribute 
 	); Tabs_increment(tabs);
 	fprintf(
 		stream,
-		"%sPointerDictionary_put(pointerDictionary, Pointer_create(%s, %s%s));\n",
+		"%sPointerDictionary_put_by_value(pointerDictionary, Pointer_create(%s, %s%s));\n",
 		Tabs_get(tabs),
 		attribute_name_upper,
 		attribute_pointer, indexes

@@ -19,7 +19,7 @@ char * generate_json_codec_declaration(Structure *structure) {
 		FILE *code_stream = open_memstream(&code, &code_length);
 		fprintf(code_stream, "char * %s_json_encode_process(PointerDictionary *pointerDictionary, void *structure);\n", structure->name);
 		fprintf(code_stream, "\n");
-		fprintf(code_stream, "void %s_json_decode_process(PointerDictionary *pointerDictionary, char *structure_json, void *structure);\n", structure->name);
+		fprintf(code_stream, "void %s_json_decode_process(PointerDictionary *pointerDictionary, FILE *structure_json_stream, void *structure);\n", structure->name);
 		fprintf(code_stream, "\n");
 		fprintf(code_stream, "char * %s_json_encode(void *structure);\n", structure->name);
 		fprintf(code_stream, "\n");
@@ -64,10 +64,10 @@ char * generate_json_codec_definition(Structure *structure) {
 		fprintf(e, "%sFILE *%s = open_memstream(&%s_json, &%s_json_length);\n", Tabs_get(et), stream_name, structure->shortcut, structure->shortcut);
 		fprintf(e, "%sfprintf(%s, \"{\\n\");\n", Tabs_get(et), stream_name);
 		//       decode
-		fprintf(d, "%svoid %s_json_decode_process(PointerDictionary *pointerDictionary, char *structure_json, void *structure) {\n", Tabs_get(dt), structure->name); Tabs_increment(dt);
+		fprintf(d, "%svoid %s_json_decode_process(PointerDictionary *pointerDictionary, FILE *structure_json_stream, void *structure) {\n", Tabs_get(dt), structure->name); Tabs_increment(dt);
 		fprintf(d, "%s%s *%s = (%s *) structure;\n", Tabs_get(dt), structure->name, structure->shortcut, structure->name);
 		fprintf(d, "%s{\n", Tabs_get(dt)); Tabs_increment(dt);
-		fprintf(d, "%sFILE *%s = fmemopen(structure_json, strlen(structure_json), \"r\");\n", Tabs_get(dt), stream_name);
+		fprintf(d, "%sFILE *%s = structure_json_stream;\n", Tabs_get(dt), stream_name);
 		fprintf(d, "%sfscanf(%s, \"{\\n\");\n", Tabs_get(dt), stream_name);
 		// structure
 		for (Attribute *attribute=structure->head; attribute!=NULL; attribute=attribute->next) {
@@ -192,9 +192,9 @@ char * generate_json_codec_definition(Structure *structure) {
 		fprintf(e, "%sreturn %s_json;\n", Tabs_get(et), structure->shortcut); Tabs_decrement(et);
 		fprintf(e, "%s}", Tabs_get(et));
 		//     decode
-		fprintf(d, "%sfprintf(%s, \"}\");\n", Tabs_get(dt), stream_name);
+		fprintf(d, "%sfscanf(%s, \"}\");\n", Tabs_get(dt), stream_name);
 		fprintf(d, "%s{\n", Tabs_get(dt)); Tabs_increment(dt);
-		fprintf(d, "%sfclose(%s);\n", Tabs_get(dt), stream_name); Tabs_decrement(dt);
+		fprintf(d, "%s%s = NULL;\n", Tabs_get(dt), stream_name); Tabs_decrement(dt);
 		fprintf(d, "%s}\n", Tabs_get(dt)); Tabs_decrement(dt);
 		fprintf(d, "%s}\n", Tabs_get(dt)); Tabs_decrement(dt);
 		fprintf(d, "%s}", Tabs_get(dt));
@@ -225,17 +225,9 @@ char * generate_json_codec_definition(Structure *structure) {
 		size_t code_json_decode_length;
 		FILE *code_json_decode_stream = open_memstream(&code_json_decode, &code_json_decode_length);
 		fprintf(code_json_decode_stream, "%svoid * %s_json_decode(char *structure_json) {\n", Tabs_get(tabs), structure->name); Tabs_increment(tabs);
-		fprintf(
-			code_json_decode_stream,
-			"%sreturn json_decode("
-				"structure_json, "
-				"Pointer_create("
-					"%s, "
-					"(%s *)malloc(sizeof(%s))"
-				")"
-			");\n",
-			Tabs_get(tabs), structure->name_upper, structure->name, structure->name
-		); Tabs_decrement(tabs);
+		fprintf(code_json_decode_stream, "%s%s *%s = (%s *)malloc(sizeof(%s));\n", Tabs_get(tabs), structure->name, structure->shortcut, structure->name, structure->name);
+		fprintf(code_json_decode_stream, "%smemset(%s, 0x00, sizeof(%s));\n", Tabs_get(tabs), structure->shortcut, structure->name);
+		fprintf(code_json_decode_stream, "%sreturn json_decode(structure_json, Pointer_create(%s, %s));\n", Tabs_get(tabs), structure->name_upper, structure->shortcut); Tabs_decrement(tabs);
 		fprintf(code_json_decode_stream, "%s}", Tabs_get(tabs));
 		{
 			Tabs_free(tabs);
@@ -301,7 +293,7 @@ void printf_structure_value(FILE *stream, Tabs *tabs, Structure *structure, Attr
 		attribute->data_type, attribute_pointer, attribute_suffix
 	);
 	fprintf(stream, "%sif (%s!=NULL) {\n", Tabs_get(tabs), attribute_pointer); Tabs_increment(tabs);
-	fprintf(stream, "%sPointerDictionary_put(pointerDictionary, Pointer_create(%s, %s));\n", Tabs_get(tabs), attribute_data_type_upper, attribute_pointer); Tabs_decrement(tabs);
+	fprintf(stream, "%sPointerDictionary_put_by_value(pointerDictionary, Pointer_create(%s, %s%s));\n", Tabs_get(tabs), attribute_data_type_upper, attribute_pointer, attribute_suffix); Tabs_decrement(tabs);
 	fprintf(stream, "%s}\n", Tabs_get(tabs));
 	{
 		free(attribute_data_type_upper);
@@ -325,46 +317,56 @@ void scanf_primitive_value(FILE *stream, Tabs *tabs, Structure *structure, Attri
 }
 
 void scanf_string_value(FILE *stream, Tabs *tabs, Structure *structure, Attribute *attribute, char *indexes) {
+	char *attribute_pointer = generate_attribute_pointer(structure, attribute);
 	char *attribute_suffix = (indexes==NULL)?"":indexes;
 	fprintf(stream, "%schar *%s_string_base64 = (char *)calloc(BASE64_LENGTH_MAX+1, sizeof(char));\n", Tabs_get(tabs), attribute->name);
-	fprintf(stream, "%sfscanf(%s_json_stream, \"%%*[\\\"]%%[A-Za-z0-9+/=]s%%*[\\\"]\", %s_string_base64);\n", Tabs_get(tabs), structure->shortcut, attribute->name);
-	fprintf(stream, "%sfscanf(%s_json_stream, \"\\\", \");\n", Tabs_get(tabs), structure->shortcut); // scanfing for ", " for free
-	if (attribute->dimension!=NULL) {
+	fprintf(stream, "%sfscanf(%s_json_stream, \"\\\"%%[A-Za-z0-9+/=]\\\", \", %s_string_base64);\n", Tabs_get(tabs), structure->shortcut, attribute->name);
+	fprintf(stream, "%schar *%s_string = base64_decode_string(%s_string_base64);\n", Tabs_get(tabs), attribute->name, attribute->name);
+	if (attribute->dimension==NULL) {
+		fprintf(stream, "%s%s%s = %s_string;\n", Tabs_get(tabs), attribute_pointer, attribute_suffix, attribute->name);
+	} else {
 		if (attribute->dimension->dynamic_size_source==0) {
-			fprintf(stream, "%schar *%s_string = base64_decode_string(%s_string_base64);\n", Tabs_get(tabs), attribute->name, attribute->name);
-			fprintf(stream, "%sstrcpy(%s->%s%s, %s_string);\n", Tabs_get(tabs), structure->shortcut, attribute->name, attribute_suffix, attribute->name);
+			fprintf(stream, "%sstrcpy(%s%s, %s_string);\n", Tabs_get(tabs), attribute_pointer, attribute_suffix, attribute->name);
 			fprintf(stream, "%s{\n", Tabs_get(tabs)); Tabs_increment(tabs);
 			fprintf(stream, "%sfree(%s_string);\n", Tabs_get(tabs), attribute->name); Tabs_decrement(tabs);
 			fprintf(stream, "%s}\n", Tabs_get(tabs));
 		} else {
-			fprintf(stream, "%s%s->%s%s = base64_decode_string(%s_string_base64);\n", Tabs_get(tabs), structure->shortcut, attribute->name, attribute_suffix, attribute->name);
+			fprintf(stream, "%s%s%s = %s_string;\n", Tabs_get(tabs), attribute_pointer, attribute_suffix, attribute->name);
 		}
 	}
 	fprintf(stream, "%s{\n", Tabs_get(tabs)); Tabs_increment(tabs);
 	fprintf(stream, "%sfree(%s_string_base64);\n", Tabs_get(tabs), attribute->name); Tabs_decrement(tabs);
 	fprintf(stream, "%s}\n", Tabs_get(tabs));
 	{
+		free(attribute_pointer);
 		attribute_suffix = NULL;
 	}
 }
 
 void scanf_structure_value(FILE *stream, Tabs *tabs, Structure *structure, Attribute *attribute, char *indexes) {
+	char *attribute_data_type_upper = string_to_upper(attribute->data_type);
+	char *attribute_pointer = generate_attribute_pointer(structure, attribute);
 	char *attribute_suffix = (indexes==NULL)?"":indexes;
-	// TODO: rework it
-	fprintf(stream, "%s// TODO: add structure scanf!\n", Tabs_get(tabs));
-	/*
-	fprintf(stream, "%slong %s_address = 0;\n", Tabs_get(tabs), attribute->name);
-	fprintf(stream, "%sfscanf(%s_json_stream, \"%%lx, \", &%s_address);\n", Tabs_get(tabs), structure->shortcut, attribute->name);
-	fprintf(
-		stream,
-		"%s%s->%s%s = (%s%s) %s_address;\n",
-		Tabs_get(tabs),
-		structure->shortcut, attribute->name, attribute_suffix,
-		attribute->data_type, (attribute->type==STRUCTURE || attribute->type==STRUCTURE_ARRAY)?"":"*",
-		attribute->name
-	); // TODO: cant handle structure/structure_array address (
-	*/
+	
+	fprintf(stream, "%schar *%s_hashCode = (char *)calloc(1024+1, sizeof(char));\n", Tabs_get(tabs), attribute->name);
+	fprintf(stream, "%sfscanf(%s_json_stream, \"%%[A-Za-z0-9$_@], \", %s_hashCode);\n", Tabs_get(tabs), structure->shortcut, attribute->name);
+	fprintf(stream, "%slong %s_address;\n", Tabs_get(tabs), attribute->name);
+	fprintf(stream, "%ssscanf(%s_hashCode, \"%%*[^@]@%%ld\", &%s_address);\n", Tabs_get(tabs), attribute->name, attribute->name);
+	fprintf(stream, "%sif (%s_address!=0) {\n", Tabs_get(tabs), attribute->name); Tabs_increment(tabs);
+	// TODO: search for another links
+	if (attribute->type==STRUCTURE_POINTER || attribute->type==STRUCTURE_POINTER_ARRAY) {
+		fprintf(stream, "%s%s%s = (%s *)malloc(sizeof(%s));\n", Tabs_get(tabs), attribute_pointer, attribute_suffix, attribute->data_type, attribute->data_type);
+		fprintf(stream, "%smemset(%s%s, 0x00, sizeof(%s));\n", Tabs_get(tabs), attribute_pointer, attribute_suffix, attribute->data_type);
+	}
+	fprintf(stream, "%sPointerDictionary_put_by_key_and_value(pointerDictionary, %s_hashCode, Pointer_create(%s, %s%s));\n", Tabs_get(tabs), attribute->name, attribute_data_type_upper, attribute_pointer, attribute_suffix); Tabs_decrement(tabs);
+	fprintf(stream, "%s}\n", Tabs_get(tabs));
+	
+	fprintf(stream, "%s{\n", Tabs_get(tabs)); Tabs_increment(tabs);
+	fprintf(stream, "%sfree(%s_hashCode);\n", Tabs_get(tabs), attribute->name); Tabs_decrement(tabs);
+	fprintf(stream, "%s}\n", Tabs_get(tabs));
 	{
+		free(attribute_data_type_upper);
+		free(attribute_pointer);
 		attribute_suffix = NULL;
 	}
 }

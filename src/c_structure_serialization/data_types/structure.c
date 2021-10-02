@@ -200,7 +200,6 @@ Structure * Structure_create_by_file_path_and_source_code(char *file_path, Array
 			}
 			
 			Attribute *attribute = Attribute_create(type, attribute_data_type, attribute_name, dimension);
-			
 			Structure_add(structure, attribute);			
 			
 			{

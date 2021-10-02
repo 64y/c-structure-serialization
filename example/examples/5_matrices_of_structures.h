@@ -21,7 +21,7 @@ void example_of_structure_with_matrices_of_structures() {
 		"Figures",
 		Figures_generate,
 		Figures_free,
-		DO_TO_STRING | DO_JSON_ENCODE // | DO_JSON_DECODE
+		DO_TO_STRING | DO_JSON_ENCODE | DO_JSON_DECODE
 	);
 }
 
@@ -47,6 +47,9 @@ void * Figures_generate(void) {
 			Point c = {random()%50-25, random()%50-25};
 			Triangle t = {a, b, c};
 			figures->triangles[i][j] = t;
+			if (i==2 && j==2) {
+				continue;
+			}
 		}
 	}
 	figures->rectangles_a = 2;
@@ -71,8 +74,8 @@ void * Figures_generate(void) {
 			}
 		}
 	}
-	free(figures->rectangles[0][0][0][1][1]);
-	figures->rectangles[0][0][0][1][1] = NULL;
+	/*free(figures->rectangles[0][0][0][1][1]);
+	figures->rectangles[0][0][0][1][1] = NULL;*/
 	return figures;
 }
 

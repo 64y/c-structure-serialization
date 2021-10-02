@@ -1,11 +1,20 @@
 #include "includes.h"
 
 
-PointerNode * PointerNode_create(Pointer *pointer) {
+PointerNode * PointerNode_create_by_key_and_value(char *key, Pointer *value) {
 	PointerNode *pointerNode = (PointerNode *)malloc(sizeof(PointerNode));
-	pointerNode->key = Pointer_hash_code(pointer);
-	pointerNode->value = pointer;
+	pointerNode->key = (char *)calloc(strlen(key)+1, sizeof(char)); strcpy(pointerNode->key, key);
+	pointerNode->value = value;
 	pointerNode->next = NULL;
+	return pointerNode;
+}
+
+PointerNode * PointerNode_create_by_value(Pointer *value) {
+	char *key = Pointer_hash_code(value);
+	PointerNode *pointerNode = PointerNode_create_by_key_and_value(key, value);
+	{
+		free(key);
+	}
 	return pointerNode;
 }
 
@@ -120,9 +129,12 @@ Pointer * PointerDictionary_get(PointerDictionary *pointerDictionary, char *key)
 	return NULL;
 }
 
-void PointerDictionary_put(PointerDictionary *pointerDictionary, Pointer *pointer) {
+Boolean PointerDictionary_put_by_key_and_value(PointerDictionary *pointerDictionary, char *key, Pointer *value) {
+	if (PointerDictionary_contains(pointerDictionary, key)) {
+		return false;
+	}
 	pointerDictionary->size = pointerDictionary->size + 1;
-	PointerNode *pointerNode = PointerNode_create(pointer);
+	PointerNode *pointerNode = PointerNode_create_by_key_and_value(key, value);
 	if (pointerDictionary->head==NULL) {
 		pointerDictionary->head = pointerNode;
 	} else {
@@ -132,6 +144,16 @@ void PointerDictionary_put(PointerDictionary *pointerDictionary, Pointer *pointe
 		}
 		last->next = pointerNode;
 	}
+	return true;
+}
+
+Boolean PointerDictionary_put_by_value(PointerDictionary *pointerDictionary, Pointer *value) {
+	char *key = Pointer_hash_code(value);
+	Boolean result = PointerDictionary_put_by_key_and_value(pointerDictionary, key, value);
+	{
+		free(key);
+	}
+	return result;
 }
 
 Boolean PointerDictionary_contains(PointerDictionary *pointerDictionary, char *key) {

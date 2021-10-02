@@ -11,7 +11,8 @@ typedef struct PointerNode {
 	struct PointerNode *next;
 } PointerNode;
 
-PointerNode * PointerNode_create(Pointer *pointer);
+PointerNode * PointerNode_create_by_key_and_value(char *key, Pointer *value);
+PointerNode * PointerNode_create_by_value(Pointer *value);
 void PointerNode_free(PointerNode *pointerNode);
 char * PointerNode_to_string(PointerNode *pointerNode);
 
@@ -29,7 +30,8 @@ char * PointerDictionary_to_string(PointerDictionary *pointerDictionary);
 size_t PointerDictionary_size(PointerDictionary *pointerDictionary);
 
 Pointer * PointerDictionary_get(PointerDictionary *pointerDictionary, char *key);
-void PointerDictionary_put(PointerDictionary *pointerDictionary, Pointer *pointer);
+Boolean PointerDictionary_put_by_key_and_value(PointerDictionary *pointerDictionary, char *key, Pointer *value);
+Boolean PointerDictionary_put_by_value(PointerDictionary *pointerDictionary, Pointer *value);
 Boolean PointerDictionary_contains(PointerDictionary *pointerDictionary, char *key);
 Pointer * PointerDictionary_remove(PointerDictionary *pointerDictionary, char *key);
 
