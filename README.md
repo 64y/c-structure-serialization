@@ -139,4 +139,8 @@ If you want to call `bin/main` you need to use "./bin/my_lib" library path in `m
 
 ## TODO
  - [x] Implement **to_string**;
- - [ ] Implement **json_codec**.
+ - [x] Implement **json_codec**;
+ - [ ] fix null in **json_codec**;
+ - [ ] Implement **binary_codec**;
+ - [ ] Work in dirs;
+ - [ ] Write documentation.
