@@ -138,8 +138,6 @@ cd bin
 If you want to call `bin/main` you need to use "./bin/my_lib" library path in `main.c`.
 
 ## TODO
- - [x] Implement **to_string**;
- - [x] Implement **json_codec**;
  - [ ] fix null in **json_codec**;
  - [ ] Implement **binary_codec**;
  - [ ] Work in dirs;
