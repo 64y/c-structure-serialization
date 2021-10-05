@@ -4,9 +4,9 @@
 #include "includes.h"
 
 
-extern char * (*to_string_process_methods[]) (PointerDictionary *pointerDictionary, void *structure);
-extern char * (*json_encode_process_methods[]) (PointerDictionary *pointerDictionary, void *structure);
-extern void (*json_decode_process_methods[]) (PointerDictionary *pointerDictionary, FILE *structure_json_stream, void *structure);
+extern char * (*to_string_process_methods[]) (FILE *structure_string_stream, PointerDictionary *pointerDictionary, void *structure);
+extern char * (*json_encode_process_methods[]) (FILE *structure_json_stream, PointerDictionary *pointerDictionary, void *structure);
+extern void (*json_decode_process_methods[]) (FILE *structure_json_stream, PointerDictionary *pointerDictionary, void *structure);
 
 char * to_string(Pointer *pointer);
 char * json_encode(Pointer *pointer);
