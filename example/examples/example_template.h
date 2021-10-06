@@ -41,10 +41,15 @@ void example (
 	}
 	
 	if (DO_FLAG & DO_JSON_DECODE) {
+		char *structure_string = serializer->to_string(structure);
 		char *structure_json = serializer->json_encode(structure);
 		void *structure_temp = serializer->json_decode(structure_json);
 		char *structure_temp_string = serializer->to_string(structure_temp);
 		printf("JSON_DECODE:\n%s\n", structure_temp_string);
+		
+		printf(" - Does structure_string and structure_temp_string equal? - %s!\n", (strcmp(structure_string, structure_temp_string)==0) ? "YES" : "NO");
+		
+		free(structure_string);
 		free(structure_json);
 		structure_free(structure_temp);
 		free(structure_temp_string);

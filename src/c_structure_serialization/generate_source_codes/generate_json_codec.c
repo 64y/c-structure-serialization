@@ -94,8 +94,7 @@ char * generate_json_codec_definition(Structure *structure) {
 		fprintf(
 			e,
 			"%1$s%2$s *%3$s = (%4$s *) structure;\n"
-			"%1$sfprintf(%5$s, \"{\");\n"
-			"%1$sif (%3$s != NULL) {\n",
+			"%1$sfprintf(%5$s, \"{\");\n",
 			Tabs_get(et), structure->name, structure->shortcut, structure->name, stream_name
 		);
 		//       decode
@@ -224,9 +223,7 @@ char * generate_json_codec_definition(Structure *structure) {
 		}
 		// end
 		//     encode
-		fprintf(e, "%sfprintf(%s, \"\\n\");\n", Tabs_get(et), stream_name); Tabs_decrement(et);
-		fprintf(e, "%s}\n", Tabs_get(et));
-		fprintf(e, "%sfprintf(%s, \"}\");\n", Tabs_get(et), stream_name); Tabs_decrement(et);
+		fprintf(e, "%sfprintf(%s, \"\\n}\");\n", Tabs_get(et), stream_name); Tabs_decrement(et);
 		fprintf(e, "%s}", Tabs_get(et));
 		//     decode
 		fprintf(d, "%sfscanf(%s, \"\\n}\");\n", Tabs_get(dt), stream_name); Tabs_decrement(dt);
@@ -311,11 +308,11 @@ void printf_string_value(FILE *stream, Tabs *tabs, Structure *structure, Attribu
 	char *attribute_suffix = (indexes==NULL)?"":indexes;
 	fprintf(
 		stream,
-		"%1$sstring_base64 = base64_encode_string(%2$s->%3$s%4$s);\n"
+		"%1$sstring_base64 = (%2$s->%3$s%4$s!=NULL) ? base64_encode_string(%2$s->%3$s%4$s) : base64_encode(&((Data) {3, (unsigned char *) \"\\0\\0\\0\"})) ;\n"
 		"%1$sfprintf(structure_json_stream, \"\\\"%%s\\\"\", string_base64);\n"
 		"%1$s{\n",
 		Tabs_get(tabs), structure->shortcut, attribute->name, attribute_suffix
-	);
+	); Tabs_increment(tabs);
 	fprintf(stream, "%sfree(string_base64);\n", Tabs_get(tabs));
 	fprintf(stream, "%sstring_base64 = NULL;\n", Tabs_get(tabs)); Tabs_decrement(tabs);
 	fprintf(stream, "%s}\n", Tabs_get(tabs));
@@ -365,19 +362,23 @@ void scanf_string_value(FILE *stream, Tabs *tabs, Structure *structure, Attribut
 		"%1$sstring = base64_decode_string(string_base64);\n",
 		Tabs_get(tabs)
 	);
-
-	if (attribute->dimension==NULL) {
-		fprintf(stream, "%s%s = string;\n", Tabs_get(tabs), attribute_pointer);
+	
+	if (attribute->dimension==NULL || (attribute->dimension!=NULL && attribute->dimension->dynamic_size_source>0)) {
+		fprintf(stream, "%sif (strcmp(\"AAAA\", string_base64)==0) {\n", Tabs_get(tabs)); Tabs_increment(tabs);
+		fprintf(stream, "%s%s%s = NULL;\n", Tabs_get(tabs), attribute_pointer, attribute_suffix);
+		fprintf(stream, "%s{\n", Tabs_get(tabs)); Tabs_increment(tabs);
+		fprintf(stream, "%sfree(string);\n", Tabs_get(tabs)); Tabs_decrement(tabs);
+		fprintf(stream, "%s}\n", Tabs_get(tabs)); Tabs_decrement(tabs);
+		fprintf(stream, "%s} else {\n", Tabs_get(tabs)); Tabs_increment(tabs);
+		fprintf(stream, "%s%s%s = string;\n", Tabs_get(tabs), attribute_pointer, attribute_suffix); Tabs_decrement(tabs);
+		fprintf(stream, "%s}\n", Tabs_get(tabs));
 	} else {
-		if (attribute->dimension->dynamic_size_source==0) {
-			fprintf(stream, "%sstrcpy(%s%s, string);\n", Tabs_get(tabs), attribute_pointer, attribute_suffix);
-			fprintf(stream, "%s{\n", Tabs_get(tabs)); Tabs_increment(tabs);
-			fprintf(stream, "%sfree(string);\n", Tabs_get(tabs)); Tabs_decrement(tabs);
-			fprintf(stream, "%s}\n", Tabs_get(tabs));
-		} else {
-			fprintf(stream, "%s%s%s = string;\n", Tabs_get(tabs), attribute_pointer, attribute_suffix);
-		}
+		fprintf(stream, "%sstrcpy(%s%s, string);\n", Tabs_get(tabs), attribute_pointer, attribute_suffix);
+		fprintf(stream, "%s{\n", Tabs_get(tabs)); Tabs_increment(tabs);
+		fprintf(stream, "%sfree(string);\n", Tabs_get(tabs)); Tabs_decrement(tabs);
+		fprintf(stream, "%s}\n", Tabs_get(tabs));
 	}
+	Tabs_decrement(tabs);
 	fprintf(stream, "%s{\n", Tabs_get(tabs)); Tabs_increment(tabs);
 	fprintf(stream, "%sfree(string_base64);\n", Tabs_get(tabs));
 	fprintf(stream, "%sstring_base64_length = 0;\n", Tabs_get(tabs));  Tabs_decrement(tabs);
