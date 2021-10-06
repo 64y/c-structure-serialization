@@ -74,8 +74,8 @@ void * Figures_generate(void) {
 			}
 		}
 	}
-	/*free(figures->rectangles[0][0][0][1][1]);
-	figures->rectangles[0][0][0][1][1] = NULL;*/
+	free(figures->rectangles[0][0][0][1][1]);
+	figures->rectangles[0][0][0][1][1] = NULL;
 	return figures;
 }
 

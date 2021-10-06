@@ -251,10 +251,10 @@ void * Strings_generate(void) {
 			}
 		}
 	}
-	strings->stre_0 = 2;
-	strings->stre_1 = 2;
-	strings->stre_2 = 2;
-	strings->stre_3 = 2;
+	strings->stre_0 = 3;
+	strings->stre_1 = 3;
+	strings->stre_2 = 3;
+	strings->stre_3 = 3;
 	for (int i=0; i<strings->stre_0; i++) {
 		for (int j=0; j<strings->stre_1; j++) {
 			strings->stre[i][j] = (char ***)calloc(strings->stre_2, sizeof(char **));
@@ -266,6 +266,8 @@ void * Strings_generate(void) {
 			}
 		}
 	}
+	free(strings->stre[1][1][1][1]);
+	strings->stre[1][1][1][1] = NULL;
 	return strings;
 }
 	
@@ -300,7 +302,9 @@ void Strings_free(void *structure) {
 			for (int j=0; j<strings->stre_1; j++) {
 				for (int k=0; k<strings->stre_2; k++) {
 					for (int l=0; l<strings->stre_3; l++) {
-						free(strings->stre[i][j][k][l]);
+						if (strings->stre[i][j][k][l]!=NULL) {
+							free(strings->stre[i][j][k][l]);
+						}
 					}
 					free(strings->stre[i][j][k]);
 				}

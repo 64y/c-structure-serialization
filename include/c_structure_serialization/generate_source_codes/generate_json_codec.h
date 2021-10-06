@@ -6,7 +6,6 @@
 
 
 char * generate_json_codec_declaration(Structure *structure);
-
 char * generate_json_codec_definition(Structure *structure);
 
 #endif

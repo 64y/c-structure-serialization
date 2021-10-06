@@ -322,12 +322,28 @@ Boolean Structure_delete(Structure *structure, Attribute *attribute) {
 	return false;
 }
 
-Boolean Structure_has_structure_attributes(Structure *structure) {
-	Boolean has = 0;
+Boolean Structure_contains_string_attributes(Structure *structure) {
+	Boolean does = false;
 	for (Attribute *curr=structure->head; curr!=NULL; curr=curr->next) {
-		has |= curr->type==STRUCTURE || curr->type==STRUCTURE_POINTER || curr->type==STRUCTURE_ARRAY || curr->type==STRUCTURE_POINTER_ARRAY;
+		does |= curr->type==STRING || curr->type==STRING_ARRAY;
 	}
-	return has;
+	return does;
+}
+
+Boolean Structure_contains_array_attributes(Structure *structure) {
+	Boolean does = false;
+	for (Attribute *curr=structure->head; curr!=NULL; curr=curr->next) {
+		does |= curr->type==PRIMITIVE_ARRAY || curr->type==STRING_ARRAY || curr->type==STRUCTURE_ARRAY || curr->type==STRUCTURE_POINTER_ARRAY;
+	}
+	return does;
+}
+
+Boolean Structure_contains_structure_attributes(Structure *structure) {
+	Boolean does = false;
+	for (Attribute *curr=structure->head; curr!=NULL; curr=curr->next) {
+		does |= curr->type==STRUCTURE || curr->type==STRUCTURE_POINTER || curr->type==STRUCTURE_ARRAY || curr->type==STRUCTURE_POINTER_ARRAY;
+	}
+	return does;
 }
 
 
