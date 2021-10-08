@@ -14,6 +14,7 @@
 #include "c_structure_serialization/data_types/structure_regular_expressions.h"
 #include "c_structure_serialization/generate_source_codes/generate_to_string_method.h"
 #include "c_structure_serialization/generate_source_codes/generate_json_codec.h"
+#include "c_structure_serialization/generate_source_codes/generate_bytes_codec.h"
 #include "c_structure_serialization/generate_source_codes/generate_libraries.h"
 
 
@@ -94,10 +95,11 @@ void generate_library_for_structure(char *project_path, Structure *structure) {
 	char *structure_library_c_file_name = string_appends((char *[]){path_libraries, "/", structure->name_lower, "_library.c", NULL});
 	char *code_h;
 	{
-		size_t generate_code_size = 2;
+		size_t generate_code_size = 3;
 		char * (*generate_code[]) (Structure *structure) = {
 			generate_to_string_method_declaration,
-			generate_json_codec_declaration
+			generate_json_codec_declaration,
+			generate_bytes_codec_declaration
 		};
 		
 		size_t code_h_length;
@@ -120,10 +122,11 @@ void generate_library_for_structure(char *project_path, Structure *structure) {
 	file_write(structure_library_h_file_name, code_h);
 	char *code_c;
 	{
-		size_t generate_code_size = 2;
+		size_t generate_code_size = 3;
 		char * (*generate_code[]) (Structure *structure) = {
 			generate_to_string_method_definition,
-			generate_json_codec_definition
+			generate_json_codec_definition,
+			generate_bytes_codec_definition
 		};
 		
 		size_t code_c_length;
@@ -205,20 +208,30 @@ void generate_structure_name_file(char *project_path, Array *structures) {
 
 void generate_structure_methods_file(char *project_path, Array *structures) {
 	size_t structures_size = Array_size(structures);
-	char *to_string_methods, *json_encode_methods, *json_decode_methods;
+	size_t methods_names_size = 5;
+	char *methods_names[] = {
+		"_to_string_process",
+		"_json_encode_process",
+		"_json_decode_process",
+		"_bytes_encode_process",
+		"_bytes_decode_process"
+	};
+	char *methods;
 	{
-		size_t to_string_methods_length, json_encode_methods_length, json_decode_methods_length;
-		FILE *to_string_methods_stream = open_memstream(&to_string_methods, &to_string_methods_length), *json_encode_methods_stream = open_memstream(&json_encode_methods, &json_encode_methods_length), *json_decode_methods_stream = open_memstream(&json_decode_methods, &json_decode_methods_length);
+		size_t methods_length;
+		FILE *methods_stream = open_memstream(&methods, &methods_length);
+		fprintf(methods_stream, "{\n");
 		for (int i=0; i<structures_size; i++) {
 			char *structure_name = ((Structure *) Array_get(structures, i))->name;
-			fprintf(to_string_methods_stream, "%s_to_string_process%s", structure_name, (i<structures_size-1)?",\n\t":"");
-			fprintf(json_encode_methods_stream, "%s_json_encode_process%s", structure_name, (i<structures_size-1)?",\n\t":"");
-			fprintf(json_decode_methods_stream, "%s_json_decode_process%s", structure_name, (i<structures_size-1)?",\n\t":"");
+			fprintf(methods_stream, "\t{\n");
+			for (int j=0; j<methods_names_size; j++) {
+				fprintf(methods_stream, "\t\t%s%s%s", structure_name, methods_names[j], (j<methods_names_size-1)?",\n":"\n");
+			}
+			fprintf(methods_stream, "\t}%s\n", (i<structures_size-1)?",":"");
 		}
+		fprintf(methods_stream, "}\n");
 		{
-			fclose(to_string_methods_stream);
-			fclose(json_encode_methods_stream);
-			fclose(json_decode_methods_stream);
+			fclose(methods_stream);
 		}
 	}
 	
@@ -228,16 +241,14 @@ void generate_structure_methods_file(char *project_path, Array *structures) {
 	{
 		size_t structure_methods_c_source_code_length;
 		FILE *structure_methods_c_source_code_stream = open_memstream(&structure_methods_c_source_code, &structure_methods_c_source_code_length);
-		fprintf(structure_methods_c_source_code_stream, structure_methods_c_format, to_string_methods, json_encode_methods, json_decode_methods);
+		fprintf(structure_methods_c_source_code_stream, structure_methods_c_format, methods);
 		{
 			fclose(structure_methods_c_source_code_stream);
 		}
 	}
 	file_write(structure_methods_c_path, structure_methods_c_source_code);
 	{
-		free(to_string_methods);
-		free(json_encode_methods);
-		free(json_decode_methods);
+		free(methods);
 		free(structure_methods_c_path);
 		free(structure_methods_c_format);
 		free(structure_methods_c_source_code);

@@ -1,17 +1,7 @@
 #include "includes.h"
 
 
-void (*to_string_process_methods[]) (FILE *structure_string_stream, PointerDictionary *pointerDictionary, void *structure) = {
-	%s
-};
-
-void (*json_encode_process_methods[]) (FILE *structure_json_stream, PointerDictionary *pointerDictionary, void *structure) = {
-	%s
-};
-
-void (*json_decode_process_methods[]) (FILE *structure_json_stream, PointerDictionary *pointerDictionary, void *structure) = {
-	%s
-};
+void (*methods[][5]) (FILE *structure_string_stream, PointerDictionary *pointerDictionary, void *structure) = %s;
 
 
 char * to_string(Pointer *pointer) {
@@ -23,14 +13,14 @@ char * to_string(Pointer *pointer) {
 		PointerDictionary *pointerDictionary = PointerDictionary_create();
 		PointerDictionary_put_by_value(pointerDictionary, pointer);
 		PointerNode *curr = pointerDictionary->head;
-		to_string_process_methods[curr->value->name](structure_string_stream, pointerDictionary, curr->value->pointer);
+		methods[curr->value->name][TO_STRING](structure_string_stream, pointerDictionary, curr->value->pointer);
 		for (size_t curr_i=1, size=PointerDictionary_size(pointerDictionary); curr_i<size; size=PointerDictionary_size(pointerDictionary)) {
 			PointerDictionary_stage_next(pointerDictionary);
 			while (curr_i < size) {
 				curr = curr->next;
 				curr_i = curr_i + 1;
 				fprintf(structure_string_stream, "\n |_ ");
-				to_string_process_methods[curr->value->name](structure_string_stream, pointerDictionary, curr->value->pointer);
+				methods[curr->value->name][TO_STRING](structure_string_stream, pointerDictionary, curr->value->pointer);
 			}
 		}
 		{
@@ -52,7 +42,7 @@ char * json_encode(Pointer *pointer) {
 		PointerDictionary_put_by_value(pointerDictionary, pointer);
 		PointerNode *curr = pointerDictionary->head;
 		fprintf(structure_json_stream, "\"%%s@%%lx\": ", STRUCTURE_NAME_STRING[curr->value->name], (long)curr->value->pointer);
-		json_encode_process_methods[curr->value->name](structure_json_stream, pointerDictionary, curr->value->pointer);
+		methods[curr->value->name][JSON_ENCODE](structure_json_stream, pointerDictionary, curr->value->pointer);
 		for (size_t curr_i=1, size=PointerDictionary_size(pointerDictionary); curr_i<size; size=PointerDictionary_size(pointerDictionary)) {
 			PointerDictionary_stage_next(pointerDictionary);
 			while (curr_i < size) {
@@ -63,7 +53,7 @@ char * json_encode(Pointer *pointer) {
 				}
 				fprintf(structure_json_stream, ",\n");
 				fprintf(structure_json_stream, "\"%%s@%%lx\": ", STRUCTURE_NAME_STRING[curr->value->name], (long)curr->value->pointer);
-				json_encode_process_methods[curr->value->name](structure_json_stream, pointerDictionary, curr->value->pointer);
+				methods[curr->value->name][JSON_ENCODE](structure_json_stream, pointerDictionary, curr->value->pointer);
 			}
 		}
 		{
@@ -106,7 +96,7 @@ void * json_decode(char *structure_json, Pointer *pointer) {
 				fprintf(stderr, "Wrong order of elements in json \'%%s\'!=\'%%s\'!\n", curr->key, hashCode);
 				exit(1);
 			}
-			json_decode_process_methods[curr->value->name](structure_json_stream, pointerDictionary, curr->value->pointer);
+			methods[curr->value->name][JSON_DECODE](structure_json_stream, pointerDictionary, curr->value->pointer);
 			{
 				free(hashCode);
 				hashCode_length = 0;
@@ -115,6 +105,57 @@ void * json_decode(char *structure_json, Pointer *pointer) {
 		structure = pointerDictionary->head->value->pointer;
 		{
 			fclose(structure_json_stream);
+			PointerDictionary_free(pointerDictionary);
+		}
+	}
+	return structure;
+}
+
+Data * bytes_encode(Pointer *pointer) {
+	Data *structure_bytes = Data_create_null();
+	{
+		FILE *structure_bytes_stream = open_memstream((char **)&structure_bytes->bytes, &structure_bytes->bytes_size);
+		PointerDictionary *pointerDictionary = PointerDictionary_create();
+		PointerDictionary_put_by_value(pointerDictionary, pointer);
+		for (PointerNode *curr = pointerDictionary->head; curr!=NULL; curr=curr->next) {
+			methods[curr->value->name][BYTES_ENCODE](structure_bytes_stream, pointerDictionary, curr->value->pointer);
+		}
+		{
+			fclose(structure_bytes_stream);
+			PointerDictionary_free(pointerDictionary);
+		}
+	}
+	return structure_bytes;
+}
+
+void * bytes_decode(Data *structure_bytes, Pointer *pointer) {
+	void *structure;
+	{
+		FILE *structure_bytes_stream = fmemopen(structure_bytes->bytes, structure_bytes->bytes_size, "rb");
+		PointerDictionary *pointerDictionary = PointerDictionary_create();
+		long structure_address;
+		fread(&structure_address, sizeof(long), 1, structure_bytes_stream);
+		fseek(structure_bytes_stream, -sizeof(long), SEEK_CUR);
+		char *hashCode;
+		{
+			size_t hashCode_length;
+			FILE *hashCode_stream = open_memstream(&hashCode, &hashCode_length);
+			fprintf(hashCode_stream, "%%s@%%lx", STRUCTURE_NAME_STRING[pointer->name], structure_address);
+			{
+				fclose(hashCode_stream);
+			}
+		}
+		PointerDictionary_put_by_key_and_value(pointerDictionary, hashCode, pointer);
+		{
+			structure_address = 0;
+			free(hashCode);
+		}
+		for (PointerNode *curr = pointerDictionary->head; curr!=NULL; curr=curr->next) {
+			methods[curr->value->name][BYTES_DECODE](structure_bytes_stream, pointerDictionary, curr->value->pointer);
+		}
+		structure = pointerDictionary->head->value->pointer;
+		{
+			fclose(structure_bytes_stream);
 			PointerDictionary_free(pointerDictionary);
 		}
 	}

@@ -3,8 +3,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "_utils/data.h"
-
+#include "c_structure_serialization/utils/data.h"
 
 Data * Data_create_null(void) {
 	Data *data = (Data *)malloc(sizeof(Data));

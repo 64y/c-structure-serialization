@@ -328,7 +328,7 @@ void printf_structure_value(FILE *stream, Tabs *tabs, Structure *structure, Attr
 	fprintf(
 		stream,
 		"%1$sfprintf(structure_json_stream, \"%%s@%%lx\", \"%2$s\", (long)(void *)%3$s%4$s);\n"
-		"%1$sif (%3$s!=NULL) {\n",
+		"%1$sif (%3$s%4$s!=NULL) {\n",
 		Tabs_get(tabs), attribute->data_type, attribute_pointer, attribute_suffix
 	); Tabs_increment(tabs);
 	fprintf(stream, "%sPointerDictionary_put_by_value(pointerDictionary, Pointer_create(%s, %s%s));\n", Tabs_get(tabs), attribute_data_type_upper, attribute_pointer, attribute_suffix); Tabs_decrement(tabs);

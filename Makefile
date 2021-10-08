@@ -6,7 +6,7 @@ SOURCE_DIR := src
 OBJECT_DIR := obj
 TARGET_DIR := bin
 LIBRARY_DIR := lib
-SOURCES := $(shell find $(SOURCE_DIR) -type f -name *.c ! -name "serializer.c")
+SOURCES := $(shell find $(SOURCE_DIR) -type f -name *.c ! -name "serializer.c" ! -name "data.c")
 OBJECTS := $(patsubst $(SOURCE_DIR)/%, $(OBJECT_DIR)/%, $(SOURCES:.c=.o))
 -include $(OBJECTS:.o=.d)
 CFLAGS := -Wall -g
@@ -15,8 +15,8 @@ INC := -I $(INCLUDE_DIR)
 INC_DEP := -I $(INCLUDE_DIR)
 TARGET := generate_library
 
-LIBRARY_SOURCE := $(SOURCE_DIR)/c_structure_serialization/serializer.c
-LIBRARY_OBJECT := $(OBJECT_DIR)/c_structure_serialization/serializer.o
+LIBRARY_SOURCES := $(shell find $(SOURCE_DIR) -type f -name "serializer.c" -o -name "data.c")
+LIBRARY_OBJECTS := $(patsubst $(SOURCE_DIR)/%, $(OBJECT_DIR)/%, $(LIBRARY_SOURCES:.c=.o))
 LIBRARY_CFLAGS := -Wall -fPIC
 LIBRARY_LFLAGS := -ldl
 LIBRARY_INC := -I $(INCLUDE_DIR)
@@ -41,11 +41,9 @@ directories:
 	@mkdir -p $(TARGET_DIR)
 	@mkdir -p $(LIBRARY_DIR)
 
-library:
+library: $(LIBRARY_OBJECTS)
 	@echo "Compiling library:"
-	@mkdir -p $(dir $(LIBRARY_OBJECT))
-	$(CC) $(LIBRARY_CFLAGS) $(LIBRARY_LFLAGS) $(LIBRARY_INC) -c -o $(LIBRARY_OBJECT) $(LIBRARY_SOURCE)
-	ar -cvq $(LIBRARY_DIR)/$(LIBRARY) $(LIBRARY_OBJECT)
+	ar -cvq $(LIBRARY_DIR)/$(LIBRARY) $^
 	
 $(TARGET): $(OBJECTS)
 	@echo "\nCompiling target:"
