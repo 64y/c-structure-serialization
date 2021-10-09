@@ -10,14 +10,14 @@ void * AllPrimitives_generate(void);
 void AllPrimitives_free(void *structure);
 
 
-void example_of_structure_with_primitives_members() {
+void example_of_structure_with_primitives_members(int DO_FLAGS) {
 	example(
 		"Structure with Primitives Members",
 		"./my_lib",
 		"AllPrimitives",
 		AllPrimitives_generate,
 		AllPrimitives_free,
-		DO_TO_STRING | DO_JSON_ENCODE | DO_JSON_DECODE
+		DO_FLAGS
 	);
 }
 

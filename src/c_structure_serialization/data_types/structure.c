@@ -2,11 +2,12 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "c_structure_serialization/utils/array.h"
 #include "c_structure_serialization/utils/boolean.h"
+#include "c_structure_serialization/utils/array.h"
 #include "c_structure_serialization/utils/strings.h"
 #include "c_structure_serialization/data_types/attribute_type.h"
 #include "c_structure_serialization/data_types/basic_type.h"
+#include "c_structure_serialization/data_types/dimension.h"
 #include "c_structure_serialization/data_types/attribute.h"
 #include "c_structure_serialization/data_types/structure.h"
 #include "c_structure_serialization/data_types/structure_regular_expressions.h"
@@ -48,10 +49,6 @@ Structure * Structure_create_by_file_path_and_source_code(char *file_path, Array
 		} else {
 			char *source_code_string = Array_to_string(source_code);
 			fprintf(stderr, "\'Structure_create_by_file_path_and_source_code\' method can\'t create Structure from source code:%s\n", source_code_string);
-			{
-				Structure_free(structure);
-				free(source_code_string);
-			}
 			exit(1);
 		}
 		structure_struct_name = string_copy(structure_name_first);
@@ -82,7 +79,7 @@ Structure * Structure_create_by_file_path_and_source_code(char *file_path, Array
 			{
 				for (int string_i=0; string_i<strlen(attribute_dynamic_sizes_string); string_i++) {
 					if (attribute_dynamic_sizes_string[string_i]=='*') {
-						attribute_dynamic_sizes = attribute_dynamic_sizes + 1;
+						attribute_dynamic_sizes = attribute_dynamic_sizes+1;
 					}
 				}
 			}
@@ -92,7 +89,7 @@ Structure * Structure_create_by_file_path_and_source_code(char *file_path, Array
 			{
 				for (int string_i=0; string_i<strlen(attribute_static_sizes_string); string_i++) {
 					if (attribute_static_sizes_string[string_i]=='[') {
-						attribute_static_sizes = attribute_static_sizes + 1;
+						attribute_static_sizes = attribute_static_sizes+1;
 					}
 				}
 			}
@@ -100,18 +97,18 @@ Structure * Structure_create_by_file_path_and_source_code(char *file_path, Array
 			{
 				for (Attribute *curr=structure->head; curr!=NULL; curr=curr->next) {
 					if (strlen(attribute_name)<strlen(curr->name) && strncmp(attribute_name, curr->name, strlen(attribute_name))==0) {
-						attribute_sizes_names = attribute_sizes_names + 1;
+						attribute_sizes_names = attribute_sizes_names+1;
 					}
 				}
 			}
 
-			Boolean attribute_is_primitive = (BasicType_get_by_name(attribute_data_type)!=NULL) ? true : false;
+			Boolean attribute_is_primitive = (BasicType_get_by_name(attribute_data_type)!=NULL)?true:false;
 			Boolean attribute_is_char = string_equals(attribute_data_type, "char");
 			
 			if (
 				attribute_static_sizes==0 && attribute_dynamic_sizes==0
 			) {
-				type = (attribute_is_primitive) ? PRIMITIVE : STRUCTURE;
+				type = (attribute_is_primitive)?PRIMITIVE:STRUCTURE;
 			} else if (
 				attribute_is_char && (attribute_static_sizes+attribute_dynamic_sizes==1) && (attribute_sizes_names==0)
 			) {
@@ -123,7 +120,7 @@ Structure * Structure_create_by_file_path_and_source_code(char *file_path, Array
 				!attribute_is_primitive && attribute_static_sizes==0 && attribute_dynamic_sizes==1 && attribute_sizes_names==0
 			) {
 				type = STRUCTURE_POINTER;
-				attribute_dynamic_sizes = attribute_dynamic_sizes - 1;
+				attribute_dynamic_sizes = attribute_dynamic_sizes-1;
 			} else if (
 				(attribute_static_sizes>0 && attribute_dynamic_sizes==0 && attribute_sizes_names==0) ||
 				(attribute_static_sizes>0 && attribute_dynamic_sizes==0 && attribute_sizes_names==attribute_static_sizes) ||
@@ -145,13 +142,13 @@ Structure * Structure_create_by_file_path_and_source_code(char *file_path, Array
 				} else {
 					type = NO_TYPE;
 				}
-				attribute_dynamic_sizes = attribute_dynamic_sizes - 1;
+				attribute_dynamic_sizes = attribute_dynamic_sizes-1;
 			} else if (
 				attribute_is_char && attribute_static_sizes>0 && attribute_dynamic_sizes==0 && attribute_sizes_names==attribute_static_sizes-1
 			) {
 				type = STRING_ARRAY;
 				attribute_data_type = "char *";
-				attribute_static_sizes = attribute_static_sizes - 1;
+				attribute_static_sizes = attribute_static_sizes-1;
 			} else {
 				type = NO_TYPE;
 			}
@@ -166,18 +163,16 @@ Structure * Structure_create_by_file_path_and_source_code(char *file_path, Array
 					char *buff = (char *)calloc(32, sizeof(char));
 					for (int attribute_static_index=0, string_start=0; attribute_static_index<attribute_static_sizes; attribute_static_index++) {
 						sscanf(attribute_static_sizes_string+string_start, "[%[^]]s]", buff);
-						string_start += 1 + strlen(buff) + 1;
+						string_start += 1+strlen(buff)+1;
 						Dimension_set_dimension(dimension, attribute_static_index, buff);
 					}
 					{
 						free(buff);
 					}
 				}
-				int index=((attribute_static_sizes>0 && attribute_dynamic_sizes==0 && attribute_sizes_names==attribute_static_sizes)||(attribute_static_sizes>0 && attribute_dynamic_sizes>0 && attribute_sizes_names==attribute_static_sizes+attribute_dynamic_sizes)) ? 0 : attribute_static_sizes;
-				// TODO: remove to_dellete 0, 1, 2, 3 occurrences
-				for (Attribute *curr=structure->head, *to_delete=NULL; curr!=NULL; curr=curr->next, Structure_delete(structure, to_delete), to_delete=NULL) {
+				int index=((attribute_static_sizes>0 && attribute_dynamic_sizes==0 && attribute_sizes_names==attribute_static_sizes)||(attribute_static_sizes>0 && attribute_dynamic_sizes>0 && attribute_sizes_names==attribute_static_sizes+attribute_dynamic_sizes))?0:attribute_static_sizes;
+				for (Attribute *curr=structure->head; curr!=NULL; curr=curr->next) {
 					if (strlen(attribute_name)<strlen(curr->name) && strncmp(attribute_name, curr->name, strlen(attribute_name))==0) {
-						//to_delete = curr;
 						Dimension_set_dimension(dimension, index, curr->name);
 						index = index + 1;
 					}
@@ -225,23 +220,24 @@ Structure * Structure_create_by_file_path_and_source_code(char *file_path, Array
 }
 
 void Structure_free(Structure *structure) {
-	if (structure != NULL) {
-		if (structure->file_path != NULL) {
+	if (structure!=NULL) {
+		if (structure->file_path!=NULL) {
 			free(structure->file_path);
+			structure->file_path = NULL;
 		}
-		if (structure->name != NULL) {
+		if (structure->name!=NULL) {
 			free(structure->name);
 			structure->name = NULL;
 		}
-		if (structure->name_lower != NULL) {
+		if (structure->name_lower!=NULL) {
 			free(structure->name_lower);
 			structure->name_lower = NULL;
 		}
-		if (structure->name_upper != NULL) {
+		if (structure->name_upper!=NULL) {
 			free(structure->name_upper);
 			structure->name_upper = NULL;
 		}
-		if (structure->shortcut != NULL) {
+		if (structure->shortcut!=NULL) {
 			free(structure->shortcut);
 			structure->shortcut = NULL;
 		}
@@ -261,15 +257,15 @@ char * Structure_to_string(Structure *structure) {
 		FILE *structure_string_stream = open_memstream(&structure_string, &structure_string_length);
 		fprintf(
 			structure_string_stream,
-			"Structure@%016lx\n"
+			"Structure@%lX\n"
 			"file path: \'%s\';\n"
 			"name: \'%s\';\n"
 			"name_lower: \'%s\';\n"
 			"name_upper: \'%s\';\n"
 			"shortcut: \'%s\';\n"
 			"size: \'%ld\';\n"
-			"head: @%016lx",
-			(long)(void *)structure, structure->file_path, structure->name, structure->name_lower, structure->name_upper, structure->shortcut, structure->size, (long)(void *) structure->head
+			"head: \'Attribute@%lX\'",
+			(long)(void *)structure, structure->file_path, structure->name, structure->name_lower, structure->name_upper, structure->shortcut, structure->size, (long)(void *)structure->head
 		);
 		for (Attribute *curr=structure->head; curr!=NULL; curr=curr->next) {
 			char *attribute_string = Attribute_to_string(curr);
@@ -282,13 +278,14 @@ char * Structure_to_string(Structure *structure) {
 	return structure_string;
 }
 
+
 void Structure_add(Structure *structure, Attribute *attribute) {
-	if (structure->head == NULL) {
+	if (structure->head==NULL) {
 		structure->size = 1;
 		structure->head = attribute;
 	} else {
 		Attribute *curr = structure->head;
-		while (curr->next != NULL) {
+		while (curr->next!=NULL) {
 			curr = curr->next;
 		}
 		structure->size = structure->size + 1;
@@ -300,7 +297,7 @@ Boolean Structure_delete(Structure *structure, Attribute *attribute) {
 	if (structure->head==NULL || attribute==NULL) {
 		return false;
 	}
-	if (structure->head == attribute) {
+	if (structure->head==attribute) {
 		Attribute *curr = structure->head;
 		structure->head = structure->head->next;
 		curr->next = NULL;
@@ -309,7 +306,7 @@ Boolean Structure_delete(Structure *structure, Attribute *attribute) {
 		return true;
 	} else {
 		for (Attribute *prev = structure->head, *curr=structure->head->next; prev!=NULL && curr!=NULL; prev=prev->next, curr=curr->next) {
-			if (curr == attribute) {
+			if (curr==attribute) {
 				prev->next = curr->next;
 				curr->next = NULL;
 				Attribute_free(curr);

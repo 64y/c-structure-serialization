@@ -32,7 +32,7 @@ Data * Data_create_from_string(char *string) {
 }
 
 void Data_free(Data *data) {
-	if (data != NULL) {
+	if (data!=NULL) {
 		if (data->bytes!=NULL) {
 			free(data->bytes);
 			data->bytes = NULL;
@@ -50,7 +50,7 @@ char * Data_to_string(Data *data) {
 		FILE *data_string_stream = open_memstream(&data_string, &data_string_length);
 		fprintf(
 			data_string_stream,
-			"Data @%lx:\n"
+			"Data@%lX\n"
 			"bytes_size: \'%ld\';\n"
 			"bytes: \'",
 			(long)(void *)data, data->bytes_size

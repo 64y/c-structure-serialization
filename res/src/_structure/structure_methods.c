@@ -118,7 +118,8 @@ Data * bytes_encode(Pointer *pointer) {
 		PointerDictionary *pointerDictionary = PointerDictionary_create();
 		PointerDictionary_put_by_value(pointerDictionary, pointer);
 		for (PointerNode *curr = pointerDictionary->head; curr!=NULL; curr=curr->next) {
-			methods[curr->value->name][BYTES_ENCODE](structure_bytes_stream, pointerDictionary, curr->value->pointer);
+			fwrite((long *)&curr->value->pointer, sizeof(long), 1, structure_bytes_stream);
+			methods[curr->value->name][BYTES_ENCODE](structure_bytes_stream, pointerDictionary, curr);
 		}
 		{
 			fclose(structure_bytes_stream);
@@ -133,14 +134,14 @@ void * bytes_decode(Data *structure_bytes, Pointer *pointer) {
 	{
 		FILE *structure_bytes_stream = fmemopen(structure_bytes->bytes, structure_bytes->bytes_size, "rb");
 		PointerDictionary *pointerDictionary = PointerDictionary_create();
-		long structure_address;
+		long structure_address, structure_address_temporary;
 		fread(&structure_address, sizeof(long), 1, structure_bytes_stream);
 		fseek(structure_bytes_stream, -sizeof(long), SEEK_CUR);
 		char *hashCode;
 		{
 			size_t hashCode_length;
 			FILE *hashCode_stream = open_memstream(&hashCode, &hashCode_length);
-			fprintf(hashCode_stream, "%%s@%%lx", STRUCTURE_NAME_STRING[pointer->name], structure_address);
+			fprintf(hashCode_stream, "%%s@%%lX", STRUCTURE_NAME_STRING[pointer->name], structure_address);
 			{
 				fclose(hashCode_stream);
 			}
@@ -151,6 +152,12 @@ void * bytes_decode(Data *structure_bytes, Pointer *pointer) {
 			free(hashCode);
 		}
 		for (PointerNode *curr = pointerDictionary->head; curr!=NULL; curr=curr->next) {
+			sscanf(curr->key, "%%*[^@]@%%lX", &structure_address);
+			fread(&structure_address_temporary, sizeof(long), 1, structure_bytes_stream);
+			if (structure_address!=structure_address_temporary) {
+				fprintf(stderr, "Wrong order of elements in bytes \'%%s\'!=\'%%lX\'!\n", curr->key, structure_address_temporary);
+				exit(1);
+			}
 			methods[curr->value->name][BYTES_DECODE](structure_bytes_stream, pointerDictionary, curr->value->pointer);
 		}
 		structure = pointerDictionary->head->value->pointer;

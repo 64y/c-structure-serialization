@@ -7,15 +7,16 @@
 #include <unistd.h>
 
 #include "c_structure_serialization/utils/array.h"
-#include "c_structure_serialization/utils/files.h"
 #include "c_structure_serialization/utils/strings.h"
+#include "c_structure_serialization/utils/files.h"
 #include "c_structure_serialization/data_types/dimension.h"
 #include "c_structure_serialization/data_types/attribute.h"
+#include "c_structure_serialization/data_types/structure.h"
 #include "c_structure_serialization/data_types/structure_regular_expressions.h"
+#include "c_structure_serialization/generate_source_codes/generate_libraries.h"
 #include "c_structure_serialization/generate_source_codes/generate_to_string_method.h"
 #include "c_structure_serialization/generate_source_codes/generate_json_codec.h"
 #include "c_structure_serialization/generate_source_codes/generate_bytes_codec.h"
-#include "c_structure_serialization/generate_source_codes/generate_libraries.h"
 
 
 char * generate_attribute_pointer(Structure *structure, Attribute *attribute) {
@@ -132,10 +133,9 @@ void generate_library_for_structure(char *project_path, Structure *structure) {
 		size_t code_c_length;
 		FILE *code_c_stream = open_memstream(&code_c, &code_c_length);
 		fprintf(code_c_stream, "#include \"includes.h\"\n");
-		fprintf(code_c_stream, "\n");
 		for (int i=0; i<generate_code_size; i++) {
 			char *code = generate_code[i](structure);
-			fprintf(code_c_stream, "%s\n\n", code);
+			fprintf(code_c_stream, "\n\n%s", code);
 			free(code);
 		}
 		{

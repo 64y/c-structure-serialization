@@ -11,12 +11,12 @@ char * BasicType_to_string(BasicType *basicType) {
 		FILE *basicType_string_stream = open_memstream(&basicType_string, &basicType_string_length);
 		fprintf(
 			basicType_string_stream,
-			"BasicType:\n"
+			"BasicType@%lX\n"
 			"name: \'%s\';\n"
 			"size in bytes: \'%ld\';\n"
 			"format specifier: \'%s\';\n"
 			"format parameters: \'%s\'.",
-			basicType->name, basicType->size_in_bytes, basicType->format_specifier, basicType->format_parameters
+			(long)(void *)basicType, basicType->name, basicType->size_in_bytes, basicType->format_specifier, basicType->format_parameters
 		);
 		{
 			fclose(basicType_string_stream);
@@ -26,9 +26,9 @@ char * BasicType_to_string(BasicType *basicType) {
 }
 
 
-const size_t BASIC_TYPES_SIZE = 10;
+const size_t BASIC_TYPE_SIZE = 10;
 
-BasicType BASIC_TYPES[] = {
+BasicType BASIC_TYPE[] = {
 	{"char", 1, "%02hhx", ""},
 	{"unsigned char", 1, "%hhu", ""},
 	{"byte", 1, "%hhu", ""},
@@ -42,9 +42,9 @@ BasicType BASIC_TYPES[] = {
 };
 
 BasicType * BasicType_get_by_name(char *name) {
-	for (int i=0; i<BASIC_TYPES_SIZE; i++) {
-		if (string_equals(BASIC_TYPES[i].name, name)) {
-			return &BASIC_TYPES[i];
+	for (int i=0; i<BASIC_TYPE_SIZE; i++) {
+		if (string_equals(BASIC_TYPE[i].name, name)) {
+			return &BASIC_TYPE[i];
 		}
 	}
 	return NULL;

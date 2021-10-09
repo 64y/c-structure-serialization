@@ -3,7 +3,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "c_structure_serialization/utils/data.h"
+#include "utils/data.h"
 
 
 Data * Data_create_null(void) {

@@ -57,8 +57,8 @@ Serializer * Serializer_create(char *library_path, char *structure_name) {
 }
 
 void Serializer_free(Serializer *serializer) {
-	if (serializer != NULL) {
-		if (serializer->handle != NULL) {
+	if (serializer!=NULL) {
+		if (serializer->handle!=NULL) {
 			dlclose(serializer->handle);
 			serializer->handle = NULL;
 		}
@@ -73,14 +73,7 @@ void Serializer_free(Serializer *serializer) {
 }
 
 char * get_serializer_method_name(char *structure_name, char *method_name) {
-	char *serializer_method_name;
-	{
-		size_t serializer_method_name_length;
-		FILE *serializer_method_name_stream = open_memstream(&serializer_method_name, &serializer_method_name_length);
-		fprintf(serializer_method_name_stream, "%s_%s", structure_name, method_name);
-		{
-			fclose(serializer_method_name_stream);
-		}
-	}
+	char *serializer_method_name = (char *)calloc(strlen(structure_name)+1+strlen(method_name)+1, sizeof(char));
+	sprintf(serializer_method_name, "%s_%s", structure_name, method_name);
 	return serializer_method_name;
 }

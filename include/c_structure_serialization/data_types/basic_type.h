@@ -15,8 +15,8 @@ typedef struct BasicType {
 char * BasicType_to_string(BasicType *basicType);
 
 
-extern const size_t BASIC_TYPES_SIZE;
-extern BasicType BASIC_TYPES[];
+extern const size_t BASIC_TYPE_SIZE;
+extern BasicType BASIC_TYPE[];
 BasicType * BasicType_get_by_name(char *name);
 
 #endif

@@ -2,12 +2,15 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "c_structure_serialization/utils/tabs.h"
 #include "c_structure_serialization/utils/strings.h"
+#include "c_structure_serialization/utils/tabs.h"
 #include "c_structure_serialization/data_types/attribute_type.h"
 #include "c_structure_serialization/data_types/basic_type.h"
-#include "c_structure_serialization/generate_source_codes/generate_to_string_method.h"
+#include "c_structure_serialization/data_types/attribute.h"
+#include "c_structure_serialization/data_types/structure.h"
 #include "c_structure_serialization/generate_source_codes/generate_libraries.h"
+#include "c_structure_serialization/generate_source_codes/generate_to_string_method.h"
+
 
 char * generate_to_string_method_declaration(Structure *structure) {
 	char *code;
@@ -25,6 +28,7 @@ char * generate_to_string_method_declaration(Structure *structure) {
 	}
 	return code;
 }
+
 
 void printf_primitive(FILE *stream, Tabs *tabs, Structure *structure, Attribute *attribute, char *indexes);
 void printf_structure(FILE *stream, Tabs *tabs, Structure *structure, Attribute *attribute, char *indexes);
@@ -99,7 +103,7 @@ char * generate_to_string_method_definition(Structure *structure) {
 					break;
 				}
 				case NO_TYPE: {
-					fprintf(stderr, "\'generate_to_string_method_definition\' is not allowed to work with \'%s\' attribute type!\n", ATTRIBUTE_TYPE_STRINGS[attribute->type]);
+					fprintf(stderr, "\'generate_to_string_method_definition\' is not allowed to work with \'%s\' attribute type!\n", ATTRIBUTE_TYPE_STRING[attribute->type]);
 					exit(1);
 				}
 			}

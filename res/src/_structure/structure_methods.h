@@ -1,6 +1,7 @@
 #ifndef _STRUCTURE_STRUCTURE_METHODS_H
 #define _STRUCTURE_STRUCTURE_METHODS_H
 
+
 #include "includes.h"
 
 

@@ -3,10 +3,10 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "c_structure_serialization/utils/array.h"
 #include "c_structure_serialization/utils/boolean.h"
-#include "c_structure_serialization/utils/files.h"
+#include "c_structure_serialization/utils/array.h"
 #include "c_structure_serialization/utils/strings.h"
+#include "c_structure_serialization/utils/files.h"
 
 
 void file_write(char *file_path, char *source_code) {
@@ -23,14 +23,14 @@ char * file_read(char *file_path) {
 		size_t string_length;
 		FILE *string_stream = open_memstream(&string, &string_length);
 		FILE *file_stream = NULL;
-		if ((file_stream = fopen(file_path, "r"))==NULL) {
+		if ((file_stream=fopen(file_path, "r"))==NULL) {
 			fprintf(stderr, "\'file_read\' method can\'t read file \"%s\"!\n", file_path);
 			exit(1);
 		}
 		ssize_t read;
 		char *line = NULL;
 		size_t line_length = 0;
-		while ((read = getline(&line, &line_length, file_stream)) != -1) {
+		while ((read = getline(&line, &line_length, file_stream))!=-1) {
 			fprintf(string_stream, "%s", line);
 			{
 				free(line);
@@ -49,7 +49,7 @@ char * file_read(char *file_path) {
 char * file_get_directory_path(char *file_path) {
 	ssize_t directory_path_length;
 	for (directory_path_length=strlen(file_path)-1; directory_path_length>=0; directory_path_length--) {
-		if (file_path[directory_path_length] == '/') {
+		if (file_path[directory_path_length]=='/') {
 			break;
 		}
 	}

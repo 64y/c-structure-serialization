@@ -17,7 +17,7 @@ typedef enum AttributeType {
 	STRUCTURE_POINTER_ARRAY
 } AttributeType;
 
-extern const size_t ATTRIBUTE_TYPE_STRINGS_SIZE;
-extern const char *ATTRIBUTE_TYPE_STRINGS[];
+extern const size_t ATTRIBUTE_TYPE_STRING_SIZE;
+extern const char *ATTRIBUTE_TYPE_STRING[];
 
 #endif

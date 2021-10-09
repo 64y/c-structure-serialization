@@ -13,10 +13,10 @@ Tabs * Tabs_create() {
 }
 
 void Tabs_free(Tabs *tabs) {
-	if (tabs != NULL) {
+	if (tabs!=NULL) {
 		tabs->string_length = 0;
 		tabs->string_length_max = 0;
-		if (tabs->string != NULL) {
+		if (tabs->string!=NULL) {
 			free(tabs->string);
 			tabs->string = NULL;
 		}
@@ -32,11 +32,11 @@ char * Tabs_to_string(Tabs *tabs) {
 		FILE *tabs_string_stream = open_memstream(&tabs_string, &tabs_string_length);
 		fprintf(
 			tabs_string_stream,
-			"Tabs:\n"
+			"Tabs@%lX\n"
 			"string length: \'%ld\';\n"
 			"string length max: \'%ld\';\n"
 			"string: \'%s\'.",
-			tabs->string_length, tabs->string_length_max, tabs->string
+			(long)(void *)tabs, tabs->string_length, tabs->string_length_max, tabs->string
 		);
 		{
 			fclose(tabs_string_stream);
@@ -45,20 +45,21 @@ char * Tabs_to_string(Tabs *tabs) {
 	return tabs_string;
 }
 
+
 char * Tabs_get(Tabs *tabs) {
 	return tabs->string;
 }
 
 void Tabs_increment(Tabs *tabs) {
-	if (tabs->string_length < tabs->string_length_max) {
+	if (tabs->string_length<tabs->string_length_max) {
 		tabs->string[tabs->string_length] = '\t';
-		tabs->string_length = tabs->string_length + 1;
+		tabs->string_length = tabs->string_length+1;
 	}
 }
 
 void Tabs_decrement(Tabs *tabs) {
-	if (tabs->string_length > 0) {
-		tabs->string_length = tabs->string_length - 1;
+	if (tabs->string_length>0) {
+		tabs->string_length = tabs->string_length-1;
 		tabs->string[tabs->string_length] = 0;
 	}
 }

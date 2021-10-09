@@ -9,9 +9,11 @@
 #include <c_structure_serialization/serializer.h>
 
 
-#define DO_TO_STRING 0b001
-#define DO_JSON_ENCODE 0b010
-#define DO_JSON_DECODE 0b100
+#define DO_TO_STRING 		0b00001
+#define DO_JSON_ENCODE 	0b00010
+#define DO_JSON_DECODE 	0b00100
+#define DO_BYTES_ENCODE	0b01000
+#define DO_BYTES_DECODE	0b10000
 
 
 void example (
@@ -46,6 +48,24 @@ void example (
 		char *structure_temp_string = serializer->to_string(structure_temp);
 		printf("JSON_DECODE:\n%s\n", structure_temp_string);
 		free(structure_json);
+		structure_free(structure_temp);
+		free(structure_temp_string);
+	}
+	
+	if (DO_FLAG & DO_BYTES_ENCODE) {
+		Data *structure_data = serializer->bytes_encode(structure);
+		char *structure_data_string = Data_to_string(structure_data);
+		printf("BYTES_ENCODE:\n%s\n", structure_data_string);
+		Data_free(structure_data);
+		free(structure_data_string);
+	}
+	
+	if (DO_FLAG & DO_BYTES_ENCODE) {
+		Data *structure_data = serializer->bytes_encode(structure);
+		void *structure_temp = serializer->bytes_decode(structure_data);
+		char *structure_temp_string = serializer->to_string(structure_temp);
+		printf("BYTES_DECODE:\n%s\n", structure_temp_string);
+		Data_free(structure_data);
 		structure_free(structure_temp);
 		free(structure_temp_string);
 	}

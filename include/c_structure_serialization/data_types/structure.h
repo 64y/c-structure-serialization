@@ -4,8 +4,8 @@
 
 #include <stddef.h>
 
-#include "c_structure_serialization/utils/array.h"
 #include "c_structure_serialization/utils/boolean.h"
+#include "c_structure_serialization/utils/array.h"
 #include "c_structure_serialization/data_types/attribute.h"
 
 

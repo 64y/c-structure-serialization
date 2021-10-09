@@ -19,36 +19,36 @@ void * Strings_generate(void);
 void Strings_free(void *structure);
 
 
-void example_of_structure_with_matrix() {
+void example_of_structure_with_matrix(int DO_FLAGS) {
 	example(
 		"Structure with Matrix",
 		"./my_lib",
 		"Matrix3D",
 		Matrix3D_generate,
 		Matrix3D_free,
-		DO_TO_STRING | DO_JSON_ENCODE | DO_JSON_DECODE
+		DO_FLAGS
 	);
 }
 
-void example_of_structure_with_matrices() {
+void example_of_structure_with_matrices(int DO_FLAGS) {
 	example(
 		"Structure with Matrices",
 		"./my_lib",
 		"Arrays",
 		Arrays_generate,
 		Arrays_free,
-		DO_TO_STRING | DO_JSON_ENCODE | DO_JSON_DECODE
+		DO_FLAGS
 	);
 }
 
-void example_of_structure_with_matrices_of_strings() {
+void example_of_structure_with_matrices_of_strings(int DO_FLAGS) {
 	example(
 		"Example of Structure with Matrices of Strings",
 		"./my_lib",
 		"Strings",
 		Strings_generate,
 		Strings_free,
-		DO_TO_STRING | DO_JSON_ENCODE | DO_JSON_DECODE
+		DO_FLAGS
 	);
 }
 

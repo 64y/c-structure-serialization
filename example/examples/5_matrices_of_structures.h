@@ -14,14 +14,14 @@ void * Figures_generate(void);
 void Figures_free(void *structures);
 
 
-void example_of_structure_with_matrices_of_structures() {
+void example_of_structure_with_matrices_of_structures(int DO_FLAGS) {
 	example(
 		"Structure with Matrices of Structures",
 		"./my_lib",
 		"Figures",
 		Figures_generate,
 		Figures_free,
-		DO_TO_STRING | DO_JSON_ENCODE | DO_JSON_DECODE
+		DO_FLAGS
 	);
 }
 

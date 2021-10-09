@@ -6,18 +6,17 @@
 #include "c_structure_serialization/utils/tabs.h"
 #include "c_structure_serialization/data_types/attribute_type.h"
 #include "c_structure_serialization/data_types/basic_type.h"
-#include "c_structure_serialization/data_types/dimension.h"
 #include "c_structure_serialization/data_types/attribute.h"
 #include "c_structure_serialization/data_types/structure.h"
-#include "c_structure_serialization/generate_source_codes/generate_json_codec.h"
 #include "c_structure_serialization/generate_source_codes/generate_libraries.h"
+#include "c_structure_serialization/generate_source_codes/generate_json_codec.h"
+
 
 char * generate_json_codec_declaration(Structure *structure) {
 	char *code;
 	{
 		size_t code_length;
 		FILE *code_stream = open_memstream(&code, &code_length);
-		
 		fprintf(
 			code_stream,
 			"void %1$s_json_encode_process(FILE *structure_json_stream, PointerDictionary *pointerDictionary, void *structure);\n"
@@ -36,11 +35,9 @@ char * generate_json_codec_declaration(Structure *structure) {
 void printf_primitive_value(FILE *stream, Tabs *tabs, Structure *structure, Attribute *attribute, char *indexes);
 void printf_string_value(FILE *stream, Tabs *tabs, Structure *structure, Attribute *attribute, char *indexes);
 void printf_structure_value(FILE *stream, Tabs *tabs, Structure *structure, Attribute *attribute, char *indexes);
-
 void scanf_primitive_value(FILE *stream, Tabs *tabs, Structure *structure, Attribute *attribute, char *indexes);
 void scanf_string_value(FILE *stream, Tabs *tabs, Structure *structure, Attribute *attribute, char *indexes);
 void scanf_structure_value(FILE *stream, Tabs *tabs, Structure *structure, Attribute *attribute, char *indexes);
-
 
 char * generate_json_codec_definition(Structure *structure) {
 	void (*array_of_printf_value[]) (FILE *, Tabs *, Structure *, Attribute *, char *) = { NULL,
@@ -144,8 +141,8 @@ char * generate_json_codec_definition(Structure *structure) {
 					for (int i=0; i<attribute->dimension->size; i++) {
 						// decode
 						if (i>=attribute->dimension->static_size_source) {
-							char *stars_first = string_repeat_char('*', number_of_stars);
-							char *stars_second = string_repeat_char('*', number_of_stars-1);
+							char *stars_first = string_repeat_star(number_of_stars);
+							char *stars_second = string_repeat_star(number_of_stars-1);
 							fprintf(
 								d,
 								"%s%s%s = (%s%s)calloc(%s, sizeof(%s%s));\n",
@@ -207,7 +204,7 @@ char * generate_json_codec_definition(Structure *structure) {
 					break;
 				}
 				default: {
-					fprintf(stderr, "\'generate_json_codec_definition\' is not allowed to work with \'%s\' attribute type!\n", ATTRIBUTE_TYPE_STRINGS[attribute->type]);
+					fprintf(stderr, "\'generate_json_codec_definition\' is not allowed to work with \'%s\' attribute type!\n", ATTRIBUTE_TYPE_STRING[attribute->type]);
 					exit(1);
 				}
 			}

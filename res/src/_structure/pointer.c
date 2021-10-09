@@ -23,22 +23,23 @@ char * Pointer_to_string(Pointer *pointer) {
 		FILE *pointer_string_stream = open_memstream(&pointer_string, &pointer_string_length);
 		fprintf(
 			pointer_string_stream,
-			"Pointer@%016lx\n"
+			"Pointer@%lX\n"
 			"name: \'%s\';\n"
-			"pointer: \'%016lx\'.",
-			(long)(void *)pointer, STRUCTURE_NAME_STRING[pointer->name], (long)pointer->pointer
+			"pointer: \'%s%lX\'.",
+			(long)(void *)pointer, STRUCTURE_NAME_STRING[pointer->name], STRUCTURE_NAME_STRING[pointer->name], (long)pointer->pointer
 		);
 		fclose(pointer_string_stream);
 	}
 	return pointer_string;
 }
 
+
 char * Pointer_hash_code(Pointer *pointer) {
 	char *pointer_hashCode;
 	{
 		size_t pointer_hashCode_length;
 		FILE *pointer_hashCode_stream = open_memstream(&pointer_hashCode, &pointer_hashCode_length);
-		fprintf(pointer_hashCode_stream, "%s@%016lx", STRUCTURE_NAME_STRING[pointer->name], (long)pointer->pointer);
+		fprintf(pointer_hashCode_stream, "%s@%lX", STRUCTURE_NAME_STRING[pointer->name], (long)pointer->pointer);
 		fclose(pointer_hashCode_stream);
 	}
 	return pointer_hashCode;

@@ -8,14 +8,14 @@
 void * Array_create(void);
 void Array_free(void *structure);
 
-void example_of_structure_with_array() {
+void example_of_structure_with_array(int DO_FLAGS) {
 	example(
 		"Structure with Array",
 		"./my_lib",
 		"Array",
 		Array_create,
 		Array_free,
-		DO_TO_STRING | DO_JSON_ENCODE | DO_JSON_DECODE
+		DO_FLAGS
 	);
 }
 

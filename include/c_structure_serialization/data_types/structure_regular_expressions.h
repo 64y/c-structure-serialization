@@ -15,6 +15,7 @@ typedef struct RegularExpression {
 RegularExpression * RegularExpression_create(char *pattern, size_t num_matches);
 void RegularExpression_free(RegularExpression *regularExpression);
 char * RegularExpression_to_string(RegularExpression *regularExpression);
+
 Boolean RegularExpression_match(RegularExpression *regularExpression, char *string);
 char ** RegularExpression_parse(RegularExpression *regularExpression, char *string);
 

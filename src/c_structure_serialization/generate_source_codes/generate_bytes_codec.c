@@ -6,12 +6,10 @@
 #include "c_structure_serialization/utils/tabs.h"
 #include "c_structure_serialization/data_types/attribute_type.h"
 #include "c_structure_serialization/data_types/basic_type.h"
-#include "c_structure_serialization/data_types/dimension.h"
 #include "c_structure_serialization/data_types/attribute.h"
 #include "c_structure_serialization/data_types/structure.h"
-#include "c_structure_serialization/generate_source_codes/generate_bytes_codec.h"
 #include "c_structure_serialization/generate_source_codes/generate_libraries.h"
-
+#include "c_structure_serialization/generate_source_codes/generate_bytes_codec.h"
 
 
 char * generate_bytes_codec_declaration(Structure *structure) {
@@ -37,38 +35,115 @@ char * generate_bytes_codec_declaration(Structure *structure) {
 void fwrite_primitive_value(FILE *stream, Tabs *tabs, Structure *structure, Attribute *attribute, char *indexes);
 void fwrite_string_value(FILE *stream, Tabs *tabs, Structure *structure, Attribute *attribute, char *indexes);
 void fwrite_structure_value(FILE *stream, Tabs *tabs, Structure *structure, Attribute *attribute, char *indexes);
-
 void fread_primitive_value(FILE *stream, Tabs *tabs, Structure *structure, Attribute *attribute, char *indexes);
 void fread_string_value(FILE *stream, Tabs *tabs, Structure *structure, Attribute *attribute, char *indexes);
 void fread_structure_value(FILE *stream, Tabs *tabs, Structure *structure, Attribute *attribute, char *indexes);
 
-
 char * generate_bytes_codec_definition(Structure *structure) {
 
-	void (*array_of_printf_value[]) (FILE *, Tabs *, Structure *, Attribute *, char *) = { NULL,
+	void (*array_of_fwrite_value[]) (FILE *, Tabs *, Structure *, Attribute *, char *) = { NULL,
 		fwrite_primitive_value, fwrite_string_value, fwrite_structure_value, fwrite_structure_value,
 		fwrite_primitive_value, fwrite_string_value, fwrite_structure_value, fwrite_structure_value
 	};
-	void (*array_of_scanf_value[]) (FILE *, Tabs *, Structure *, Attribute *, char *) = { NULL,
+	void (*array_of_fread_value[]) (FILE *, Tabs *, Structure *, Attribute *, char *) = { NULL,
 		fread_primitive_value, fread_string_value, fread_structure_value, fread_structure_value,
 		fread_primitive_value, fread_string_value, fread_structure_value, fread_structure_value
 	};
 	char *code_bytes_encode_process, *code_bytes_decode_process;
 	{
 		size_t code_bytes_encode_process_length, code_bytes_decode_process_length;
-		FILE *e = open_memstream(&code_bytes_encode_process, &code_bytes_decode_process_length), *d = open_memstream(&code_bytes_decode_process, &code_bytes_decode_process_length);
+		FILE *e = open_memstream(&code_bytes_encode_process, &code_bytes_encode_process_length), *d = open_memstream(&code_bytes_decode_process, &code_bytes_decode_process_length);
 		Tabs *et = Tabs_create(), *dt = Tabs_create();
 		char *stream_name = string_copy("structure_bytes_stream");
 		// encode
-		fprintf(e, "%svoid %s_bytes_encode_process(FILE *structure_bytes_stream, PointerDictionary *pointerDictionary, void *structure) {\n", Tabs_get(tabs), structure->name); Tabs_increase(et);
+		fprintf(e, "%svoid %s_bytes_encode_process(FILE *structure_bytes_stream, PointerDictionary *pointerDictionary, void *structure) {\n", Tabs_get(et), structure->name); Tabs_increment(et);
 		// decode
-		fprintf(d, "%svoid %s_bytes_decode_process(FILE *structure_bytes_stream, PointerDictionary *pointerDictionary, void *structure) {\n", Tabs_get(tabs), structure->name); Tabs_increase(dt);
-		
+		fprintf(d, "%svoid %s_bytes_decode_process(FILE *structure_bytes_stream, PointerDictionary *pointerDictionary, void *structure) {\n", Tabs_get(dt), structure->name); Tabs_increment(dt);
+		if (Structure_contains_string_attributes(structure)) {
+			//encode
+			fprintf(e, "%ssize_t string_length;\n", Tabs_get(dt)
+			);
+			//decode
+			fprintf(
+				d,
+				"%1$schar *string;\n"
+				"%1$ssize_t string_length;\n",
+				Tabs_get(dt)
+			);
+		}
+		if (Structure_contains_structure_attributes(structure)) {
+			//encode
+			//decode
+			fprintf(
+				d,
+				"%1$schar *hashCode;\n"
+				"%1$ssize_t hashCode_length;\n"
+				"%1$slong structure_address;\n",
+				Tabs_get(dt)
+			);
+		}
 		// encode
-		Tabs_decrease(et);
+		fprintf(e, "%s%s *%s = (%s *) structure;\n", Tabs_get(et), structure->name, structure->shortcut, structure->name);
+		// decode
+		fprintf(d, "%s%s *%s = (%s *) structure;\n", Tabs_get(dt), structure->name, structure->shortcut, structure->name);
+		for (Attribute *attribute=structure->head; attribute!=NULL; attribute=attribute->next) {
+			void (*fwrite_value) (FILE *, Tabs *, Structure *, Attribute *, char *) = array_of_fwrite_value[attribute->type];
+			void (*fread_value) (FILE *, Tabs *, Structure *, Attribute *, char *) = array_of_fread_value[attribute->type];
+			switch (attribute->type) {
+				case PRIMITIVE: case STRING: case STRUCTURE: case STRUCTURE_POINTER: {
+					// encode
+					fwrite_value(e, et, structure, attribute, NULL);
+					// decode
+					fread_value(d, dt, structure, attribute, NULL);
+					break;
+				}
+				case PRIMITIVE_ARRAY: case STRING_ARRAY: case STRUCTURE_ARRAY: case STRUCTURE_POINTER_ARRAY: {
+					char *code_indexes;
+					{
+						size_t code_indexes_length;
+						FILE *code_indexes_stream=open_memstream(&code_indexes, &code_indexes_length);
+						for (int i=0; i<attribute->dimension->size; i++, Tabs_increment(et), Tabs_increment(dt)) {
+							fprintf(e, "%1$sfor (int i_%2$d=0; i_%2$d<%3$s; i_%2$d++) {\n", Tabs_get(et), i, attribute->dimension->dimensions[i]);
+							fprintf(d, "%1$sfor (int i_%2$d=0; i_%2$d<%3$s; i_%2$d++) {\n", Tabs_get(dt), i, attribute->dimension->dimensions[i]);
+							fprintf(code_indexes_stream, "[i_%d]", i);
+						}
+						{
+							fclose(code_indexes_stream);
+						}
+					}
+					// encode
+					fwrite_value(e, et, structure, attribute, code_indexes);
+					// decode
+					fread_value(d, dt, structure, attribute, code_indexes);
+					
+					for (int i=0; i<attribute->dimension->size; i++) {
+						// encode
+						Tabs_decrement(et);
+						fprintf(e, "%s}\n", Tabs_get(et));
+						// decode
+						Tabs_decrement(dt);
+						fprintf(d, "%s}\n", Tabs_get(dt));
+					}
+					{
+						free(code_indexes);
+					}
+					break;
+				}
+				case NO_TYPE: {
+					fprintf(stderr, "\'generate_bytes_codec_definition\' is not allowed to work with \'%s\' attribute type!\n", ATTRIBUTE_TYPE_STRING[attribute->type]);
+					exit(1);
+				}
+			}
+			{
+				fwrite_value = NULL;
+				fread_value = NULL;
+			}
+		}
+		// encode
+		Tabs_decrement(et);
 		fprintf(e, "%s}", Tabs_get(et));
 		// decode
-		Tabs_decrease(dt);
+		Tabs_decrement(dt);
 		fprintf(d, "%s}", Tabs_get(dt));
 		{
 			fclose(e);
@@ -131,10 +206,9 @@ char * generate_bytes_codec_definition(Structure *structure) {
 	return code;
 }
 
-
 void fwrite_primitive_value(FILE *stream, Tabs *tabs, Structure *structure, Attribute *attribute, char *indexes) {
 	char *attribute_suffix = (indexes==NULL)?"":indexes;
-	fprintf(stream, "%sfwrite(%s->%s%s, sizeof(%s), 1, structure_bytes_stream);\n", Tabs_get(tabs), structure->name, attribute->name, attribute_suffix, attribute->data_type);
+	fprintf(stream, "%sfwrite(&%s->%s%s, sizeof(%s), 1, structure_bytes_stream);\n", Tabs_get(tabs), structure->shortcut, attribute->name, attribute_suffix, attribute->data_type);
 	{
 		attribute_suffix = NULL;
 	}
@@ -144,9 +218,20 @@ void fwrite_string_value(FILE *stream, Tabs *tabs, Structure *structure, Attribu
 	char *attribute_pointer = generate_attribute_pointer(structure, attribute);
 	char *attribute_suffix = (indexes==NULL)?"":indexes;
 	fprintf(stream, "%sif (%s%s==NULL) {\n", Tabs_get(tabs), attribute_pointer, attribute_suffix); Tabs_increment(tabs);
-	fprintf(stream, "%sfwrite(0, sizeof(size_t), 1, structure_bytes_stream);\n", Tabs_get(tabs)); Tabs_decrement(tabs);
+	fprintf(
+		stream,
+		"%1$sstring_length = 0;\n"
+		"%1$sfwrite(&string_length, sizeof(size_t), 1, structure_bytes_stream);\n",
+		Tabs_get(tabs)
+	); Tabs_decrement(tabs);
 	fprintf(stream, "%s} else {\n", Tabs_get(tabs)); Tabs_increment(tabs);
-	fprintf(stream, "%1$sfwrite(%2$s%3$s, sizeof(char), strlen(%2$s%3$s), structure_bytes_stream);\n", Tabs_get(tabs), attribute_pointer, attribute_suffix); Tabs_decrement(tabs);
+	fprintf(
+		stream,
+		"%1$sstring_length = strlen(%2$s%3$s);\n"
+		"%1$sfwrite(&string_length, sizeof(size_t), 1, structure_bytes_stream);\n"
+		"%1$sfwrite(%2$s%3$s, sizeof(char), strlen(%2$s%3$s), structure_bytes_stream);\n",
+		Tabs_get(tabs), attribute_pointer, attribute_suffix);
+	Tabs_decrement(tabs);
 	fprintf(stream, "%s}\n", Tabs_get(tabs));
 	{
 		free(attribute_pointer);
@@ -160,9 +245,9 @@ void fwrite_structure_value(FILE *stream, Tabs *tabs, Structure *structure, Attr
 	char *attribute_suffix = (indexes==NULL)?"":indexes;
 	fprintf(
 		stream,
-		"%1$sfwrite((long)(void *)%2$s%3$s, sizeof(long), 1, structure_bytes_stream);\n"
-		"%1$sif (%2$s%3$s!=NULL) {\n",
-		Tabs_get(tabs), attribute_pointer, attribute_suffix
+		"%1$sfwrite((long *)(void **)&%2$s->%3$s%5$s, sizeof(long), 1, structure_bytes_stream);\n"
+		"%1$sif (%4$s%5$s!=NULL) {\n",
+		Tabs_get(tabs), structure->shortcut, attribute->name, attribute_pointer, attribute_suffix
 	); Tabs_increment(tabs);
 	fprintf(stream, "%sPointerDictionary_put_by_value(pointerDictionary, Pointer_create(%s, %s%s));\n", Tabs_get(tabs), attribute_data_type_upper, attribute_pointer, attribute_suffix); Tabs_decrement(tabs);
 	fprintf(stream, "%s}\n", Tabs_get(tabs));
@@ -176,7 +261,7 @@ void fwrite_structure_value(FILE *stream, Tabs *tabs, Structure *structure, Attr
 
 void fread_primitive_value(FILE *stream, Tabs *tabs, Structure *structure, Attribute *attribute, char *indexes) {
 	char *attribute_suffix = (indexes==NULL)?"":indexes;
-	fprintf(stream, "%sfread(%s->%s%s, sizeof(%s), 1, structure_bytes_stream);\n", Tabs_get(tabs), structure->name, attribute->name, attribute_suffix, attribute->data_type);
+	fprintf(stream, "%sfread(&%s->%s%s, sizeof(%s), 1, structure_bytes_stream);\n", Tabs_get(tabs), structure->shortcut, attribute->name, attribute_suffix, attribute->data_type);
 	{
 		attribute_suffix = NULL;
 	}
@@ -233,7 +318,7 @@ void fread_structure_value(FILE *stream, Tabs *tabs, Structure *structure, Attri
 	fprintf(
 		stream,
 		"%1$sFILE *hashCode_stream = open_memstream(&hashCode, &hashCode_length);\n"
-		"%1$sfprintf(hashCode_stream, \"%%s@%%lx\", \"%2$s\", structure_address);\n",
+		"%1$sfprintf(hashCode_stream, \"%%s@%%lX\", \"%2$s\", structure_address);\n",
 		Tabs_get(tabs), attribute->data_type
 	);
 	fprintf(stream, "%s{\n", Tabs_get(tabs)); Tabs_increment(tabs);
@@ -250,7 +335,7 @@ void fread_structure_value(FILE *stream, Tabs *tabs, Structure *structure, Attri
 			stream,
 			"%1$s%2$s%3$s = (%4$s *)malloc(sizeof(%4$s));\n"
 			"%1$smemset(%2$s%3$s, 0x00, sizeof(%4$s));\n"
-			"%1$sPointerDictionary_put_by_key_and_value(pointerDictionary, hashCode, Pointer_create(%5$s, %2$s%3$s$s));\n",
+			"%1$sPointerDictionary_put_by_key_and_value(pointerDictionary, hashCode, Pointer_create(%5$s, %2$s%3$s));\n",
 			 Tabs_get(tabs), attribute_pointer, attribute_suffix, attribute->data_type, attribute_data_type_upper
 		); Tabs_decrement(tabs);
 		fprintf(stream, "%s}\n", Tabs_get(tabs));
@@ -273,4 +358,3 @@ void fread_structure_value(FILE *stream, Tabs *tabs, Structure *structure, Attri
 		attribute_suffix = NULL;
 	}
 }
-
