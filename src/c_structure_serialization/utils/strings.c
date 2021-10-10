@@ -2,8 +2,8 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "c_structure_serialization/utils/array.h"
 #include "c_structure_serialization/utils/boolean.h"
+#include "c_structure_serialization/utils/array.h"
 #include "c_structure_serialization/utils/strings.h"
 
 
@@ -13,25 +13,15 @@ char * string_copy(char *string) {
 	return string_copy;
 }
 
-char * string_repeat_char(char c, size_t times) {
-	if (times==0) {
-		return string_copy("");
-	}
-	char *string = (char *)calloc(1+times+1, sizeof(char));
-	string[0] = ' '; 
-	memset(string+1, c, times);
-	return string;
-}
-
 Boolean string_equals(char *string0, char *string1) {
-	return (strcmp(string0, string1)==0)? true : false;
+	return (strcmp(string0, string1)==0)?true:false;
 }
 
 Boolean string_equals_r(char *string0, char *string1) {
 	size_t string0_length = strlen(string0);
 	size_t string1_length = strlen(string1);
 	for (int string0_i=string0_length-1, string1_i=string1_length-1; string0_i>=0 && string1_i>=0; string0_i--, string1_i--) {
-		if (string0[string0_i] != string1[string1_i]) {
+		if (string0[string0_i]!=string1[string1_i]) {
 			return false;
 		}
 	}
@@ -56,15 +46,17 @@ char * string_to_upper(char *string) {
 	return string_upper;
 }
 
-char * string_to_upper_safe(char *string) {
-	size_t string_upper_length = strlen(string);
-	char *string_upper = string_to_upper(string);
-	for (int i=0; i<string_upper_length; i++) {
-		if (string[i] == ' ') {
-			string_upper[i] = '_';
+char * string_make_safe(char *string) {
+	size_t string_safe_length = strlen(string);
+	char *string_safe = (char *)calloc(string_safe_length, sizeof(char));
+	for (int i=0; i<string_safe_length; i++) {
+		if (string[i]!=' ') {
+			string_safe[i] = string[i];
+		} else {
+			string_safe[i] = '_';
 		}
 	}
-	return string_upper;
+	return string_safe;
 }
 
 char * string_make_shortcut(char *string) {
@@ -96,6 +88,16 @@ char * string_random(size_t string_length_min, size_t string_length_max) {
 	for (int i=0; i<string_length; i++) {
 		string[i] = string_printable[random() % string_printable_length];
 	}
+	return string;
+}
+
+char * string_repeat_star(size_t times) {
+	if (times==0) {
+		return string_copy("");
+	}
+	char *string = (char *)calloc(1+times+1, sizeof(char));
+	string[0] = ' '; 
+	memset(string+1, '*', times);
 	return string;
 }
 

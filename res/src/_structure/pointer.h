@@ -13,6 +13,7 @@ typedef struct Pointer {
 Pointer * Pointer_create(StructureName name, void *structure);
 void Pointer_free(Pointer *pointer);
 char * Pointer_to_string(Pointer *pointer);
+
 char * Pointer_hash_code(Pointer *pointer);
 
 #endif

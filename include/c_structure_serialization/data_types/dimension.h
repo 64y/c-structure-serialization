@@ -17,6 +17,7 @@ typedef struct Dimension {
 Dimension * Dimension_create(size_t static_size, size_t dynamic_size);
 void Dimension_free(Dimension *dimension);
 char * Dimension_to_string(Dimension *dimension);
+
 void Dimension_set_dimension(Dimension *dimension, int index, char *value);
 
 #endif

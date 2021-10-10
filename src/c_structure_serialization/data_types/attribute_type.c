@@ -3,7 +3,7 @@
 
 const size_t ATTRIBUTE_TYPE_STRING_SIZE = 9;
 
-const char *ATTRIBUTE_TYPE_STRINGS[] = {
+const char *ATTRIBUTE_TYPE_STRING[] = {
 	"NO_TYPE",
 	"PRIMITIVE",
 	"STRING",

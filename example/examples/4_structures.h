@@ -10,14 +10,14 @@ void * Pets_generate(void);
 void Pets_free_generated(void *structure);
 
 
-void example_of_structure_with_structures_and_structures_pointers () {
+void example_of_structure_with_structures_and_structures_pointers (int DO_FLAGS) {
 	example(
 		"Structure with Structures and Structures Pointers",
 		"./my_lib",
 		"Pets",
 		Pets_generate,
 		Pets_free_generated,
-		DO_TO_STRING | DO_JSON_ENCODE | DO_JSON_DECODE
+		DO_FLAGS
 	);
 }
 

@@ -19,10 +19,10 @@ Array * Array_create(
 }
 
 void Array_free(Array *array) {
-	if (array != NULL) {
-		if (array->elements != NULL) {
+	if (array!=NULL) {
+		if (array->elements!=NULL) {
 			for (int i=0; i<array->size; i++) {
-				if (array->elements[i] != NULL) {
+				if (array->elements[i]!=NULL) {
 					array->element_free(array->elements[i]);
 					array->elements[i] = NULL;
 				}
@@ -46,14 +46,14 @@ char * Array_to_string(Array *array) {
 		FILE *array_string_stream = open_memstream(&array_string, &array_string_length);
 		fprintf(
 			array_string_stream,
-			"Array:\n"
+			"Array@%lX\n"
 			"a_size: \'%ld\';\n"
 			"a: [\n",
-			array->size
+			(long)(void *)array, array->size
 		);
 		for (int i=0; i<array->size; i++) {
 			char *element_string = array->element_to_string(array->elements[i]);
-			fprintf(array_string_stream, "\t%s\n", element_string);
+			fprintf(array_string_stream, "  %s\n", element_string);
 			{
 				free(element_string);
 			}
@@ -66,10 +66,11 @@ char * Array_to_string(Array *array) {
 	return array_string;
 }
 
+
 void Array_add(Array *array, void *element_create_arguments) {
 	array->elements = (void **)realloc(array->elements, (array->size+1)*sizeof(void *));
 	array->elements[array->size] = array->element_create(element_create_arguments);
-	array->size = array->size + 1;
+	array->size = array->size+1;
 }
 
 void * Array_get(Array *array, int index) {

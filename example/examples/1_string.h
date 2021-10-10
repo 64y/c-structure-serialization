@@ -10,14 +10,14 @@ void * Parrot_generate(void);
 void Parrot_free(void *structure);
 
 
-void example_of_structure_with_string_member() {
+void example_of_structure_with_string_member(int DO_FLAGS) {
 	example(
 		"Structure with String Member",
 		"./my_lib",
 		"Parrot",
 		Parrot_generate,
 		Parrot_free,
-		DO_TO_STRING | DO_JSON_ENCODE | DO_JSON_DECODE
+		DO_FLAGS
 	);
 }
 

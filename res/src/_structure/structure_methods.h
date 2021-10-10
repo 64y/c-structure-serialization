@@ -1,15 +1,26 @@
 #ifndef _STRUCTURE_STRUCTURE_METHODS_H
 #define _STRUCTURE_STRUCTURE_METHODS_H
 
+
 #include "includes.h"
 
 
-extern char * (*to_string_process_methods[]) (PointerDictionary *pointerDictionary, void *structure);
-extern char * (*json_encode_process_methods[]) (PointerDictionary *pointerDictionary, void *structure);
-extern void (*json_decode_process_methods[]) (PointerDictionary *pointerDictionary, FILE *structure_json_stream, void *structure);
+typedef unsigned int enum_index;
+
+typedef enum StructureMethods {
+	TO_STRING,
+	JSON_ENCODE,
+	JSON_DECODE,
+	BYTES_ENCODE,
+	BYTES_DECODE
+} StructureMethods;
+
+extern void (*methods[][5]) (FILE *, PointerDictionary *, void *);
 
 char * to_string(Pointer *pointer);
 char * json_encode(Pointer *pointer);
 void * json_decode(char *structure_json, Pointer *pointer);
+Data * byte_encode(Pointer *pointer);
+void * byte_decode(Data *structure_data, Pointer *pointer);
 
 #endif

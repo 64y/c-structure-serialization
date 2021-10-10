@@ -19,12 +19,12 @@ PointerNode * PointerNode_create_by_value(Pointer *value) {
 }
 
 void PointerNode_free(PointerNode *pointerNode) {
-	if(pointerNode != NULL) {
-		if (pointerNode->key != NULL) {
+	if(pointerNode!=NULL) {
+		if (pointerNode->key!=NULL) {
 			free(pointerNode->key);
 			pointerNode->key = NULL;
 		}
-		if (pointerNode->value != NULL) {
+		if (pointerNode->value!=NULL) {
 			Pointer_free(pointerNode->value);
 			pointerNode->value = NULL;
 		}
@@ -41,10 +41,10 @@ char * PointerNode_to_string(PointerNode *pointerNode) {
 		FILE *pointerNode_string_stream = open_memstream(&pointerNode_string, &pointerNode_string_length);
 		fprintf(
 			pointerNode_string_stream,
-			"PointerNode@%016lx\n"
+			"PointerNode@%lX\n"
 			"key: \'%s\';\n"
-			"value: \'%016lx\';\n"
-			"next: \'%016lx\'.",
+			"value: \'Pointer@%lX\';\n"
+			"next: \'PointerNode@%lX\'.",
 			(long)(void *)pointerNode, pointerNode->key, (long)(void *)pointerNode->value, (long)(void *)pointerNode->next
 		);
 		if (pointerNode->value != NULL) {
@@ -71,9 +71,9 @@ PointerDictionary * PointerDictionary_create(void) {
 }
 
 void PointerDictionary_free(PointerDictionary *pointerDictionary) {
-	if (pointerDictionary != NULL) {
+	if (pointerDictionary!=NULL) {
 		pointerDictionary->size = 0;
-		if (pointerDictionary->head != NULL) {
+		if (pointerDictionary->head!=NULL) {
 			while (pointerDictionary->head!=NULL) {
 				PointerNode *pointerNode = pointerDictionary->head;
 				pointerDictionary->head = pointerDictionary->head->next;
@@ -94,11 +94,11 @@ char * PointerDictionary_to_string(PointerDictionary *pointerDictionary) {
 		FILE *pointerDictionary_string_stream = open_memstream(&pointerDictionary_string, &pointerDictionary_string_length);
 		fprintf(
 			pointerDictionary_string_stream,
-			"PointerDictionary@%016lx:\n"
+			"PointerDictionary@%lX\n"
 			"size: \'%ld\';\n"
-			"head: \'%016lx\';\n"
+			"head: \'PointerNode@%lX\';\n"
 			"stage: \'%ld\'.",
-			(long)(void  *) pointerDictionary, pointerDictionary->size, (long)(void *)pointerDictionary->head, pointerDictionary->stage
+			(long)(void  *)pointerDictionary, pointerDictionary->size, (long)(void *)pointerDictionary->head, pointerDictionary->stage
 		);
 		for (PointerNode *curr=pointerDictionary->head; curr!=NULL; curr=curr->next) {
 			char *pointerNode_string = PointerNode_to_string(curr);

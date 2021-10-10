@@ -19,36 +19,36 @@ void * Strings_generate(void);
 void Strings_free(void *structure);
 
 
-void example_of_structure_with_matrix() {
+void example_of_structure_with_matrix(int DO_FLAGS) {
 	example(
 		"Structure with Matrix",
 		"./my_lib",
 		"Matrix3D",
 		Matrix3D_generate,
 		Matrix3D_free,
-		DO_TO_STRING | DO_JSON_ENCODE | DO_JSON_DECODE
+		DO_FLAGS
 	);
 }
 
-void example_of_structure_with_matrices() {
+void example_of_structure_with_matrices(int DO_FLAGS) {
 	example(
 		"Structure with Matrices",
 		"./my_lib",
 		"Arrays",
 		Arrays_generate,
 		Arrays_free,
-		DO_TO_STRING | DO_JSON_ENCODE | DO_JSON_DECODE
+		DO_FLAGS
 	);
 }
 
-void example_of_structure_with_matrices_of_strings() {
+void example_of_structure_with_matrices_of_strings(int DO_FLAGS) {
 	example(
 		"Example of Structure with Matrices of Strings",
 		"./my_lib",
 		"Strings",
 		Strings_generate,
 		Strings_free,
-		DO_TO_STRING | DO_JSON_ENCODE | DO_JSON_DECODE
+		DO_FLAGS
 	);
 }
 
@@ -251,10 +251,10 @@ void * Strings_generate(void) {
 			}
 		}
 	}
-	strings->stre_0 = 2;
-	strings->stre_1 = 2;
-	strings->stre_2 = 2;
-	strings->stre_3 = 2;
+	strings->stre_0 = 3;
+	strings->stre_1 = 3;
+	strings->stre_2 = 3;
+	strings->stre_3 = 3;
 	for (int i=0; i<strings->stre_0; i++) {
 		for (int j=0; j<strings->stre_1; j++) {
 			strings->stre[i][j] = (char ***)calloc(strings->stre_2, sizeof(char **));
@@ -266,6 +266,8 @@ void * Strings_generate(void) {
 			}
 		}
 	}
+	free(strings->stre[1][1][1][1]);
+	strings->stre[1][1][1][1] = NULL;
 	return strings;
 }
 	
@@ -300,7 +302,9 @@ void Strings_free(void *structure) {
 			for (int j=0; j<strings->stre_1; j++) {
 				for (int k=0; k<strings->stre_2; k++) {
 					for (int l=0; l<strings->stre_3; l++) {
-						free(strings->stre[i][j][k][l]);
+						if (strings->stre[i][j][k][l]!=NULL) {
+							free(strings->stre[i][j][k][l]);
+						}
 					}
 					free(strings->stre[i][j][k]);
 				}

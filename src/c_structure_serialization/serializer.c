@@ -34,37 +34,46 @@ Serializer * Serializer_create(char *library_path, char *structure_name) {
 		fprintf(stderr, "\'Serializer_create\' method can\'t load \'%s\' from \"%s\" library!\n", method_name_json_decode, library_path);
 		exit(1);
 	}
+	char *method_name_byte_encode = get_serializer_method_name(structure_name, "byte_encode");
+	*(void **) (&serializer->byte_encode) = dlsym(serializer->handle, method_name_byte_encode);
+	if (dlerror()) {
+		fprintf(stderr, "\'Serializer_create\' method can\'t load \'%s\' from \"%s\" library!\n", method_name_byte_encode, library_path);
+		exit(1);
+	}
+	char *method_name_byte_decode = get_serializer_method_name(structure_name, "byte_decode");
+	*(void **) (&serializer->byte_decode) = dlsym(serializer->handle, method_name_byte_decode);
+	if (dlerror()) {
+		fprintf(stderr, "\'Serializer_create\' method can\'t load \'%s\' from \"%s\" library!\n", method_name_byte_decode, library_path);
+		exit(1);
+	}
 	{
 		free(method_name_to_string);
 		free(method_name_json_encode);
 		free(method_name_json_decode);
+		free(method_name_byte_encode);
+		free(method_name_byte_decode);
 	}
 	return serializer;
 }
 
 void Serializer_free(Serializer *serializer) {
-	if (serializer != NULL) {
-		if (serializer->handle != NULL) {
+	if (serializer!=NULL) {
+		if (serializer->handle!=NULL) {
 			dlclose(serializer->handle);
 			serializer->handle = NULL;
 		}
 		serializer->to_string = NULL;
 		serializer->json_encode = NULL;
 		serializer->json_decode = NULL;
+		serializer->byte_encode = NULL;
+		serializer->byte_decode = NULL;
 		free(serializer);
 		serializer = NULL;
 	}
 }
 
 char * get_serializer_method_name(char *structure_name, char *method_name) {
-	char *serializer_method_name;
-	{
-		size_t serializer_method_name_length;
-		FILE *serializer_method_name_stream = open_memstream(&serializer_method_name, &serializer_method_name_length);
-		fprintf(serializer_method_name_stream, "%s_%s", structure_name, method_name);
-		{
-			fclose(serializer_method_name_stream);
-		}
-	}
+	char *serializer_method_name = (char *)calloc(strlen(structure_name)+1+strlen(method_name)+1, sizeof(char));
+	sprintf(serializer_method_name, "%s_%s", structure_name, method_name);
 	return serializer_method_name;
 }

@@ -12,6 +12,8 @@ install() {
 	mkdir -p ${project_home}
 	mkdir -p ${project_home}/include/${project_name}
 	cp include/${project_name}/serializer.h ${project_home}/include/${project_name}/serializer.h
+	mkdir -p ${project_home}/include/${project_name}/utils
+	cp include/${project_name}/utils/data.h ${project_home}/include/${project_name}/utils/data.h
 	cp ${target_dir}/* ${project_home}
 	cp ${library_dir}/* ${project_home}
 	cp ${resources_dir}/* ${project_home}/${resources_dir} -r
