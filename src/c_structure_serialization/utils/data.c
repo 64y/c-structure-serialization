@@ -56,7 +56,7 @@ char * Data_to_string(Data *data) {
 			(long)(void *)data, data->bytes_size
 		);
 		for (int i=0; i<data->bytes_size; i++) {
-			fprintf(data_string_stream, "%c", (isprint(data->bytes[i]))?data->bytes[i]:'.');
+			fprintf(data_string_stream, "%02X", data->bytes[i]);
 		}
 		fprintf(data_string_stream, "\'.");
 		{

@@ -41,7 +41,7 @@ char * json_encode(Pointer *pointer) {
 		PointerDictionary *pointerDictionary = PointerDictionary_create();
 		PointerDictionary_put_by_value(pointerDictionary, pointer);
 		PointerNode *curr = pointerDictionary->head;
-		fprintf(structure_json_stream, "\"%%s@%%lx\": ", STRUCTURE_NAME_STRING[curr->value->name], (long)curr->value->pointer);
+		fprintf(structure_json_stream, "\"%%s@%%lX\": ", STRUCTURE_NAME_STRING[curr->value->name], (long)curr->value->pointer);
 		methods[curr->value->name][JSON_ENCODE](structure_json_stream, pointerDictionary, curr->value->pointer);
 		for (size_t curr_i=1, size=PointerDictionary_size(pointerDictionary); curr_i<size; size=PointerDictionary_size(pointerDictionary)) {
 			PointerDictionary_stage_next(pointerDictionary);
@@ -52,7 +52,7 @@ char * json_encode(Pointer *pointer) {
 					continue;
 				}
 				fprintf(structure_json_stream, ",\n");
-				fprintf(structure_json_stream, "\"%%s@%%lx\": ", STRUCTURE_NAME_STRING[curr->value->name], (long)curr->value->pointer);
+				fprintf(structure_json_stream, "\"%%s@%%lX\": ", STRUCTURE_NAME_STRING[curr->value->name], (long)curr->value->pointer);
 				methods[curr->value->name][JSON_ENCODE](structure_json_stream, pointerDictionary, curr->value->pointer);
 			}
 		}
@@ -135,7 +135,7 @@ void * bytes_decode(Data *structure_bytes, Pointer *pointer) {
 	{
 		FILE *structure_bytes_stream = fmemopen(structure_bytes->bytes, structure_bytes->bytes_size, "rb");
 		PointerDictionary *pointerDictionary = PointerDictionary_create();
-		long structure_address, structure_address_temporary;
+		long structure_address, structure_address_current;
 		fread(&structure_address, sizeof(long), 1, structure_bytes_stream);
 		fseek(structure_bytes_stream, 0, SEEK_SET);
 		char *hashCode;
@@ -152,11 +152,11 @@ void * bytes_decode(Data *structure_bytes, Pointer *pointer) {
 			structure_address = 0;
 			free(hashCode);
 		}
-		for (PointerNode *curr = pointerDictionary->head; curr!=NULL; curr=curr->next) {
+		for (PointerNode *curr = pointerDictionary->head; curr!=NULL; curr=curr->next) {			
 			sscanf(curr->key, "%%*[^@]@%%lX", &structure_address);
-			fread(&structure_address_temporary, sizeof(long), 1, structure_bytes_stream);
-			if (structure_address!=structure_address_temporary) {
-				fprintf(stderr, "Wrong order of elements in bytes \'%%s\'!=\'%%lX\'!\n", curr->key, structure_address_temporary);
+			fread(&structure_address_current, sizeof(long), 1, structure_bytes_stream);
+			if (structure_address!=structure_address_current) {
+				fprintf(stderr, "Wrong order of elements in bytes \'%%s\'!=\'%%lX\'!\n", curr->key, structure_address_current);
 				exit(1);
 			}
 			methods[curr->value->name][BYTES_DECODE](structure_bytes_stream, pointerDictionary, curr->value->pointer);

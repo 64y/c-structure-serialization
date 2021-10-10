@@ -73,6 +73,7 @@ char * generate_bytes_codec_definition(Structure *structure) {
 		}
 		if (Structure_contains_structure_attributes(structure)) {
 			//encode
+			fprintf(e, "%slong structure_address;\n", Tabs_get(dt));
 			//decode
 			fprintf(
 				d,
@@ -261,9 +262,10 @@ void fwrite_structure_value(FILE *stream, Tabs *tabs, Structure *structure, Attr
 	char *attribute_suffix = (indexes==NULL)?"":indexes;
 	fprintf(
 		stream,
-		"%1$sfwrite((long *)(void **)&%2$s->%3$s%5$s, sizeof(long), 1, structure_bytes_stream);\n"
-		"%1$sif (%4$s%5$s!=NULL) {\n",
-		Tabs_get(tabs), structure->shortcut, attribute->name, attribute_pointer, attribute_suffix
+		"%1$sstructure_address = (long)(void *)%2$s%3$s;\n"
+		"%1$sfwrite(&structure_address, sizeof(long), 1, structure_bytes_stream);\n"
+		"%1$sif (%2$s%3$s!=NULL) {\n",
+		Tabs_get(tabs), attribute_pointer, attribute_suffix
 	); Tabs_increment(tabs);
 	fprintf(stream, "%sPointerDictionary_put_by_value(pointerDictionary, Pointer_create(%s, %s%s));\n", Tabs_get(tabs), attribute_data_type_upper, attribute_pointer, attribute_suffix); Tabs_decrement(tabs);
 	fprintf(stream, "%s}\n", Tabs_get(tabs));
@@ -356,11 +358,12 @@ void fread_structure_value(FILE *stream, Tabs *tabs, Structure *structure, Attri
 		); Tabs_decrement(tabs);
 		fprintf(stream, "%s}\n", Tabs_get(tabs));
 		
-		fprintf(stream, "%s{\n", Tabs_get(tabs)); Tabs_increment(tabs);
-		fprintf(stream, "%sfree(hashCode);\n", Tabs_get(tabs));
-		fprintf(stream, "%shashCode_length = 0;\n", Tabs_get(tabs)); Tabs_decrement(tabs);
-		fprintf(stream, "%s}\n", Tabs_get(tabs));
-	} Tabs_decrement(tabs);	
+	}
+	fprintf(stream, "%s{\n", Tabs_get(tabs)); Tabs_increment(tabs);
+	fprintf(stream, "%sfree(hashCode);\n", Tabs_get(tabs));
+	fprintf(stream, "%shashCode_length = 0;\n", Tabs_get(tabs)); Tabs_decrement(tabs);
+	fprintf(stream, "%s}\n", Tabs_get(tabs));
+	Tabs_decrement(tabs);	
 	fprintf(stream, "%s} else {\n", Tabs_get(tabs)); Tabs_increment(tabs);
 	if (attribute->type==STRUCTURE || attribute->type==STRUCTURE_ARRAY) {
 		fprintf(stream, "%smemset(%s%s, 0x00, sizeof(%s));\n", Tabs_get(tabs), attribute_pointer, attribute_suffix, attribute->data_type);

@@ -324,7 +324,7 @@ void printf_structure_value(FILE *stream, Tabs *tabs, Structure *structure, Attr
 	char *attribute_suffix = (indexes==NULL)?"":indexes;
 	fprintf(
 		stream,
-		"%1$sfprintf(structure_json_stream, \"%%s@%%lx\", \"%2$s\", (long)(void *)%3$s%4$s);\n"
+		"%1$sfprintf(structure_json_stream, \"%%s@%%lX\", \"%2$s\", (long)(void *)%3$s%4$s);\n"
 		"%1$sif (%3$s%4$s!=NULL) {\n",
 		Tabs_get(tabs), attribute->data_type, attribute_pointer, attribute_suffix
 	); Tabs_increment(tabs);
@@ -397,7 +397,7 @@ void scanf_structure_value(FILE *stream, Tabs *tabs, Structure *structure, Attri
 		"%1$sfseek(structure_json_stream, -hashCode_length, SEEK_CUR);\n"
 		"%1$shashCode = (char *)calloc(hashCode_length+1, sizeof(char));\n"
 		"%1$sfscanf(structure_json_stream, \"%%[0-9@A-Z_a-z], \", hashCode);\n"
-		"%1$ssscanf(hashCode, \"%%*[^@]@%%lx\", &structure_address);\n",
+		"%1$ssscanf(hashCode, \"%%*[^@]@%%lX\", &structure_address);\n",
 		Tabs_get(tabs)
 	);
 	

@@ -7,6 +7,7 @@
 #include <string.h>
 
 #include <c_structure_serialization/serializer.h>
+#include <c_structure_serialization/utils/data.h>
 
 
 #define DO_TO_STRING 		0b00001
