@@ -34,24 +34,24 @@ Serializer * Serializer_create(char *library_path, char *structure_name) {
 		fprintf(stderr, "\'Serializer_create\' method can\'t load \'%s\' from \"%s\" library!\n", method_name_json_decode, library_path);
 		exit(1);
 	}
-	char *method_name_bytes_encode = get_serializer_method_name(structure_name, "bytes_encode");
-	*(void **) (&serializer->bytes_encode) = dlsym(serializer->handle, method_name_bytes_encode);
+	char *method_name_byte_encode = get_serializer_method_name(structure_name, "byte_encode");
+	*(void **) (&serializer->byte_encode) = dlsym(serializer->handle, method_name_byte_encode);
 	if (dlerror()) {
-		fprintf(stderr, "\'Serializer_create\' method can\'t load \'%s\' from \"%s\" library!\n", method_name_bytes_encode, library_path);
+		fprintf(stderr, "\'Serializer_create\' method can\'t load \'%s\' from \"%s\" library!\n", method_name_byte_encode, library_path);
 		exit(1);
 	}
-	char *method_name_bytes_decode = get_serializer_method_name(structure_name, "bytes_decode");
-	*(void **) (&serializer->bytes_decode) = dlsym(serializer->handle, method_name_bytes_decode);
+	char *method_name_byte_decode = get_serializer_method_name(structure_name, "byte_decode");
+	*(void **) (&serializer->byte_decode) = dlsym(serializer->handle, method_name_byte_decode);
 	if (dlerror()) {
-		fprintf(stderr, "\'Serializer_create\' method can\'t load \'%s\' from \"%s\" library!\n", method_name_bytes_decode, library_path);
+		fprintf(stderr, "\'Serializer_create\' method can\'t load \'%s\' from \"%s\" library!\n", method_name_byte_decode, library_path);
 		exit(1);
 	}
 	{
 		free(method_name_to_string);
 		free(method_name_json_encode);
 		free(method_name_json_decode);
-		free(method_name_bytes_encode);
-		free(method_name_bytes_decode);
+		free(method_name_byte_encode);
+		free(method_name_byte_decode);
 	}
 	return serializer;
 }
@@ -65,8 +65,8 @@ void Serializer_free(Serializer *serializer) {
 		serializer->to_string = NULL;
 		serializer->json_encode = NULL;
 		serializer->json_decode = NULL;
-		serializer->bytes_encode = NULL;
-		serializer->bytes_decode = NULL;
+		serializer->byte_encode = NULL;
+		serializer->byte_decode = NULL;
 		free(serializer);
 		serializer = NULL;
 	}

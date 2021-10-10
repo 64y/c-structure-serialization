@@ -138,7 +138,6 @@ cd bin
 If you want to call `bin/main` you need to use "./bin/my_lib" library path in `main.c`.
 
 ## TODO
- - [ ] fix **bytes_codec**;
  - [ ] Work in dirs;
  - [ ] only two encode decode methods ```Data * encode(void *structure)``` and ```void * decode(Data *data)```;
  - [ ] Write documentation.

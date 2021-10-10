@@ -52,7 +52,7 @@ char * generate_to_string_method_definition(Structure *structure) {
 		if (Structure_contains_array_attributes(structure)) {
 			fprintf(s, "%sBoolean is_last_element_in_array = false;\n", Tabs_get(tabs));
 		}
-		fprintf(s, "%sfprintf(%s, \"%%s@%%lx\", \"%s\", (long)(void *) %s);\n", Tabs_get(tabs), stream_name, structure->name, structure->shortcut);
+		fprintf(s, "%sfprintf(%s, \"%%s@%%lX\", \"%s\", (long)(void *) %s);\n", Tabs_get(tabs), stream_name, structure->name, structure->shortcut);
 		fprintf(s, "%sif (%s != NULL) {\n", Tabs_get(tabs), structure->shortcut); Tabs_increment(tabs);
 		for (Attribute *attribute=structure->head; attribute!=NULL; attribute=attribute->next) {
 			fprintf(s, "%s// %s->%s\n", Tabs_get(tabs), structure->shortcut, attribute->name);
@@ -157,7 +157,7 @@ void printf_primitive(FILE *stream, Tabs *tabs, Structure *structure, Attribute 
 void printf_structure(FILE *stream, Tabs *tabs, Structure *structure, Attribute *attribute, char *indexes) {
 	char *attribute_pointer = generate_attribute_pointer(structure, attribute);
 	char *attribute_name_upper = string_to_upper(attribute->data_type);
-	fprintf(stream, "%sfprintf(structure_string_stream, \"%%s@%%lx\", \"%s\", (long)(void *) %s%s);\n", Tabs_get(tabs), attribute->data_type, attribute_pointer, indexes);
+	fprintf(stream, "%sfprintf(structure_string_stream, \"%%s@%%lX\", \"%s\", (long)(void *) %s%s);\n", Tabs_get(tabs), attribute->data_type, attribute_pointer, indexes);
 	fprintf(stream, "%sif (%s%s%s!=NULL) {\n", Tabs_get(tabs), (string_equals(structure->name, attribute->data_type))?"pointerDictionary->stage!=0 && ":"", attribute_pointer, indexes); Tabs_increment(tabs);
 	fprintf(stream, "%sPointerDictionary_put_by_value(pointerDictionary, Pointer_create(%s, %s%s));\n", Tabs_get(tabs), attribute_name_upper, attribute_pointer, indexes);
 	Tabs_decrement(tabs);

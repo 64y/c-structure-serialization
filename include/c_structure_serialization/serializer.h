@@ -9,8 +9,8 @@ typedef struct Serializer {
 	char * (*to_string) (void *structure);
 	char * (*json_encode) (void *structure);
 	void * (*json_decode) (char *structure_json);
-	Data * (*bytes_encode) (void *structure);
-	void * (*bytes_decode) (Data *structure_bytes);
+	Data * (*byte_encode) (void *structure);
+	void * (*byte_decode) (Data *structure_bytes);
 } Serializer;
 
 

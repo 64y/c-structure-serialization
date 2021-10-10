@@ -111,10 +111,10 @@ void * json_decode(char *structure_json, Pointer *pointer) {
 	return structure;
 }
 
-Data * bytes_encode(Pointer *pointer) {
-	Data *structure_bytes = Data_create_null();
+Data * byte_encode(Pointer *pointer) {
+	Data *structure_data = Data_create_null();
 	{
-		FILE *structure_bytes_stream = open_memstream((char **)&structure_bytes->bytes, &structure_bytes->bytes_size);
+		FILE *structure_bytes_stream = open_memstream((char **)&structure_data->bytes, &structure_data->bytes_size);
 		PointerDictionary *pointerDictionary = PointerDictionary_create();
 		PointerDictionary_put_by_value(pointerDictionary, pointer);
 		for (PointerNode *curr = pointerDictionary->head; curr!=NULL; curr=curr->next) {
@@ -127,13 +127,13 @@ Data * bytes_encode(Pointer *pointer) {
 			PointerDictionary_free(pointerDictionary);
 		}
 	}
-	return structure_bytes;
+	return structure_data;
 }
 
-void * bytes_decode(Data *structure_bytes, Pointer *pointer) {
+void * byte_decode(Data *structure_data, Pointer *pointer) {
 	void *structure;
 	{
-		FILE *structure_bytes_stream = fmemopen(structure_bytes->bytes, structure_bytes->bytes_size, "rb");
+		FILE *structure_bytes_stream = fmemopen(structure_data->bytes, structure_data->bytes_size, "rb");
 		PointerDictionary *pointerDictionary = PointerDictionary_create();
 		long structure_address, structure_address_current;
 		fread(&structure_address, sizeof(long), 1, structure_bytes_stream);

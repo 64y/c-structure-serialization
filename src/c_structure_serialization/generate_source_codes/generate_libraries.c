@@ -16,7 +16,7 @@
 #include "c_structure_serialization/generate_source_codes/generate_libraries.h"
 #include "c_structure_serialization/generate_source_codes/generate_to_string_method.h"
 #include "c_structure_serialization/generate_source_codes/generate_json_codec.h"
-#include "c_structure_serialization/generate_source_codes/generate_bytes_codec.h"
+#include "c_structure_serialization/generate_source_codes/generate_byte_codec.h"
 
 
 char * generate_attribute_pointer(Structure *structure, Attribute *attribute) {
@@ -100,7 +100,7 @@ void generate_library_for_structure(char *project_path, Structure *structure) {
 		char * (*generate_code[]) (Structure *structure) = {
 			generate_to_string_method_declaration,
 			generate_json_codec_declaration,
-			generate_bytes_codec_declaration
+			generate_byte_codec_declaration
 		};
 		
 		size_t code_h_length;
@@ -127,7 +127,7 @@ void generate_library_for_structure(char *project_path, Structure *structure) {
 		char * (*generate_code[]) (Structure *structure) = {
 			generate_to_string_method_definition,
 			generate_json_codec_definition,
-			generate_bytes_codec_definition
+			generate_byte_codec_definition
 		};
 		
 		size_t code_c_length;
@@ -213,8 +213,8 @@ void generate_structure_methods_file(char *project_path, Array *structures) {
 		"_to_string_process",
 		"_json_encode_process",
 		"_json_decode_process",
-		"_bytes_encode_process",
-		"_bytes_decode_process"
+		"_byte_encode_process",
+		"_byte_decode_process"
 	};
 	char *methods;
 	{

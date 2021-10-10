@@ -20,7 +20,7 @@ extern void (*methods[][5]) (FILE *, PointerDictionary *, void *);
 char * to_string(Pointer *pointer);
 char * json_encode(Pointer *pointer);
 void * json_decode(char *structure_json, Pointer *pointer);
-Data * bytes_encode(Pointer *pointer);
-void * bytes_decode(Data *structure_bytes, Pointer *pointer);
+Data * byte_encode(Pointer *pointer);
+void * byte_decode(Data *structure_data, Pointer *pointer);
 
 #endif
