@@ -119,9 +119,10 @@ Data * bytes_encode(Pointer *pointer) {
 		PointerDictionary_put_by_value(pointerDictionary, pointer);
 		for (PointerNode *curr = pointerDictionary->head; curr!=NULL; curr=curr->next) {
 			fwrite((long *)&curr->value->pointer, sizeof(long), 1, structure_bytes_stream);
-			methods[curr->value->name][BYTES_ENCODE](structure_bytes_stream, pointerDictionary, curr);
+			methods[curr->value->name][BYTES_ENCODE](structure_bytes_stream, pointerDictionary, curr->value->pointer);
 		}
 		{
+			fflush(structure_bytes_stream);
 			fclose(structure_bytes_stream);
 			PointerDictionary_free(pointerDictionary);
 		}
@@ -136,7 +137,7 @@ void * bytes_decode(Data *structure_bytes, Pointer *pointer) {
 		PointerDictionary *pointerDictionary = PointerDictionary_create();
 		long structure_address, structure_address_temporary;
 		fread(&structure_address, sizeof(long), 1, structure_bytes_stream);
-		fseek(structure_bytes_stream, -sizeof(long), SEEK_CUR);
+		fseek(structure_bytes_stream, 0, SEEK_SET);
 		char *hashCode;
 		{
 			size_t hashCode_length;

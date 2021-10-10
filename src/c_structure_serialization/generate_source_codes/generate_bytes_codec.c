@@ -98,14 +98,30 @@ char * generate_bytes_codec_definition(Structure *structure) {
 					break;
 				}
 				case PRIMITIVE_ARRAY: case STRING_ARRAY: case STRUCTURE_ARRAY: case STRUCTURE_POINTER_ARRAY: {
+					int number_of_stars = attribute->dimension->dynamic_size_source + (attribute->type==STRUCTURE_POINTER_ARRAY);
 					char *code_indexes;
 					{
 						size_t code_indexes_length;
 						FILE *code_indexes_stream=open_memstream(&code_indexes, &code_indexes_length);
+						fprintf(code_indexes_stream, "%s", "");
+						fflush(code_indexes_stream);
 						for (int i=0; i<attribute->dimension->size; i++, Tabs_increment(et), Tabs_increment(dt)) {
+							// encode
 							fprintf(e, "%1$sfor (int i_%2$d=0; i_%2$d<%3$s; i_%2$d++) {\n", Tabs_get(et), i, attribute->dimension->dimensions[i]);
+							// decode
+							if (i>=attribute->dimension->static_size_source) {
+								char *stars_first = string_repeat_star(number_of_stars);
+								char *stars_second = string_repeat_star(number_of_stars-1);
+								fprintf(d, "%1$s%2$s->%3$s%4$s = (%5$s%6$s)calloc(%7$s, sizeof(%5$s%8$s));\n", Tabs_get(dt), structure->shortcut, attribute->name, code_indexes, attribute->data_type, stars_first, attribute->dimension->dimensions[i], stars_second);
+								number_of_stars = number_of_stars - 1;
+								{
+									free(stars_first);
+									free(stars_second);
+								}
+							}
 							fprintf(d, "%1$sfor (int i_%2$d=0; i_%2$d<%3$s; i_%2$d++) {\n", Tabs_get(dt), i, attribute->dimension->dimensions[i]);
 							fprintf(code_indexes_stream, "[i_%d]", i);
+							fflush(code_indexes_stream);
 						}
 						{
 							fclose(code_indexes_stream);

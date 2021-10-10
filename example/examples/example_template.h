@@ -32,7 +32,7 @@ void example (
 	
 	if (DO_FLAG & DO_TO_STRING) {
 		char *structure_string = serializer->to_string(structure);
-		printf("TO_STRING:\n%s\n", structure_string);
+		printf("TO_STRING:\n%s\n\n", structure_string);
 		free(structure_string);
 	}
 	
@@ -46,7 +46,7 @@ void example (
 		char *structure_json = serializer->json_encode(structure);
 		void *structure_temp = serializer->json_decode(structure_json);
 		char *structure_temp_string = serializer->to_string(structure_temp);
-		printf("JSON_DECODE:\n%s\n", structure_temp_string);
+		printf("JSON_DECODE:\n%s\n\n", structure_temp_string);
 		free(structure_json);
 		structure_free(structure_temp);
 		free(structure_temp_string);
@@ -55,7 +55,7 @@ void example (
 	if (DO_FLAG & DO_BYTES_ENCODE) {
 		Data *structure_data = serializer->bytes_encode(structure);
 		char *structure_data_string = Data_to_string(structure_data);
-		printf("BYTES_ENCODE:\n%s\n", structure_data_string);
+		printf("BYTES_ENCODE:\n%s\n\n", structure_data_string);
 		Data_free(structure_data);
 		free(structure_data_string);
 	}
@@ -64,7 +64,7 @@ void example (
 		Data *structure_data = serializer->bytes_encode(structure);
 		void *structure_temp = serializer->bytes_decode(structure_data);
 		char *structure_temp_string = serializer->to_string(structure_temp);
-		printf("BYTES_DECODE:\n%s\n", structure_temp_string);
+		printf("BYTES_DECODE:\n%s\n\n", structure_temp_string);
 		Data_free(structure_data);
 		structure_free(structure_temp);
 		free(structure_temp_string);
