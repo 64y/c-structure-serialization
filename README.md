@@ -1,8 +1,41 @@
 # C Structure Serialization
+It can be used to get the string representation of structure and serialize/deserialize structure with json or byte format. Also you can add your own codecs.
 
-It is a library to serialize structure which contains: primitives, strings, structures or their multi dimentional types.
+
+## Proposed Solution
+The only true solution is to implement your own codecs by yourself for each structure you need according to your tasks. Also you have to edit your codec each time your structure is edited. But it is boring and annoying to write the almost same code for each structure separately. It is very common and cycled process, that's why it should be automated.
+
+You can `fwrite`/`fread` whole structure if each of its structure member is static allocated. For example you want to collect a matrix of Points (x, y coordinated) in structure, and this matrix can be 5x5, 100x100 or even 10^5x10^5. Then you are able to serialize it only if matrix is staticly allocated for size 10^5x10^5. And each time you want to serialize/deserialize matrix of Points, it would be performed for its max dimensions, which is a wastage of memory and bandwich.
+
+In theory you are able to extract information about any structure during program execution, but only via `type Structure` in `gdb` or parsing DWARF in `objdump` (as I know) and if this program was compiled with `-g` flag yo provide elf info.
+
+Proposed solution consits of two parts:
+1. Program to generate sources and create a library of methods for each structure in specified folder;
+2. Compiled library to use apropriate methods from generated one based on structure name.
+
+All you need is Linux/shell/bash/make/gcc.
+
+
+## Structure Definition Limits
 
 ## Install and Uninstall
+
+## How To
+
+## Make Your Own Codec
+
+## Future Improvements
+
+## My *C* Preferences
+You might find 'em in source codes:
+- camel case for names and underscore for functions;
+- method should return single instance of data instead of pointers in arguments;
+- I am fond of `alloc` and `free` memory;
+- highlighting `fclose` and `free` with braces;
+- `typedef`ing structures to avoid using `struct`;
+- it is good to have `create`, `free` and `to_string` methods for every structure.
+
+
 
 To install and uninstall **C Structure Serialization** methods `install` and `uninstall` from `install_and_uninstall.sh` file is used.
 
@@ -141,3 +174,5 @@ If you want to call `bin/main` you need to use "./bin/my_lib" library path in `m
  - [ ] Work in dirs;
  - [ ] only two encode decode methods ```Data * encode(void *structure)``` and ```void * decode(Data *data)```;
  - [ ] Write documentation.
+ 
+[link](#problem-definition)
