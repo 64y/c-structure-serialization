@@ -275,5 +275,5 @@ typedef struct Figures {
 ```
 * [Structure](example/structures/figures.h);
 * [Example](example/examples/5_matrices_of_structures.h);
-* [Example Output](EXAMPLE_OUTPUT.md#example-output-of-structure-with-matrices-of-structures).
+* [Example Output](EXAMPLES_OUTPUT.md#example-output-of-structure-with-matrices-of-structures).
 Example Output of Structure with Matrices of Structures
