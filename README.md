@@ -170,57 +170,56 @@ cd bin;./main;cd ../;
 
 If you want to call `bin/main` you need to use "./bin/my_lib" library path in `main.c`.
 
-There are several examples for different structures in [main.c](example/main.c).
+There are several examples for different structures - [EXAMPLES](EXAMPLES.MD).
 ```bash
 make example;cd bin;./example;cd ../;
 ```
 
 ## Future Improvements
-- 
 
 ## Make Your Own Codec
 
 ### Short Description of Files
 ```
 c_structure_serialization - directory of main program;
-	utils - contains helpful structures and methods;
-		boolean.h boolean.c - `Boolean` enum for `true` and `false`;
-		data.h data.c - `Data` structure is byte array and its size;
-		array.h array.c - `Array` structure is an abstract array;
-		string.h string.c - utilities to work with strings;
-		files.h files.c - utilities to work with files;
-		tabs.h tabs.c - `Tabs` structure helps to control tabs in the begining of each line of created source codes;
-	data_types - contains structures to parse source code and create a representaion of each structure in program;
-		attribute_type.h attribute_type.c - `AttributeType` enum;
-		basic_type.h basic_type.c - `BasicType` structure to describe primitive types;
-		dimension.h dimension.c - `Dimension` structure contains dimension sizes and variables of array in structure;
-		attribute.h attribute.c - `Attribute` structure represents attribute of structure;
-		structure.h structure.c - `Structure` structure parse lines of source codes to extract attributes;
-		structure_regular_expressions.h structure_regular_expressions.c - `RegularExpression` structure, `StructureRegularExpressions` - regex for structure;
-	generate_source_codes - directory of methods to generate source code for future library;
-		generate_library.h generate_library.c - contains method to parse files for structures and modify `structure_name`, `structure_methods`, `includes.h` in `res` directory;
-		generate_to_string.h generate_to_string.c - methods to generate `to_string` method;
-		generate_json_codec.h generate_json_codec.c - methods to generate json codec;
-		generate_byte_codec.h generate_byte_codec.c - methods to generate byte codec;
-	serializer.h serializer.c - `Serializer` structure created based on library file and structure names;
+  utils - contains helpful structures and methods;
+    boolean.h boolean.c - `Boolean` enum for `true` and `false`;
+    data.h data.c - `Data` structure is byte array and its size;
+    array.h array.c - `Array` structure is an abstract array;
+    string.h string.c - utilities to work with strings;
+    files.h files.c - utilities to work with files;
+    tabs.h tabs.c - `Tabs` structure helps to control tabs in the begining of each line of created source codes;
+  data_types - contains structures to parse source code and create a representaion of each structure in program;
+    attribute_type.h attribute_type.c - `AttributeType` enum;
+    basic_type.h basic_type.c - `BasicType` structure to describe primitive types;
+    dimension.h dimension.c - `Dimension` structure contains dimension sizes and variables of array in structure;
+    attribute.h attribute.c - `Attribute` structure represents attribute of structure;
+    structure.h structure.c - `Structure` structure parse lines of source codes to extract attributes;
+    structure_regular_expressions.h structure_regular_expressions.c - `RegularExpression` structure, `StructureRegularExpressions` - regex for structure;
+  generate_source_codes - directory of methods to generate source code for future library;
+    generate_library.h generate_library.c - contains method to parse files for structures and modify `structure_name`, `structure_methods`, `includes.h` in `res` directory;
+    generate_to_string.h generate_to_string.c - methods to generate `to_string` method;
+    generate_json_codec.h generate_json_codec.c - methods to generate json codec;
+    generate_byte_codec.h generate_byte_codec.c - methods to generate byte codec;
+  serializer.h serializer.c - `Serializer` structure created based on library file and structure names;
 main.c - main for `generate_library` program - Target of build.
 
 res/src - directory 
-	_structure
-		pointer.h pointer.c
-		pointer_dictionary.h pointer_dictionary.c
-		structure_name.h structure_name.c
-		structure_methods.h structure_methods.c
-	_utils
-		boolean.h
-		data.h data.c
-		base64.h base64.c
+  _structure
+    pointer.h pointer.c
+    pointer_dictionary.h pointer_dictionary.c
+    structure_name.h structure_name.c
+    structure_methods.h structure_methods.c
+  _utils
+    boolean.h
+    data.h data.c
+    base64.h base64.c
 includes.h
 
 example
-	examples - examples for structures;
-	structures - headers of structures;
-	main.c - main for `example program`.
+  examples - examples for structures;
+  structures - headers of structures;
+  main.c - main for `example program`.
 ```
 
 ### Makefile
