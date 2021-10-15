@@ -5,23 +5,14 @@
 
 
 char * BasicType_to_string(BasicType *basicType) {
-	char *basicType_string;
-	{
-		size_t basicType_string_length;
-		FILE *basicType_string_stream = open_memstream(&basicType_string, &basicType_string_length);
-		fprintf(
-			basicType_string_stream,
-			"BasicType@%lX\n"
-			"name: \'%s\';\n"
-			"size in bytes: \'%ld\';\n"
-			"format specifier: \'%s\';\n"
-			"format parameters: \'%s\'.",
-			(long)(void *)basicType, basicType->name, basicType->size_in_bytes, basicType->format_specifier, basicType->format_parameters
-		);
-		{
-			fclose(basicType_string_stream);
-		}
-	}
+	char *basicType_string = string_create_by_format(
+		"BasicType@%lX\n"
+		"name: \'%s\';\n"
+		"size in bytes: \'%ld\';\n"
+		"format specifier: \'%s\';\n"
+		"format parameters: \'%s\'.",
+		(long)(void *)basicType, basicType->name, basicType->size_in_bytes, basicType->format_specifier, basicType->format_parameters
+	);
 	return basicType_string;
 }
 

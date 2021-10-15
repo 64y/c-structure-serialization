@@ -13,21 +13,14 @@
 
 
 char * generate_byte_codec_declaration(Structure *structure) {
-	char *code;
-	{
-		size_t code_length;
-		FILE *code_stream = open_memstream(&code, &code_length);
-		fprintf(
-			code_stream,
-			"void %1$s_byte_encode_process(FILE *structure_byte_stream, PointerDictionary *pointerDictionary, void *structure);\n"
-			"void %1$s_byte_decode_process(FILE *structure_byte_stream, PointerDictionary *pointerDictionary, void *structure);\n"
-			"\n"
-			"Data * %1$s_byte_encode(void *structure);\n"
-			"void * %1$s_byte_decode(Data *structure_data);",
-			structure->name
-		);
-		fclose(code_stream);
-	}
+	char *code = string_create_by_format(
+		"void %1$s_byte_encode_process(FILE *structure_byte_stream, PointerDictionary *pointerDictionary, void *structure);\n"
+		"void %1$s_byte_decode_process(FILE *structure_byte_stream, PointerDictionary *pointerDictionary, void *structure);\n"
+		"\n"
+		"Data * %1$s_byte_encode(void *structure);\n"
+		"void * %1$s_byte_decode(Data *structure_data);",
+		structure->name
+	);
 	return code;
 }
 
@@ -54,7 +47,7 @@ char * generate_byte_codec_definition(Structure *structure) {
 		size_t code_byte_encode_process_length, code_byte_decode_process_length;
 		FILE *e = open_memstream(&code_byte_encode_process, &code_byte_encode_process_length), *d = open_memstream(&code_byte_decode_process, &code_byte_decode_process_length);
 		Tabs *et = Tabs_create(), *dt = Tabs_create();
-		char *stream_name = string_copy("structure_byte_stream");
+		char *stream_name = string_create("structure_byte_stream");
 		// encode
 		fprintf(e, "%svoid %s_byte_encode_process(FILE *structure_byte_stream, PointerDictionary *pointerDictionary, void *structure) {\n", Tabs_get(et), structure->name); Tabs_increment(et);
 		// decode
@@ -116,8 +109,8 @@ char * generate_byte_codec_definition(Structure *structure) {
 								fprintf(d, "%1$s%2$s->%3$s%4$s = (%5$s%6$s)calloc(%7$s, sizeof(%5$s%8$s));\n", Tabs_get(dt), structure->shortcut, attribute->name, code_indexes, attribute->data_type, stars_first, attribute->dimension->dimensions[i], stars_second);
 								number_of_stars = number_of_stars - 1;
 								{
-									free(stars_first);
-									free(stars_second);
+									string_free(stars_first);
+									string_free(stars_second);
 								}
 							}
 							fprintf(d, "%1$sfor (int i_%2$d=0; i_%2$d<%3$s; i_%2$d++) {\n", Tabs_get(dt), i, attribute->dimension->dimensions[i]);
@@ -142,7 +135,7 @@ char * generate_byte_codec_definition(Structure *structure) {
 						fprintf(d, "%s}\n", Tabs_get(dt));
 					}
 					{
-						free(code_indexes);
+						string_free(code_indexes);
 					}
 					break;
 				}
@@ -167,7 +160,7 @@ char * generate_byte_codec_definition(Structure *structure) {
 			fclose(d);
 			Tabs_free(et);
 			Tabs_free(dt);
-			free(stream_name);
+			string_free(stream_name);
 		}
 	}
 	char *code_byte_encode;
@@ -203,7 +196,6 @@ char * generate_byte_codec_definition(Structure *structure) {
 		}
 	}
 	char *code = string_appends(
-		(char *[]) {
 			code_byte_encode_process,
 			"\n",
 			code_byte_decode_process,
@@ -211,14 +203,13 @@ char * generate_byte_codec_definition(Structure *structure) {
 			code_byte_encode,
 			"\n",
 			code_byte_decode,
-			NULL
-		}
+			NO_MORE_STRINGS
 	);
 	{
-		free(code_byte_encode_process);
-		free(code_byte_decode_process);
-		free(code_byte_encode);
-		free(code_byte_decode);
+		string_free(code_byte_encode_process);
+		string_free(code_byte_decode_process);
+		string_free(code_byte_encode);
+		string_free(code_byte_decode);
 	}
 	return code;
 }
@@ -251,8 +242,7 @@ void fwrite_string_value(FILE *stream, Tabs *tabs, Structure *structure, Attribu
 	Tabs_decrement(tabs);
 	fprintf(stream, "%s}\n", Tabs_get(tabs));
 	{
-		free(attribute_pointer);
-		attribute_suffix = NULL;
+		string_free(attribute_pointer);
 	}
 }
 
@@ -270,8 +260,8 @@ void fwrite_structure_value(FILE *stream, Tabs *tabs, Structure *structure, Attr
 	fprintf(stream, "%sPointerDictionary_put_by_value(pointerDictionary, Pointer_create(%s, %s%s));\n", Tabs_get(tabs), attribute_data_type_upper, attribute_pointer, attribute_suffix); Tabs_decrement(tabs);
 	fprintf(stream, "%s}\n", Tabs_get(tabs));
 	{
-		free(attribute_data_type_upper);
-		free(attribute_pointer);
+		string_free(attribute_data_type_upper);
+		string_free(attribute_pointer);
 		attribute_suffix = NULL;
 	}
 	
@@ -316,8 +306,7 @@ void fread_string_value(FILE *stream, Tabs *tabs, Structure *structure, Attribut
 	} Tabs_decrement(tabs);
 	fprintf(stream, "%s}\n", Tabs_get(tabs));
 	{
-		free(attribute_pointer);
-		attribute_suffix = NULL;
+		string_free(attribute_pointer);
 	}
 }
 
@@ -372,8 +361,8 @@ void fread_structure_value(FILE *stream, Tabs *tabs, Structure *structure, Attri
 	} Tabs_decrement(tabs);
 	fprintf(stream, "%s}\n", Tabs_get(tabs));
 	{
-		free(attribute_data_type_upper);
-		free(attribute_pointer);
+		string_free(attribute_data_type_upper);
+		string_free(attribute_pointer);
 		attribute_suffix = NULL;
 	}
 }

@@ -4,6 +4,8 @@
 void (*methods[][5]) (FILE *structure_string_stream, PointerDictionary *pointerDictionary, void *structure) = %s;
 
 
+
+
 char * to_string(Pointer *pointer) {
 	char *structure_string;
 	{
@@ -169,3 +171,39 @@ void * byte_decode(Data *structure_data, Pointer *pointer) {
 	}
 	return structure;
 }
+
+
+/*Data * encode(StructureMethod *structureMethod, PointerNode *pointerNode) {
+	Data *structure_data = Data_create_null();
+	{
+		FILE *structure_bytes_stream = open_memstream((char **)&structure_data->bytes, &structure_data->bytes_size);
+		PointerDictionary *pointerDictionary = PointerDictionary_create();
+		PointerDictionary_put(pointerDictionary, pointerNode);
+		for (PointerNode *curr = pointerDictionary->head; curr!=NULL; curr=curr->next) {
+			methods[curr->value->name][structureMethod](structure_bytes_stream, pointerDictionary, curr);
+		}
+		{
+			fclose(structure_bytes_stream);
+			PointerDictionary_free(pointerDictionary);
+		}
+	}
+	return structure_data;
+}
+
+void * decode(Data *structure_data, StructureMethod *structureMethod, PointerNode *pointerNode) {
+	void *structure = NULL;
+	{
+		FILE *structure_bytes_stream = open_memstream((char **)&structure_data->bytes, &structure_data->bytes_size);
+		PointerDictionary *pointerDictionary = PointerDictionary_create();
+		PointerDictionary_put(pointerDictionary, pointerNode);
+		for (PointerNode *curr = pointerDictionary->head; curr!=NULL; curr=curr->next) {
+			methods[curr->value->name][structureMethod](structure_bytes_stream, pointerDictionary, curr);
+		}
+		structure = pointerDictionary->head->pointer;
+		{
+			fclose(structure_bytes_stream);
+			PointerDictionary_free(pointerDictionary);
+		}
+	}
+	return structure;
+}*/

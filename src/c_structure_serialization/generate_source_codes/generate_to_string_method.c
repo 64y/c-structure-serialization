@@ -13,19 +13,11 @@
 
 
 char * generate_to_string_method_declaration(Structure *structure) {
-	char *code;
-	{
-		size_t code_length;
-		FILE *code_stream = open_memstream(&code, &code_length);
-		fprintf(
-			code_stream,
-			"void %1$s_to_string_process(FILE *structure_string_stream, PointerDictionary *pointerDictionary, void *structure);\n"
-			"\n"
-			"char * %1$s_to_string(void *structure);",
-			structure->name
-		);
-		fclose(code_stream);
-	}
+	char *code = string_create_by_format(
+		"void %1$s_to_string_process(FILE *structure_string_stream, PointerDictionary *pointerDictionary, void *structure);\n"
+		"char * %1$s_to_string(void *structure);",
+		structure->name
+	);
 	return code;
 }
 
@@ -45,7 +37,7 @@ char * generate_to_string_method_definition(Structure *structure) {
 		
 		Tabs *tabs = Tabs_create();
 		
-		char *stream_name = string_copy("structure_string_stream");
+		char *stream_name = string_create("structure_string_stream");
 		fprintf(s, "%svoid %s_to_string_process(FILE *structure_string_stream, PointerDictionary *pointerDictionary, void *structure) {\n", Tabs_get(tabs), structure->name); Tabs_increment(tabs);
 		fprintf(s, "%s%s *%s = (%s *) structure;\n", Tabs_get(tabs), structure->name, structure->shortcut, structure->name);
 		//
@@ -95,9 +87,9 @@ char * generate_to_string_method_definition(Structure *structure) {
 						fprintf(s, "%s}\n", Tabs_get(tabs));
 					}
 					{
-						free(code_loop);
-						free(code_indexes);
-						free(code_is_last);
+						string_free(code_loop);
+						string_free(code_indexes);
+						string_free(code_is_last);
 					}
 					// fprintf(s, "%s\n", Tabs_get(tabs));
 					break;
@@ -117,7 +109,7 @@ char * generate_to_string_method_definition(Structure *structure) {
 		{
 			fclose(s);
 			Tabs_free(tabs);
-			free(stream_name);
+			string_free(stream_name);
 		}
 	}
 	char *code_structure_to_string;
@@ -135,10 +127,10 @@ char * generate_to_string_method_definition(Structure *structure) {
 			Tabs_free(tabs);
 		}
 	}
-	char * code = string_appends((char *[]) {code_structure_to_string_process, "\n", code_structure_to_string, NULL});
+	char * code = string_appends(code_structure_to_string_process, "\n", code_structure_to_string, NO_MORE_STRINGS);
 	{
-		free(code_structure_to_string_process);
-		free(code_structure_to_string);
+		string_free(code_structure_to_string_process);
+		string_free(code_structure_to_string);
 	}
 	return code;
 }
@@ -163,7 +155,7 @@ void printf_structure(FILE *stream, Tabs *tabs, Structure *structure, Attribute 
 	Tabs_decrement(tabs);
 	fprintf(stream, "%s}\n", Tabs_get(tabs));
 	{
-		free(attribute_pointer);
-		free(attribute_name_upper);
+		string_free(attribute_pointer);
+		string_free(attribute_name_upper);
 	}
 }

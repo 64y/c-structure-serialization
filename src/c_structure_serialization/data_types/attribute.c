@@ -21,12 +21,10 @@ void Attribute_free(Attribute *attribute) {
 	if (attribute!=NULL) {
 		attribute->type = NO_TYPE;
 		if (attribute->data_type!=NULL) {
-			free(attribute->data_type);
-			attribute->data_type = NULL;
+			string_free(attribute->data_type);
 		}
 		if (attribute->name!=NULL) {
-			free(attribute->name);
-			attribute->name = NULL;
+			string_free(attribute->name);
 		}
 		if (attribute->dimension!=NULL) {
 			Dimension_free(attribute->dimension);
@@ -54,7 +52,7 @@ char * Attribute_to_string(Attribute *attribute) {
 			(long)(void *)attribute, ATTRIBUTE_TYPE_STRING[attribute->type], attribute->data_type, attribute->name, (long)(void *)attribute->dimension, (long)(void *)attribute->next, dimension_string
 		);
 		{
-			free(dimension_string);
+			string_free(dimension_string);
 			fclose(attribute_string_stream);
 		}
 	}

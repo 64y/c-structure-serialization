@@ -2,6 +2,7 @@
 #define STRUCTURES_REGULAR_EXPRESSIONS_H
 
 
+#include <stdbool.h>
 #include <stddef.h>
 #include <regex.h>
 
@@ -16,7 +17,7 @@ RegularExpression * RegularExpression_create(char *pattern, size_t num_matches);
 void RegularExpression_free(RegularExpression *regularExpression);
 char * RegularExpression_to_string(RegularExpression *regularExpression);
 
-Boolean RegularExpression_match(RegularExpression *regularExpression, char *string);
+bool RegularExpression_match(RegularExpression *regularExpression, char *string);
 char ** RegularExpression_parse(RegularExpression *regularExpression, char *string);
 
 

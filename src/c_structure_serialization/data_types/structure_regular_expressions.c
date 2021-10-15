@@ -1,9 +1,10 @@
+#include <stdbool.h>
+#include <stddef.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <regex.h>
 
-#include "c_structure_serialization/utils/boolean.h"
 #include "c_structure_serialization/utils/strings.h"
 #include "c_structure_serialization/data_types/basic_type.h"
 #include "c_structure_serialization/data_types/structure_regular_expressions.h"
@@ -27,8 +28,7 @@ RegularExpression * RegularExpression_create(char *pattern, size_t num_matches) 
 void RegularExpression_free(RegularExpression *regularExpression) {
 	if (regularExpression!=NULL) {
 		if (regularExpression->pattern!=NULL) {
-			free(regularExpression->pattern);
-			regularExpression->pattern = NULL;
+			string_free(regularExpression->pattern);
 		}
 		regularExpression->num_matches = 0;
 		if (regularExpression->re!=NULL) {
@@ -42,26 +42,17 @@ void RegularExpression_free(RegularExpression *regularExpression) {
 }
 
 char * RegularExpression_to_string(RegularExpression *regularExpression) {
-	char *regularExpression_string;
-	{
-		size_t regularExpression_string_length;
-		FILE *regularExpression_string_stream = open_memstream(&regularExpression_string, &regularExpression_string_length);
-		fprintf(
-			regularExpression_string_stream,
-			"RegularExpression@%lx\n"
-			"pattern: \'%s\';\n"
-			"num match: \'%ld\';\n"
-			"re: @%lX.",
-			(long)(void *) regularExpression, regularExpression->pattern, regularExpression->num_matches, (long)(void *) regularExpression->re
-		);
-		{
-			fclose(regularExpression_string_stream);
-		}
-	}
+	char *regularExpression_string = string_create_by_format(
+		"RegularExpression@%lx\n"
+		"pattern: \'%s\';\n"
+		"num match: \'%ld\';\n"
+		"re: @%lX.",
+		(long)(void *) regularExpression, regularExpression->pattern, regularExpression->num_matches, (long)(void *) regularExpression->re
+	);
 	return regularExpression_string;
 }
 
-Boolean RegularExpression_match(RegularExpression *regularExpression, char *string) {
+bool RegularExpression_match(RegularExpression *regularExpression, char *string) {
 	return (regexec(regularExpression->re, string, 0, NULL, 0) == 0)?true:false;
 }
 

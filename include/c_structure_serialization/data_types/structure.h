@@ -2,9 +2,9 @@
 #define STRUCTURE_H
 
 
+#include <stdbool.h>
 #include <stddef.h>
 
-#include "c_structure_serialization/utils/boolean.h"
 #include "c_structure_serialization/utils/array.h"
 #include "c_structure_serialization/data_types/attribute.h"
 
@@ -25,10 +25,10 @@ void Structure_free(Structure *structure);
 char * Structure_to_string(Structure *structure);
 
 void Structure_add(Structure *structure, Attribute *attribute);
-Boolean Structure_delete(Structure *structure, Attribute *attribute);
-Boolean Structure_contains_string_attributes(Structure *structure);
-Boolean Structure_contains_array_attributes(Structure *structure);
-Boolean Structure_contains_structure_attributes(Structure *structure);
+bool Structure_delete(Structure *structure, Attribute *attribute);
+bool Structure_contains_string_attributes(Structure *structure);
+bool Structure_contains_array_attributes(Structure *structure);
+bool Structure_contains_structure_attributes(Structure *structure);
 
 
 void * array_Structure_create_pack_arguments(char *file_path, Array *source_code);

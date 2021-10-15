@@ -3,7 +3,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "c_structure_serialization/utils/boolean.h"
 #include "c_structure_serialization/utils/array.h"
 #include "c_structure_serialization/utils/strings.h"
 #include "c_structure_serialization/utils/files.h"
@@ -32,15 +31,11 @@ char * file_read(char *file_path) {
 		size_t line_length = 0;
 		while ((read = getline(&line, &line_length, file_stream))!=-1) {
 			fprintf(string_stream, "%s", line);
-			{
-				free(line);
-				line = NULL;
-			}
 		}
 		{
 			fclose(string_stream);
 			fclose(file_stream);
-			free(line);
+			string_free(line);
 		}
 	}
 	return string;
@@ -62,6 +57,7 @@ char * file_get_directory_path(char *file_path) {
 }
 
 Array * directory_path_scan_for_h_files(char *directory_path) {
+	// TODO: scan directory and subdirectories for h files
 	Array *h_files = Array_create_for_string();
 	DIR *directory;
 	struct dirent *file;

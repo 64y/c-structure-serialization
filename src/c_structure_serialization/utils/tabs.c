@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#include "c_structure_serialization/utils/strings.h"
 #include "c_structure_serialization/utils/tabs.h"
 
 
@@ -17,8 +18,7 @@ void Tabs_free(Tabs *tabs) {
 		tabs->string_length = 0;
 		tabs->string_length_max = 0;
 		if (tabs->string!=NULL) {
-			free(tabs->string);
-			tabs->string = NULL;
+			string_free(tabs->string);
 		}
 		free(tabs);
 		tabs = NULL;
@@ -26,22 +26,13 @@ void Tabs_free(Tabs *tabs) {
 }
 
 char * Tabs_to_string(Tabs *tabs) {
-	char *tabs_string;
-	{
-		size_t tabs_string_length;
-		FILE *tabs_string_stream = open_memstream(&tabs_string, &tabs_string_length);
-		fprintf(
-			tabs_string_stream,
-			"Tabs@%lX\n"
-			"string length: \'%ld\';\n"
-			"string length max: \'%ld\';\n"
-			"string: \'%s\'.",
-			(long)(void *)tabs, tabs->string_length, tabs->string_length_max, tabs->string
-		);
-		{
-			fclose(tabs_string_stream);
-		}
-	}
+	char *tabs_string = string_create_by_format(
+		"Tabs@%lX\n"
+		"string length: \'%ld\';\n"
+		"string length max: \'%ld\';\n"
+		"string: \'%s\'.",
+		(long)(void *)tabs, tabs->string_length, tabs->string_length_max, tabs->string
+	);
 	return tabs_string;
 }
 

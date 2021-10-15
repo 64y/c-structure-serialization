@@ -13,21 +13,14 @@
 
 
 char * generate_json_codec_declaration(Structure *structure) {
-	char *code;
-	{
-		size_t code_length;
-		FILE *code_stream = open_memstream(&code, &code_length);
-		fprintf(
-			code_stream,
-			"void %1$s_json_encode_process(FILE *structure_json_stream, PointerDictionary *pointerDictionary, void *structure);\n"
-			"void %1$s_json_decode_process(FILE *structure_json_stream, PointerDictionary *pointerDictionary, void *structure);\n"
-			"\n"
-			"char * %1$s_json_encode(void *structure);\n"
-			"void * %1$s_json_decode(char *structure_json);",
-			structure->name
-		);
-		fclose(code_stream);
-	}
+	char *code = string_create_by_format(
+		"void %1$s_json_encode_process(FILE *structure_json_stream, PointerDictionary *pointerDictionary, void *structure);\n"
+		"void %1$s_json_decode_process(FILE *structure_json_stream, PointerDictionary *pointerDictionary, void *structure);\n"
+		"\n"
+		"char * %1$s_json_encode(void *structure);\n"
+		"void * %1$s_json_decode(char *structure_json);",
+		structure->name
+	);
 	return code;
 }
 
@@ -55,7 +48,7 @@ char * generate_json_codec_definition(Structure *structure) {
 		
 		Tabs *et = Tabs_create(), *dt = Tabs_create();
 		// start
-		char *stream_name = string_copy("structure_json_stream");
+		char *stream_name = string_create("structure_json_stream");
 
 		//       encode
 		fprintf(e, "%svoid %s_json_encode_process(FILE *structure_json_stream, PointerDictionary *pointerDictionary, void *structure) {\n", Tabs_get(et), structure->name); Tabs_increment(et);
@@ -266,16 +259,14 @@ char * generate_json_codec_definition(Structure *structure) {
 		}
 	}	
 	char *code = string_appends(
-		(char *[]) {
-			code_json_encode_process,
-			"\n",
-			code_json_decode_process,
-			"\n",
-			code_json_encode,
-			"\n",
-			code_json_decode,
-			NULL
-		}
+		code_json_encode_process,
+		"\n",
+		code_json_decode_process,
+		"\n",
+		code_json_encode,
+		"\n",
+		code_json_decode,
+		NO_MORE_STRINGS
 	);
 	{
 		free(code_json_encode_process);

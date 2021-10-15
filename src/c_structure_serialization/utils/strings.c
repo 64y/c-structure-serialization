@@ -1,31 +1,60 @@
 #include <ctype.h>
+#include <stdarg.h>
+#include <stdbool.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
-#include "c_structure_serialization/utils/boolean.h"
 #include "c_structure_serialization/utils/array.h"
 #include "c_structure_serialization/utils/strings.h"
 
 
-char * string_copy(char *string) {
+char * string_create(char *string) {
 	char *string_copy = (char *)calloc(strlen(string)+1, sizeof(char));
 	strcpy(string_copy, string);
 	return string_copy;
 }
 
-Boolean string_equals(char *string0, char *string1) {
-	return (strcmp(string0, string1)==0)?true:false;
+char * string_create_by_format(char *string_format, ...) {
+	va_list string_arguments;
+	va_start(string_arguments, string_format);
+	char *string;
+	{
+		size_t string_length;
+		FILE *string_stream = open_memstream(&string, &string_length);
+		vfprintf(string_stream, string_format, string_arguments);
+		{
+			fclose(string_stream);
+		}
+	}
+	va_end(string_arguments);
+	return string;
 }
 
-Boolean string_equals_r(char *string0, char *string1) {
-	size_t string0_length = strlen(string0);
-	size_t string1_length = strlen(string1);
-	for (int string0_i=string0_length-1, string1_i=string1_length-1; string0_i>=0 && string1_i>=0; string0_i--, string1_i--) {
-		if (string0[string0_i]!=string1[string1_i]) {
+void string_free(char *string) {
+	if (string!=NULL) {
+		free(string);
+		string = NULL;
+	}
+}
+
+bool string_equals(char *stringA, char *stringB) {
+	return (strcmp(stringA, stringB)==0)?true:false;
+}
+
+bool string_ends_with(char *string, char *end) {
+	size_t string_length = strlen(string);
+	size_t end_length = strlen(end);
+	for (int string_i=string_length-1, end_i=end_length-1; string_i>=0 && end_i>=0; string_i--, end_i--) {
+		if (string[string_i]!=end[end_i]) {
 			return false;
 		}
 	}
 	return true;
+}
+
+char * string_copy(char *string) {
+	return string_create(string);
 }
 
 char * string_to_lower(char *string) {
@@ -46,54 +75,54 @@ char * string_to_upper(char *string) {
 	return string_upper;
 }
 
-char * string_make_safe(char *string) {
-	size_t string_safe_length = strlen(string);
-	char *string_safe = (char *)calloc(string_safe_length, sizeof(char));
-	for (int i=0; i<string_safe_length; i++) {
-		if (string[i]!=' ') {
-			string_safe[i] = string[i];
+char * string_replace_char(char *string, char find, char replace) {
+	size_t string_length = strlen(string);
+	char *string_replaced = (char *)calloc(string_length+1, sizeof(char));
+	for (int i=0; i<string_length; i++) {
+		string_replaced[i] = (string[i]==find)?replace:string[i];
+	}
+	return string_replaced;
+}
+
+char * string_appends(char *string_first, ...) {
+	va_list ap;
+	va_start(ap, string_first);
+	char *string;
+	{
+		size_t string_length;
+		FILE *string_stream = open_memstream(&string, &string_length);
+		if (string_first!=NO_MORE_STRINGS) {
+			fprintf(string_stream, "%s", string_first);
+			while (1) {
+				char *str = va_arg(ap, char *);
+				if (str==NO_MORE_STRINGS) {
+					break;
+				}
+				fprintf(string_stream, "%s", str);
+			}
 		} else {
-			string_safe[i] = '_';
+			fprintf(string_stream, "%s", "");
+		}
+		{
+			fclose(string_stream);
 		}
 	}
-	return string_safe;
+	va_end(ap);
+	return string;
 }
 
 char * string_make_shortcut(char *string) {
-	char *shortcut = (char *)calloc(strlen(string)+1, sizeof(char));
-	strcpy(shortcut, string);
-	shortcut[0] = tolower(shortcut[0]);
-	return shortcut;
-}
-
-char * string_appends(char *strings[]) {
-	size_t string_length = 0;
-	for (int i=0; strings[i]!=NULL; i++) {
-		string_length += strlen(strings[i]);
-	}
-	char *string = (char *)calloc(string_length+1, sizeof(char));
-	for (int i=0, string_index=0; strings[i]!=NULL; i++) {
-		for (int index=0; index<strlen(strings[i]); string_index++, index++) {
-			string[string_index] = strings[i][index];
-		}
-	}
-	return string;
-}
-
-char * string_random(size_t string_length_min, size_t string_length_max) {
-	size_t string_printable_length = 96;
-	char *string_printable = "0123456789qwertyuiopasdfgghjklzxcvbnmQWERTYUIOPASDFGHJKLZXCVBNM`~!@#$%%^&*()-_=+[{]}\\|;:\'\",<.>/?";
-	size_t string_length = string_length_min + random()%(string_length_max+1-string_length_min);
-	char *string = (char *)calloc(string_length+1, sizeof(char));
-	for (int i=0; i<string_length; i++) {
-		string[i] = string_printable[random() % string_printable_length];
-	}
-	return string;
+	size_t string_length = strlen(string);
+	char *string_shortcut = (char *)calloc(1+string_length+1, sizeof(char));
+	strcpy(string_shortcut, string);
+	string_shortcut[0] = '_';
+	string_shortcut[1] = tolower(string_shortcut[1]);
+	return string_shortcut;
 }
 
 char * string_repeat_star(size_t times) {
 	if (times==0) {
-		return string_copy("");
+		return string_create("");
 	}
 	char *string = (char *)calloc(1+times+1, sizeof(char));
 	string[0] = ' '; 
