@@ -66,7 +66,7 @@ int main(int argc, char *argv[]) {
 	
 	generate_sources(path_to_temporary_sources, path_to_structures);
 	
-	char *command_to_create_library = string_create_by_format("gcc shared -nostartfiles -fPIC o %1$s I %2$s find %2$s -type f -name \"*.c\")\nrm %2$s -rf", path_to_created_library, path_to_temporary_sources);
+	char *command_to_create_library = string_create_by_format("gcc shared -nostartfiles -fPIC o %1$s I %2$s $(find %2$s -type f -name \"*.c\")\nrm %2$s -rf", path_to_created_library, path_to_temporary_sources);
 	system(command_to_create_library);
 	
 	{

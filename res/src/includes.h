@@ -2,22 +2,21 @@
 #define _INCLUDES_H
 
 
+#include <math.h>
+#include <stdbool.h>
+#include <stddef.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
-#include "_utils/boolean.h"
 #include "_utils/data.h"
 #include "_utils/base64.h"
 
-#include "_structure/structure_name.h"
-
 #include "_structure/pointer.h"
-#include "_structure/pointer_dictionary.h"
+#include "_structure/pointer_set.h"
+#include "_structure/structure.h"
 
 %s
 %s
-
-#include "_structure/structure_methods.h"
 
 #endif
