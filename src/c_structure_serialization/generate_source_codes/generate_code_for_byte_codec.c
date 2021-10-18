@@ -8,8 +8,9 @@
 #include "c_structure_serialization/data_types/basic_type.h"
 #include "c_structure_serialization/data_types/attribute.h"
 #include "c_structure_serialization/data_types/structure.h"
-#include "c_structure_serialization/generate_source_codes/generate_libraries.h"
-#include "c_structure_serialization/generate_source_codes/generate_byte_codec.h"
+#include "c_structure_serialization/generate_source_codes/generate_sources.h"
+#include "c_structure_serialization/generate_source_codes/generate_library.h"
+#include "c_structure_serialization/generate_source_codes/generate_code_for_byte_codec.h"
 
 
 char * generate_byte_codec_declaration(Structure *structure) {

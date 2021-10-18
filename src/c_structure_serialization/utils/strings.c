@@ -131,16 +131,17 @@ char * string_repeat_star(size_t times) {
 }
 
 
-void * array_string_create(void *element_create_arguments) {
-	return string_copy((char *) element_create_arguments);
+void * array_string_create(va_list string_arguments) {
+	return string_copy(va_arg(string_arguments, char *));
 }
 
-void array_string_free(void *element) {
-	free((char *)element);
+void array_string_free(void *string) {
+	char *str = (char *) string;
+	string_free(str);
 }
 
-char * array_string_to_string(void *element) {
-	return string_copy((char *) element);
+char * array_string_to_string(void *string) {
+	return string_copy((char *) string);
 }
 
 int array_string_cmp(const void *a, const void *b) {

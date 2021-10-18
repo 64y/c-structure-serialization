@@ -1,5 +1,5 @@
-#ifndef GENERATE_BYTE_CODEC_H
-#define GENERATE_BYTE_CODEC_H
+#ifndef GENERATE_CODE_FOR_BYTE_CODEC_H
+#define GENERATE_CODE_FOR_BYTE_CODEC_H
 
 
 #include "c_structure_serialization/data_types/structure.h"

@@ -1,5 +1,5 @@
-#ifndef GENERATE_TO_STRING_METHOD_H
-#define GENERATE_TO_STRING_METHOD_H
+#ifndef GENERATE_CODE_FOR_TO_STRING_H
+#define GENERATE_CODE_FOR_TO_STRING_H
 
 
 #include "c_structure_serialization/data_types/structure.h"

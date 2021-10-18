@@ -52,6 +52,7 @@ char * PointerSet_to_string(PointerSet *pointerSet) {
 	return pointerSet_string;
 }
 
+
 Pointer * PointerSet_get_by_hashCode(PointerSet *pointerSet, char *hashCode) {
 	for (Pointer *curr=pointerSet->head; curr!=NULL; curr=curr->next) {
 		if (strcmp(hashCode, curr->hashCode)==0) {
@@ -77,7 +78,6 @@ bool PointerSet_put(PointerSet *pointerSet, Pointer *pointer) {
 	}
 	return true;
 }
-
 
 bool PointerSet_contains_by_hashCode(PointerSet *pointerSet, char *hashCode) {
 	return (PointerSet_get_by_hashCode(pointerSet, hashCode)!=NULL)?true:false;
@@ -108,4 +108,16 @@ Pointer * PointerSet_remove_by_hashCode(PointerSet *pointerSet, char *hashCode) 
 
 void PointerSet_stage_next(PointerSet *pointerSet) {
 	pointerSet->stage = pointerSet->stage + 1;
+}
+
+
+void PointerSet_walk(PointerSet *pointerSet) {
+	size_t curr_i=0, curr_size=PointerSet_size(pointerSet);
+	for (Pointer *curr=pointerSet->head; curr!=NULL; curr=curr->next, curr_size=PointerSet_size(pointerSet), PointerSet_stage_next(pointerSet)) {
+		while (curr_i<curr_size && curr!=NULL) {
+			structures_methods[curr->name][WALK_POINTER](pointerSet, pointer);
+			curr = curr->next;
+			curr_i = curr_i + 1;
+		}
+	}
 }

@@ -57,21 +57,51 @@ char * file_get_directory_path(char *file_path) {
 }
 
 Array * directory_path_scan_for_h_files(char *directory_path) {
-	// TODO: scan directory and subdirectories for h files
 	Array *h_files = Array_create_for_string();
-	DIR *directory;
-	struct dirent *file;
-	if ((directory = opendir(directory_path)) != NULL) {
-		while((file = readdir(directory)) != NULL) {
-			if (
-				!string_equals(file->d_name, ".") &&
-				!string_equals(file->d_name, "..") &&
-				file->d_name[strlen(file->d_name)-1]=='h'
-			) {
-				Array_add(h_files, file->d_name);
+	{
+		Array *directories = Array_create_for_string();
+		Array_add(directories, directory_path);
+		for (int i=0; i<Array_size(directories); i++) {
+			char *curr_directory_path = (char *) Array_get(directories, i);
+			DIR *directory;
+			struct dirent *file;
+			
+			if ((directory = opendir(curr_directory_path)) != NULL) {
+				while((file = readdir(directory)) != NULL) {
+					switch (file->d_type) {
+						case DT_DIR: {
+							if (string_equals(".", file->d_name) || string_equals("..", file->d_name)) {
+								break;
+							}
+							char *path_name = string_appends(curr_directory_path, "/", file->d_name, NO_MORE_STRINGS);
+							Array_add(directories, path_name);
+							{
+								string_free(path_name);
+							}
+							break;
+						}
+						case DT_REG: {
+							if (string_ends_with(file->d_name, ".h")) {
+								char *file_name = string_appends(curr_directory_path, "/", file->d_name, NO_MORE_STRINGS);
+								Array_add(h_files, file_name);
+								{
+									string_free(file_name);
+								}
+							}
+							break;
+						}
+						default: {
+							fprintf(stderr, "In \'directory_path_scan_for_h_files\' can\'t work with file \'%s\' of type \'%d\'!", file->d_name, file->d_type);
+						}
+					}
+				}
+				closedir(directory);
 			}
 		}
-		closedir(directory);
+		{
+			Array_free(directories);
+		}
 	}
+	Array_sort(h_files, array_string_cmp);
 	return h_files;
 }

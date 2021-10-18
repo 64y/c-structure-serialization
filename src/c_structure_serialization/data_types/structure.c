@@ -1,3 +1,4 @@
+#include <stdarg.h>
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdio.h>
@@ -339,26 +340,18 @@ bool Structure_contains_structure_attributes(Structure *structure) {
 }
 
 
-void * array_Structure_create_pack_arguments(char *file_path, Array *source_code) {
-	void **args = (void **)calloc(2, sizeof(void *));
-	args[0] = file_path;
-	args[1] = source_code;
-	return args;
+void * array_Structure_create(va_list structure_arguments) {
+	char *file_path = va_arg(structure_arguments, char *);
+	Array *source_code = va_arg(structure_arguments, Array *);
+	return Structure_create_by_file_path_and_source_code(file_path, source_code);
 }
 
-void * array_Structure_create(void *element) {
-	void **args = (void **) element;
-	Structure *structure = Structure_create_by_file_path_and_source_code((char *)args[0], (Array *) args[1]);
-	free(args);
-	return structure;
+void array_Structure_free(void *structure) {
+	Structure_free((Structure *) structure);
 }
 
-void array_Structure_free(void *element) {
-	Structure_free((Structure *) element);
-}
-
-char * array_Structure_to_string(void *element) {
-	return Structure_to_string((Structure *) element);
+char * array_Structure_to_string(void *structure) {
+	return Structure_to_string((Structure *) structure);
 }
 
 Array * Array_create_for_Structure() {

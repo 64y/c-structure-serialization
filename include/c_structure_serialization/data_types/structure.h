@@ -2,6 +2,7 @@
 #define STRUCTURE_H
 
 
+#include <stdarg.h>
 #include <stdbool.h>
 #include <stddef.h>
 
@@ -31,10 +32,9 @@ bool Structure_contains_array_attributes(Structure *structure);
 bool Structure_contains_structure_attributes(Structure *structure);
 
 
-void * array_Structure_create_pack_arguments(char *file_path, Array *source_code);
-void * array_Structure_create(void *element_ar);
-char * array_Structure_to_string(void *element);
-void array_Structure_free(void *element);
+void * array_Structure_create(va_list structure_arguments);
+char * array_Structure_to_string(void *structure);
+void array_Structure_free(void *structure);
 Array * Array_create_for_Structure();
 
 #endif
