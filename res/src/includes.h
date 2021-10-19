@@ -14,7 +14,7 @@
 
 #include "_structure/pointer.h"
 #include "_structure/pointer_set.h"
-#include "_structure/structure.h"
+#include "_structure/structure_info.h"
 
 %s
 %s

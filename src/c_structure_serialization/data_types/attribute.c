@@ -11,6 +11,7 @@ Attribute * Attribute_create(AttributeType type, char *data_type, char *name, Di
 	Attribute *attribute = (Attribute *)malloc(sizeof(Attribute));
 	attribute->type = type;
 	attribute->data_type = string_copy(data_type);
+	attribute->data_type_upper = string_to_upper(attribute->data_type);
 	attribute->name = string_copy(name);
 	attribute->dimension = dimension;
 	attribute->next = NULL;
@@ -22,6 +23,9 @@ void Attribute_free(Attribute *attribute) {
 		attribute->type = NO_TYPE;
 		if (attribute->data_type!=NULL) {
 			string_free(attribute->data_type);
+		}
+		if (attribute->data_type_upper!=NULL) {
+			string_free(attribute->data_type_upper);
 		}
 		if (attribute->name!=NULL) {
 			string_free(attribute->name);
@@ -36,25 +40,20 @@ void Attribute_free(Attribute *attribute) {
 }
 
 char * Attribute_to_string(Attribute *attribute) {
-	char *attribute_string;
+	char *dimension_string = Dimension_to_string(attribute->dimension);
+	char *attribute_string = string_create_by_format*(
+		"Attribute@%lX\n"
+		"type: \'%s\';\n"
+		"data type: \'%s\';\n"
+		"data type_upper: \'%s\';\n"
+		"name: \'%s\';\n"
+		"dimension: \'Dimension@%lX\';\n"
+		"next: \'Attribute@%lX\'.\n"
+		"%s",
+		(long)(void *)attribute, ATTRIBUTE_TYPE_STRING[attribute->type], attribute->data_type, attribute->data_type_upper, attribute->name, (long)(void *)attribute->dimension, (long)(void *)attribute->next, dimension_string
+	);
 	{
-		size_t attribute_string_length;
-		FILE *attribute_string_stream = open_memstream(&attribute_string, &attribute_string_length);
-		char *dimension_string = Dimension_to_string(attribute->dimension);
-		fprintf(attribute_string_stream,
-			"Attribute@%lX\n"
-			"type: \'%s\';\n"
-			"data type: \'%s\';\n"
-			"name: \'%s\';\n"
-			"dimension: \'Dimension@%lX\';\n"
-			"next: \'Attribute@%lX\'.\n"
-			"%s",
-			(long)(void *)attribute, ATTRIBUTE_TYPE_STRING[attribute->type], attribute->data_type, attribute->name, (long)(void *)attribute->dimension, (long)(void *)attribute->next, dimension_string
-		);
-		{
-			string_free(dimension_string);
-			fclose(attribute_string_stream);
-		}
+		string_free(dimension_string);
 	}
 	return attribute_string;
 }

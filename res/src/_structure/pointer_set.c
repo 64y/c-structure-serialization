@@ -9,6 +9,14 @@ PointerSet * PointerSet_create(void) {
 	return pointerSet;
 }
 
+PointerSet * PointerSet_create_by_head(Pointer *head) {
+	PointerSet *pointerSet = (PointerSet *)malloc(sizeof(PointerSet));
+	pointerSet->size = 1;
+	pointerSet->head = head;
+	pointerSet->stage = 0;
+	return pointerSet;
+}
+
 void PointerSet_free(PointerSet *pointerSet) {
 	if (pointerSet!=NULL) {
 		pointerSet->size = 0;

@@ -9,6 +9,7 @@
 typedef struct Attribute {
 	AttributeType type;
 	char *data_type;
+	char *data_type_upper;
 	char *name;
 	Dimension *dimension;
 	struct Attribute *next;
