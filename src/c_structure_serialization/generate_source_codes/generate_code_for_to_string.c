@@ -21,14 +21,21 @@ void generate_to_string_definition(FILE *c_stream, Tabs *tabs, Structure *struct
 	fprintf(
 		c_stream,
 		"%1$schar * %3$s_to_string(void *structure) {\n"
-		"%1$s%2$sreturn to_string(Pointer_create(%4$s, structure));\n"
+		"%1$s%2$sData *data = encode(TO_STRING, Pointer_create_by_name_pointer(%4$s, structure));\n"
+		"%1$s%2$sdata->bytes_size = 0;\n"
+		"%1$s%2$schar *structure_string = data->bytes;\n"
+		"%1$s%2$s{\n"
+		"%1$s%2$s%2$sfree(data);\n"
+		"%1$s%2$s%2$sdata = NULL;\n"
+		"%1$s%2$s}\n"
+		"%1$s%2$sreturn structure_string;\n"
 		"%1$s}",
 		Tabs_get(tabs), Tabs_get_tab(tabs), structure->name, structure->name_upper
 	);
 }
 
 
-void to_string_out_primitive(FILE *stream, Tabs *tabs, Attribute *attribute, char *attribute_pointer) {
+void to_string_encode_primitive(FILE *stream, Tabs *tabs, Attribute *attribute, char *attribute_pointer) {
 	fprintf(
 		stream,
 		"%sfprintf(structure_string_stream, \"\\\'%s\\\'\", %s);\n",
@@ -36,7 +43,7 @@ void to_string_out_primitive(FILE *stream, Tabs *tabs, Attribute *attribute, cha
 	);
 }
 
-void to_string_out_structure(FILE *stream, Tabs *tabs, Attribute *attribute, char *attribute_pointer) {
+void to_string_encode_structure(FILE *stream, Tabs *tabs, Attribute *attribute, char *attribute_pointer) {
 	fprintf(
 		stream,
 		"%sfprintf(structure_string_stream, \"%%s@%%lX\", \"%s\", (long)(void *)%s);\n",

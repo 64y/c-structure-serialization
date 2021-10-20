@@ -12,12 +12,12 @@
 void generate_json_codec_declaration(FILE *h_stream, Tabs *tabs, Structure *structure);
 void generate_json_codec_definition(FILE *h_stream, Tabs *tabs, Structure *structure);
 
-void json_codec_out_primitive(FILE *stream, Tabs *tabs, Attribute *attribute, char *attribute_pointer);
-void json_codec_out_string(FILE *stream, Tabs *tabs, Attribute *attribute, char *attribute_pointer);
-void json_codec_out_structure(FILE *stream, Tabs *tabs, Attribute *attribute, char *attribute_pointer);
-void json_codec_in_primitive(FILE *stream, Tabs *tabs, Attribute *attribute, char *attribute_pointer);
-void json_codec_in_string(FILE *stream, Tabs *tabs, Attribute *attribute, char *attribute_pointer);
-void json_codec_in_structure(FILE *stream, Tabs *tabs, Attribute *attribute, char *attribute_pointer);
-void json_codec_in_structure_pointer(FILE *stream, Tabs *tabs, Attribute *attribute, char *attribute_pointer);
+void json_encode_primitive(FILE *stream, Tabs *tabs, Attribute *attribute, char *attribute_pointer);
+void json_encode_string(FILE *stream, Tabs *tabs, Attribute *attribute, char *attribute_pointer);
+void json_encode_structure(FILE *stream, Tabs *tabs, Attribute *attribute, char *attribute_pointer);
+void json_decode_primitive(FILE *stream, Tabs *tabs, Attribute *attribute, char *attribute_pointer);
+void json_decode_string(FILE *stream, Tabs *tabs, Attribute *attribute, char *attribute_pointer);
+void json_decode_structure(FILE *stream, Tabs *tabs, Attribute *attribute, char *attribute_pointer);
+void json_decode_structure_pointer(FILE *stream, Tabs *tabs, Attribute *attribute, char *attribute_pointer);
 
 #endif

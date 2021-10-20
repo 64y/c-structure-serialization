@@ -12,7 +12,7 @@
 void generate_to_string_declaration(FILE *h_stream, Tabs *tabs, Structure *structure);
 void generate_to_string_definition(FILE *c_stream, Tabs *tabs, Structure *structure);
 
-void to_string_out_primitive(FILE *stream, Tabs *tabs, Attribute *attribute, char *attribute_pointer);
-void to_string_out_structure(FILE *stream, Tabs *tabs, Attribute *attribute, char *attribute_pointer);
+void to_string_encode_primitive(FILE *stream, Tabs *tabs, Attribute *attribute, char *attribute_pointer);
+void to_string_encode_structure(FILE *stream, Tabs *tabs, Attribute *attribute, char *attribute_pointer);
 
 #endif

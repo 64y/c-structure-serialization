@@ -6,6 +6,7 @@ PointerSet * PointerSet_create(void) {
 	pointerSet->size = 0;
 	pointerSet->head = NULL;
 	pointerSet->stage = 0;
+	pointerSet->address_id_counter = 0;
 	return pointerSet;
 }
 
@@ -14,6 +15,7 @@ PointerSet * PointerSet_create_by_head(Pointer *head) {
 	pointerSet->size = 1;
 	pointerSet->head = head;
 	pointerSet->stage = 0;
+	pointerSet->address_id_counter = 0;
 	return pointerSet;
 }
 
@@ -43,8 +45,9 @@ char * PointerSet_to_string(PointerSet *pointerSet) {
 			"PointerSet@%lX\n"
 			"size: \'%ld\';\n"
 			"head: \'Pointers@%lX\';\n"
-			"stage: \'%ld\'.",
-			(long)(void  *)pointerSet, pointerSet->size, (long)(void *)pointerSet->head, pointerSet->stage
+			"stage: \'%ld\';"
+			"address_id_counter: \'%u\'.\n",
+			(long)(void  *)pointerSet, pointerSet->size, (long)(void *)pointerSet->head, pointerSet->stage, pointerSet->address_id_counter
 		);
 		for (Pointer *curr=pointerSet->head; curr!=NULL; curr=curr->next) {
 			char *pointer_string = Pointer_to_string(curr);
@@ -61,20 +64,13 @@ char * PointerSet_to_string(PointerSet *pointerSet) {
 }
 
 
-Pointer * PointerSet_get_by_hashCode(PointerSet *pointerSet, char *hashCode) {
-	for (Pointer *curr=pointerSet->head; curr!=NULL; curr=curr->next) {
-		if (strcmp(hashCode, curr->hashCode)==0) {
-			return curr;
-		}
-	}
-	return NULL;
-}
-
-bool PointerSet_put(PointerSet *pointerSet, Pointer *pointer) {
+bool PointerSet_add(PointerSet *pointerSet, Pointer *pointer) {
 	if (PointerSet_contains(pointerSet, pointer)) {
 		return false;
 	}
 	pointerSet->size = pointerSet->size + 1;
+	pointerSet->address_id_counter = pointerSet->address_id_counter + 1;
+	pointer->address_id = pointerSet->address_id_counter;
 	if (pointerSet->head==NULL) {
 		pointerSet->head = pointer;
 	} else {
@@ -87,6 +83,15 @@ bool PointerSet_put(PointerSet *pointerSet, Pointer *pointer) {
 	return true;
 }
 
+Pointer * PointerSet_get_by_hashCode(PointerSet *pointerSet, char *hashCode) {
+	for (Pointer *curr=pointerSet->head; curr!=NULL; curr=curr->next) {
+		if (strcmp(hashCode, curr->hashCode)==0) {
+			return curr;
+		}
+	}
+	return NULL;
+}
+
 bool PointerSet_contains_by_hashCode(PointerSet *pointerSet, char *hashCode) {
 	return (PointerSet_get_by_hashCode(pointerSet, hashCode)!=NULL)?true:false;
 }
@@ -95,14 +100,12 @@ Pointer * PointerSet_remove_by_hashCode(PointerSet *pointerSet, char *hashCode) 
 	Pointer *pointer = NULL;
 	if (pointerSet->head!=NULL) {
 		if (strcmp(hashCode, pointerSet->head->hashCode)==0) {
-			pointerSet->size = pointerSet->size - 1;
 			pointer = pointerSet->head;
 			pointerSet->head = pointerSet->head->next;
 			pointer->next = NULL;
 		} else {
 			for (Pointer *prev=pointerSet->head, *curr=prev->next; curr!=NULL; prev=curr, curr=curr->next) {
 				if (strcmp(hashCode, curr->hashCode)==0) {
-					pointerSet->size = pointerSet->size - 1;
 					prev->next = curr->next;
 					pointer = curr;
 					pointer->next = NULL;
@@ -110,6 +113,9 @@ Pointer * PointerSet_remove_by_hashCode(PointerSet *pointerSet, char *hashCode) 
 				}
 			}
 		}
+	}
+	if (pointer!=NULL) {
+		pointerSet->size = pointerSet->size - 1;
 	}
 	return pointer;
 }

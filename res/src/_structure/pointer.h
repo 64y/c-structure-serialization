@@ -9,6 +9,7 @@ typedef struct Pointer {
 	StructureName name;
 	void *pointer;
 	long address;
+	unsigned int address_id;
 	char *hashCode;
 	struct Pointer *next;
 } Pointer;

@@ -10,6 +10,7 @@ Pointer * Pointer_create_by_name_pointer_address(StructureName name, void *struc
 	pointer->name = name;
 	pointer->pointer = structure;
 	pointer->address = address;
+	pointer->address_id = 0;
 	pointer->hashCode = NULL;
 	{
 		size_t hashCode_length;
@@ -28,6 +29,7 @@ Pointer * Pointer_create_by_name_pointer_hashCode(StructureName name, void *stru
 	pointer->name = name;
 	pointer->pointer = structure;
 	pointer->address = 0;
+	pointer->address_id = 0;
 	sscanf(hashCode, "%[^@]@%lX", &pointer->address);
 	pointer->hashCode = (char *)calloc(strlen(hashCode)+1, sizeof(char));
 	strcpy(pointer->hashCode, hashCode);
@@ -42,6 +44,7 @@ void Pointer_free(Pointer *pointer) {
 			pointer->name = NULL;
 		}
 		pointer->address = 0;
+		pointer->address_id = 0;
 		if (pointer->hashCode!=NULL) {
 			free(pointer->hashCode);
 			pointer->hashCode = NULL;
@@ -63,42 +66,12 @@ char * Pointer_to_string(Pointer *pointer) {
 			"name: \'%s\';\n"
 			"pointer: \'%lX\';"
 			"address: \'%lX\';"
+			"address_id: \'%X\';"
 			"hashCode: \'%s\';"
 			"next: \'%lX\'.",
-			(long)(void *)pointer, STRUCTURE_NAME_STRING[pointer->name], (long)pointer->pointer, pointer->address, pointer->hashCode, (long)pointer->next
+			(long)(void *)pointer, STRUCTURE_NAME_STRING[pointer->name], (long)pointer->pointer, pointer->address, pointer->address_id, pointer->hashCode, (long)pointer->next
 		);
 		fclose(pointer_string_stream);
 	}
 	return pointer_string;
-}
-
-Pointer * Pointer_create_by_name_pointer(StructureName structureName, void *structure);
-Pointer * Pointer_create_by_name_pointer_address(StructureName structureName, void *structure, long address);
-void Pointer_free(Pointer *pointer);
-char * Pointer_to_string(Pointer *pointer);
-
-Pointer * Pointer_create(StructureName name, void *structure) {
-}
-
-void Pointer_free(Pointer *pointer) {
-	if (pointer != NULL) {
-		pointer->pointer = NULL;
-		free(pointer);
-		pointer = NULL;
-	}
-}
-
-char * Pointer_to_string(Pointer *pointer) {
-}
-
-
-char * Pointer_hash_code(Pointer *pointer) {
-	char *pointer_hashCode;
-	{
-		size_t pointer_hashCode_length;
-		FILE *pointer_hashCode_stream = open_memstream(&pointer_hashCode, &pointer_hashCode_length);
-		fprintf(pointer_hashCode_stream, "%s@%lX", STRUCTURE_NAME_STRING[pointer->name], (long)pointer->pointer);
-		fclose(pointer_hashCode_stream);
-	}
-	return pointer_hashCode;
 }

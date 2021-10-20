@@ -8,6 +8,6 @@
 
 char * generate_attribute_pointer(Structure *structure, Attribute *attribute);
 
-void generate_library_source_code_for_structure(char *path_to_sources, Structure *structure);
+void generate_library_source_codes_for_structure(char *path_to_sources, Structure *structure);
 
 #endif

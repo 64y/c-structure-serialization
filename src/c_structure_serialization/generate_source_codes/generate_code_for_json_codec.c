@@ -29,19 +29,40 @@ void generate_json_codec_definition(FILE *c_stream, Tabs *tabs, Structure *struc
 	fprintf(
 		c_stream,
 		"%1$schar * %3$s_json_encode(void *structure) {\n"
-		"%1$s%2$sreturn json_encode(Pointer_create(%4$s, structure));\n"
+		"%1$s%2$sData *data = encode(JSON_ENCODE, Pointer_create_by_name_pointer(%4$s, structure));\n"
+		"%1$s%2$sdata->bytes_size = 0;\n"
+		"%1$s%2$schar *structure_json = data->bytes;\n"
+		"%1$s%2$s{\n"
+		"%1$s%2$s%2$sfree(data);\n"
+		"%1$s%2$s%2$sdata = NULL;\n"
+		"%1$s%2$s}\n"
+		"%1$s%2$sreturn structure_json;\n"
 		"%1$s}\n"
 		"%1$s\n"
 		"%1$svoid * %3$s_json_decode(char *structure_json) {\n"
 		"%1$s%2$s%3$s *%5$s = (%3$s *)malloc(sizeof(%3$s));\n"
 		"%1$s%2$smemset(%5$s, 0x00, sizeof(%3$s));\n"
-		"%1$s%2$sreturn json_decode(structure_json, Pointer_create(%4$s, %5$s));\n"
+		"%1$s%2$ssize_t structure_hashCode_length = 0;\n"
+		"%1$s%2$ssscanf(structure_json+4, \"%%*[$0-9@A-Z_a-z]%%ln\", &structure_hashCode_length);\n"
+		"%1$s%2$schar *structure_hashCode = (char *)calloc(structure_hashCode_length+1, sizeof(char));\n"
+		"%1$s%2$ssscanf(structure_json+4, \"%%[$0-9@A-Z_a-z]\", structure_hashCode);\n"
+		"%1$s%2$svoid *structure = decode(\n"
+		"%1$s%2$s%2$sJSON_DECODE,\n"
+		"%1$s%2$s%2$sPointer_create_by_name_pointer_hashCode(%4$s, %5$s, structure_hashCode),\n"
+		"%1$s%2$s%2$s&((Data) {strlen(structure_json), (byte *) structure_json}\n"
+		"%1$s%2$s);\n"
+		"%1$s%2$s{\n"
+		"%1$s%2$s%2$sfree(structure_hashCode);\n"
+		"%1$s%2$s%2$sstructure_hashCode = NULL;\n"
+		"%1$s%2$s%2$sstructure_hashCode_length = 0;\n"
+		"%1$s%2$s}\n"
+		"%1$s%2$sreturn structure;\n"
 		"%1$s}",
 		Tabs_get(tabs), Tabs_get_tab(tabs), structure->name, structure->name_upper, structure->shortcut
 	);
 }
 
-void json_codec_out_primitive(FILE *stream, Tabs *tabs, Attribute *attribute, char *attribute_pointer) {
+void json_encode_primitive(FILE *stream, Tabs *tabs, Attribute *attribute, char *attribute_pointer) {
 	fprintf(
 		stream,
 		"%sfprintf(structure_json_stream, \"%s\", %s);\n",
@@ -49,7 +70,7 @@ void json_codec_out_primitive(FILE *stream, Tabs *tabs, Attribute *attribute, ch
 	);
 }
 
-void json_codec_out_string(FILE *stream, Tabs *tabs, Attribute *attribute, char *attribute_pointer) {
+void json_encode_string(FILE *stream, Tabs *tabs, Attribute *attribute, char *attribute_pointer) {
 	fprintf(
 		stream,
 		"%1$sstring_base64 = (%3$s!=NULL) ? base64_encode_string(%3$s) : base64_encode(&((Data) {3, (byte *) \"\\0\\0\\0\"})) ;\n"
@@ -62,7 +83,7 @@ void json_codec_out_string(FILE *stream, Tabs *tabs, Attribute *attribute, char 
 	);
 }
 
-void json_codec_out_structure(FILE *stream, Tabs *tabs, Attribute *attribute, char *attribute_pointer) {
+void json_encode_structure(FILE *stream, Tabs *tabs, Attribute *attribute, char *attribute_pointer) {
 	fprintf(
 		stream,
 		"%sfprintf(structure_json_stream, \"%%s@%%lX\", \"%s\", (long)(void *)%s);\n",
@@ -70,7 +91,7 @@ void json_codec_out_structure(FILE *stream, Tabs *tabs, Attribute *attribute, ch
 	);
 }
 
-void json_codec_in_primitive(FILE *stream, Tabs *tabs, Attribute *attribute, char *attribute_pointer) {
+void json_decode_primitive(FILE *stream, Tabs *tabs, Attribute *attribute, char *attribute_pointer) {
 	fprintf(
 		stream,
 		"%sfscanf(structure_json_stream, \"%s, \", &%s);\n",
@@ -78,7 +99,7 @@ void json_codec_in_primitive(FILE *stream, Tabs *tabs, Attribute *attribute, cha
 	);
 }
 
-void json_codec_in_string(FILE *stream, Tabs *tabs, Attribute *attribute, char *attribute_pointer) {
+void json_decode_string(FILE *stream, Tabs *tabs, Attribute *attribute, char *attribute_pointer) {
 	fprintf(
 		stream,
 		"%1$sfscanf(structure_json_stream, \"\\\"\");\n"
@@ -126,13 +147,13 @@ void json_codec_in_string(FILE *stream, Tabs *tabs, Attribute *attribute, char *
 	}
 }
 
-void json_codec_in_structure(FILE *stream, Tabs *tabs, Attribute *attribute, char *attribute_pointer) {
+void json_decode_structure(FILE *stream, Tabs *tabs, Attribute *attribute, char *attribute_pointer) {
 	fprintf(
 		stream,
-		"%1$sfscanf(structure_json_stream, \"%%*[0-9@A-Z_a-z]%%ln\", &structure_hashCode_length);\n"
+		"%1$sfscanf(structure_json_stream, \"%%*[$0-9@A-Z_a-z]%%ln\", &structure_hashCode_length);\n"
 		"%1$sfseek(structure_json_stream, -structure_hashCode_length, SEEK_CUR);\n"
 		"%1$sstructure_hashCode = (char *)calloc(structure_hashCode_length+1, sizeof(char));\n"
-		"%1$sfscanf(structure_json_stream, \"%%[0-9@A-Z_a-z], \", sstructure_hashCode);\n"
+		"%1$sfscanf(structure_json_stream, \"%%[$0-9@A-Z_a-z], \", sstructure_hashCode);\n"
 		"%1$ssscanf(hashCode, \"%%*[^@]@%%lX\", &structure_address);\n"
 		"%1$sPointerSet_put(pointerSet, Pointer_create_by_name_pointer_hashCode(%3$s, %4$s, structure_hashCode));\n"
 		"%1$s{\n"
@@ -145,13 +166,13 @@ void json_codec_in_structure(FILE *stream, Tabs *tabs, Attribute *attribute, cha
 	);
 }
 
-void json_codec_in_structure_pointer(FILE *stream, Tabs *tabs, Attribute *attribute, char *attribute_pointer) {
+void json_decode_structure_pointer(FILE *stream, Tabs *tabs, Attribute *attribute, char *attribute_pointer) {
 	fprintf(
 		stream,
-		"%1$sfscanf(structure_json_stream, \"%%*[0-9@A-Z_a-z]%%ln\", &structure_hashCode_length);\n"
+		"%1$sfscanf(structure_json_stream, \"%%*[$0-9@A-Z_a-z]%%ln\", &structure_hashCode_length);\n"
 		"%1$sfseek(structure_json_stream, -structure_hashCode_length, SEEK_CUR);\n"
 		"%1$sstructure_hashCode = (char *)calloc(structure_hashCode_length+1, sizeof(char));\n"
-		"%1$sfscanf(structure_json_stream, \"%%[0-9@A-Z_a-z], \", structure_hashCode);\n"
+		"%1$sfscanf(structure_json_stream, \"%%[$0-9@A-Z_a-z], \", structure_hashCode);\n"
 		"%1$ssscanf(hashCode, \"%%*[^@]@%%lX\", &structure_address);\n"
 		"%1$sif(structure_address==0) {\n"
 		"%1$s%2$s%5$s = NULL;\n"

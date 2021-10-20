@@ -34,69 +34,144 @@ char * generate_attribute_pointer(Structure *structure, Attribute *attribute, ch
 }
 
 
-void generate_library_source_code_for_structure(char *path_to_sources, Structure *structure) {
-	
-}
-	/*char *path_libraries = string_appends(project_path, "/libraries", NO_MORE_STRINGS);
+void generate_library_methods(FILE *c_stream, Tabs *tabs, Structure *structure);
+
+void generate_library_source_codes_for_structure(char *path_to_sources, Structure *structure) {
+	char *path_to_libraries = string_appends(path_to_sources, "/libraries", NO_MORE_STRINGS);
 	mkdir(path_libraries, 0777);
-	char *structure_library_h_file_name = string_appends(path_libraries, "/", structure->name_lower, "_library.h", NO_MORE_STRINGS);
-	char *structure_library_c_file_name = string_appends(path_libraries, "/", structure->name_lower, "_library.c", NO_MORE_STRINGS);
-	char *code_h;
+	char *library_h_file_name = string_appends(path_to_sources, "/", structure->name_lower, "_library.h", NO_MORE_STRINGS);
 	{
-		size_t generate_code_size = 3;
-		char * (*generate_code[]) (Structure *structure) = {
-			generate_to_string_method_declaration,
-			generate_json_codec_declaration,
-			generate_byte_codec_declaration
+		size_t declaration_methods_size = 4;
+		void (*declaration_methods[])(FILE *h_stream, Tabs *tabs, Structure *structure) = {
+			generate_walk_declaration,
+			generate_to_string_declaration,
+			generate_byte_codec_declaration,
+			generate_json_codec_declaration
 		};
 		
-		size_t code_h_length;
-		FILE *code_h_stream = open_memstream(&code_h, &code_h_length);
-		fprintf(code_h_stream, "#ifndef %s_LIBRARY_H\n", structure->name_upper);
-		fprintf(code_h_stream, "#define %s_LIBRARY_H\n", structure->name_upper);
-		fprintf(code_h_stream, "\n");
-		fprintf(code_h_stream, "#include \"includes.h\"\n");
-		fprintf(code_h_stream, "\n");
-		for (int i=0; i<generate_code_size; i++) {
-			char *code = generate_code[i](structure);
-			fprintf(code_h_stream, "%s\n\n", code);
-			free(code);
+		Tabs *tabs = Tabs_create();
+		
+		FILE *h_stream = fopen(library_h_file_name, "r");
+		fprintf(
+			h_stream,
+			"#ifndef %1$s_LIBRARY_H\n"
+			"#define %1$s_LIBRARY_H\n"
+			"\n"
+			"#include \"includes.h\"\n"
+			"\n",
+			structure->name_upper
+		);
+		for (int i=0; i<declaration_methods_size; i++) {
+			fprintf(h_stream, "\n");
+			declaration_methods(h_stream, tabs, structure);
+			fprintf(h_stream, "\n");
 		}
-		fprintf(code_h_stream, "#endif");
+		fprintf(
+			h_stream,
+			"\n"
+			"#endif"
+		);
 		{
-			fclose(code_h_stream);
+			Tabs_free(tabs);
+			fclose(h_stream);
 		}
 	}
-	file_write(structure_library_h_file_name, code_h);
-	char *code_c;
+	char *library_c_file_name = string_appends(path_to_sources, "/", structure->name_lower, "_library.c", NO_MORE_STRINGS);
 	{
-		size_t generate_code_size = 3;
-		char * (*generate_code[]) (Structure *structure) = {
-			generate_to_string_method_definition,
-			generate_json_codec_definition,
-			generate_byte_codec_definition
+		size_t definition_methods_size = 4;
+		void (*definition_methods[])(FILE *c_stream, Tabs *tabs, Structure *structure) = {
+			generate_walk_definition,
+			generate_to_string_definition,
+			generate_byte_codec_definition,
+			generate_json_codec_definition
 		};
 		
-		size_t code_c_length;
-		FILE *code_c_stream = open_memstream(&code_c, &code_c_length);
-		fprintf(code_c_stream, "#include \"includes.h\"\n");
-		for (int i=0; i<generate_code_size; i++) {
-			char *code = generate_code[i](structure);
-			fprintf(code_c_stream, "\n\n%s", code);
-			free(code);
+		FILE *c_stream = fopen(library_c_file_name, "r");
+		fprintf(
+			c_stream,
+			"#include \"includes.h\"\n"
+			"\n"
+		);
+		for (int i=0; i<definition_methods_size; i++) {
+			fprintf(c_stream, "\n");
+			definition_methods(c_stream, tabs, structure);
+			fprintf(c_stream, "\n");
 		}
+		generate_library_methods(c_stream, tabs, structure);
 		{
-			fclose(code_c_stream);
+			Tabs_free(tabs);
+			fclose(c_stream);
 		}
 	}
-	file_write(structure_library_c_file_name, code_c);
 	{
-		free(path_libraries);
-		free(structure_library_h_file_name);
-		free(structure_library_c_file_name);
-		free(code_h);
-		free(code_c);
-	}*/
+		string_free(path_to_libraries);
+		string_free(library_h_file_name);
+		string_free(library_c_file_name);
+	}
+}
+
+
+void (*codec_methods[][])(FILE *stream, Tabs *tabs, Attribute *attribute, char *attribute_pointer) = {
+	{NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL},
+	{NULL, to_string_encode_primitive, json_encode_primitive, json_decode_primitive, byte_encode_primitive, byte_decode_primitive},
+	{NULL, to_string_encode_string, json_encode_string, json_decode_string, byte_encode_string, byte_decode_string},
+	{walk_structure, to_string_encode_structure, json_encode_structure, json_decode_structure, byte_encode_structure, byte_decode_structure},
+	{walk_structure_pointer, to_string_encode_structure, json_encode_structure, json_decode_structure, byte_encode_structure, byte_decode_structure_pointer},
+	{NULL, to_string_encode_primitive, json_encode_primitive, json_decode_primitive, byte_encode_primitive, byte_decode_primitive},
+	{NULL, to_string_encode_string, json_encode_string, json_decode_string, byte_encode_string, byte_decode_string},
+	{NULL, to_string_encode_structure, json_encode_structure, json_decode_structure, byte_encode_structure, byte_decode_structure},
+	{NULL, to_string_encode_structure, json_encode_structure, json_decode_structure, byte_encode_structure, byte_decode_structure_pointer}
+};
+
+void print_all_codecs(FILE *code_streams[], 
+
+void generate_library_methods(FILE *c_stream, Tabs *tabs, Structure *structure) {
+	char *code_walk;
+	char *code_to_string;
+	char *code_json_encode;
+	char *code_json_decode;
+	char *code_byte_encode;
+	char *code_byte_decode;
+	{
+		size_t code_walk_length, code_to_string_length, code_json_encode_length, code_json_decode_length, code_byte_encode_length, code_byte_decode_length;
+		FILE *code_streams[] = {
+			open_memstream(&code_walk, &code_walk_length),
+			open_memstream(&code_to_string, &code_to_string_length),
+			open_memstream(&code_json_encode, &code_json_encode_length),
+			open_memstream(&code_json_decode, &code_json_decode_length),
+			open_memstream(&code_byte_encode, &code_byte_encode_length),
+			open_memstream(&code_byte_decode, &code_byte_decode_length),
+			NULL
+		};
+		// WALK
+		// TO_STRING
+		// JSON_ENCODE
+		// JSON_DECODE
+		// BYTE_ENCODE
+		// BYTE_DECODE
+		for (Attribute *attribute=structure->head; attribute!=NULL; attribute=attribute->next) {
+			
+		}
+	}
+	fprintf(
+		c_stream,
+		"%s\n"
+		"%s\n"
+		"%s\n"
+		"%s\n"
+		"%s\n"
+		"%s",
+		code_walk, code_to_sting, code_json_encode, code_json_decode, code_byte_encode, code_byte_decode
+	);
+	{
+		string_free(code_walk);
+		string_free(code_to_string);
+		string_free(code_json_encode);
+		string_free(code_json_decode);
+		string_free(code_byte_encode);
+		string_free(code_byte_decode);
+	}
+}
 /*
 // TO_STRING
 	void (*printf_methods[]) (FILE *, Tabs *, Structure *, Attribute *, char *) = { NULL, 
