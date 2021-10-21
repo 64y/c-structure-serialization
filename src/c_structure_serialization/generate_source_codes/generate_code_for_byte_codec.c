@@ -11,7 +11,7 @@
 #include "c_structure_serialization/generate_source_codes/generate_code_for_byte_codec.h"
 
 
-void generate_byte_codec_declaration(FILE *h_stream, Structure *structure) {
+void generate_byte_codec_declaration(FILE *h_stream, Tabs *tabs, Structure *structure) {
 	fprintf(
 		h_stream,
 		"%1$sData * %2$s_byte_encode(void *structure);\n"
@@ -23,7 +23,7 @@ void generate_byte_codec_declaration(FILE *h_stream, Structure *structure) {
 	);
 }
 
-void generate_byte_codec_definition(FILE *c_stream, Structure *structure) {
+void generate_byte_codec_definition(FILE *c_stream, Tabs *tabs, Structure *structure) {
 	fprintf(
 		c_stream,
 		"%1$sData * %3$s_byte_encode(void *structure) {\n"
@@ -91,6 +91,11 @@ void byte_encode_structure(FILE *stream, Tabs *tabs, Attribute *attribute, char 
 		"%1$sfwrite_uint32_value30bit_size2bit(structure_byte_stream, structure_pointer->address_id);\n",
 		Tabs_get(tabs), Tabs_get_tab(tabs), attribute->data_type, attribute_pointer
 	);
+	if (attribute->type==STRUCTURE || attribute->type==STRUCTURE_ARRAY) {
+		fprintf(stream, "%sPointerSet_add(pointerSet, Pointer_create_by_name_pointer(%s, %s));\n", Tabs_get(tabs), attribute->data_type_upper, attribute_pointer);
+	} else {
+		fprintf(stream, "%1$sif (%4$s!=NULL) {\n%1$s%2$sPointerSet_add(pointerSet, Pointer_create_by_name_pointer(%3$s, %4$s));\n%1$s}", Tabs_get(tabs), Tabs_get_tab(tabs), attribute->data_type_upper, attribute_pointer);
+	}
 }
 
 void byte_decode_primitive(FILE *stream, Tabs *tabs, Attribute *attribute, char *attribute_pointer) {
@@ -105,7 +110,7 @@ void byte_decode_string(FILE *stream, Tabs *tabs, Attribute *attribute, char *at
 	fprintf(
 		stream,
 		"%sfread(&string_length, sizeof(size_t), 1, structure_byte_stream);\n",
-		Tabs_get(Tabs)
+		Tabs_get(tabs)
 	);
 	
 	if (attribute->dimension==NULL || (attribute->dimension!=NULL && attribute->dimension->dynamic_size_source>0)) {
@@ -142,11 +147,11 @@ void byte_decode_structure(FILE *stream, Tabs *tabs, Attribute *attribute, char 
 	fprintf(
 		stream,
 		"%1$sstructure_address = fread_uint32_value30bit_size2bit(structure_byte_stream);\n"
-		"%1$sPointerSet_put(pointerSet, Pointer_create_by_name_pointer_address(%4$s, %5$s, structure_address));\n"
+		"%1$sPointerSet_put(pointerSet, Pointer_create_by_name_pointer_address(%3$s, %4$s, structure_address));\n"
 		"%1$s{\n"
 		"%1$s%2$sstructure_address = 0;\n"
 		"%1$s}\n",
-		Tabs_get(tabs), Tabs_get_tab(tabs), attribute->data_type, attribute->data_type_upper, attribute_pointer
+		Tabs_get(tabs), Tabs_get_tab(tabs), attribute->data_type_upper, attribute_pointer
 	);
 }
 

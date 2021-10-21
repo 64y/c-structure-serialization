@@ -6,7 +6,7 @@
 #include "c_structure_serialization/data_types/structure.h"
 
 
-char * generate_attribute_pointer(Structure *structure, Attribute *attribute);
+char * generate_attribute_pointer(Structure *structure, Attribute *attribute, char *indexes);
 
 void generate_library_source_codes_for_structure(char *path_to_sources, Structure *structure);
 

@@ -6,4 +6,4 @@ const char *STRUCTURE_NAME_STRING[] = {
 	%s
 };
 
-void (*structures_methods[][6]) (FILE *structure_codec_stream, PointerSet *pointerSet, Pointer *pointer) = %s;
+void (*structures_methods[5][%d]) (FILE *structure_codec_stream, PointerSet *pointerSet, Pointer *pointer) = %s;

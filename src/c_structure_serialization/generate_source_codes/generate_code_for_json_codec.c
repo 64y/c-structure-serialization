@@ -89,6 +89,11 @@ void json_encode_structure(FILE *stream, Tabs *tabs, Attribute *attribute, char 
 		"%sfprintf(structure_json_stream, \"%%s@%%lX\", \"%s\", (long)(void *)%s);\n",
 		Tabs_get(tabs), attribute->data_type, attribute_pointer
 	);
+	if (attribute->type==STRUCTURE || attribute->type==STRUCTURE_ARRAY) {
+		fprintf(stream, "%sPointerSet_add(pointerSet, Pointer_create_by_name_pointer(%s, %s));\n", Tabs_get(tabs), attribute->data_type_upper, attribute_pointer);
+	} else {
+		fprintf(stream, "%1$sif (%4$s!=NULL) {\n%1$s%2$sPointerSet_add(pointerSet, Pointer_create_by_name_pointer(%3$s, %4$s));\n%1$s}", Tabs_get(tabs), Tabs_get_tab(tabs), attribute->data_type_upper, attribute_pointer);
+	}
 }
 
 void json_decode_primitive(FILE *stream, Tabs *tabs, Attribute *attribute, char *attribute_pointer) {

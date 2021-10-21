@@ -15,7 +15,6 @@ extern const char *STRUCTURE_NAME_STRING[];
 
 
 typedef enum StructureMethod {
-	WALK_THROUGH,
 	TO_STRING,
 	JSON_ENCODE,
 	JSON_DECODE,
@@ -23,6 +22,6 @@ typedef enum StructureMethod {
 	BYTES_DECODE
 } StructureMethod;
 
-extern void (*structures_methods[][6]) (FILE *structure_codec_stream, PointerSet *pointerSet, Pointer *pointer);
+extern void (*structures_methods[5][%d]) (FILE *structure_codec_stream, PointerSet *pointerSet, Pointer *pointer);
 
 #endif

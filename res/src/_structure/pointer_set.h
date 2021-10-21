@@ -23,6 +23,4 @@ bool PointerSet_contains_by_hashCode(PointerSet *pointerSet, char *hashCode);
 Pointer * PointerSet_remove_by_hashCode(PointerSet *pointerSet, char *hashCode);
 void PointerSet_stage_next(PointerSet *pointerSet);
 
-void PointerSet_walk(PointerSet *pointerSet);
-
 #endif

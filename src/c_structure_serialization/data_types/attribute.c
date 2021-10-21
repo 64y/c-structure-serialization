@@ -41,7 +41,7 @@ void Attribute_free(Attribute *attribute) {
 
 char * Attribute_to_string(Attribute *attribute) {
 	char *dimension_string = Dimension_to_string(attribute->dimension);
-	char *attribute_string = string_create_by_format*(
+	char *attribute_string = string_create_by_format(
 		"Attribute@%lX\n"
 		"type: \'%s\';\n"
 		"data type: \'%s\';\n"

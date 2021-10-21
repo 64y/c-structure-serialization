@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 #include "c_structure_serialization/utils/strings.h"
 #include "c_structure_serialization/utils/tabs.h"

@@ -114,7 +114,7 @@ char * string_appends(char *string_first, ...) {
 char * string_make_shortcut(char *string) {
 	size_t string_length = strlen(string);
 	char *string_shortcut = (char *)calloc(1+string_length+1, sizeof(char));
-	strcpy(string_shortcut, string);
+	strcpy(string_shortcut+1, string);
 	string_shortcut[0] = '_';
 	string_shortcut[1] = tolower(string_shortcut[1]);
 	return string_shortcut;
