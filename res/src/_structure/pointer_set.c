@@ -1,4 +1,10 @@
-#include "includes.h"
+#include <stdbool.h>
+#include <stddef.h>
+#include <stdio.h>
+#include <stdlib.h>
+
+#include "_structure/pointer.h"
+#include "_structure/pointer_set.h"
 
 
 PointerSet * PointerSet_create(void) {
@@ -26,7 +32,7 @@ void PointerSet_free(PointerSet *pointerSet) {
 			while (pointerSet->head!=NULL) {
 				Pointer *pointer = pointerSet->head;
 				pointerSet->head = pointerSet->head->next;
-				Pointer_free(pointe);
+				Pointer_free(pointer);
 			}
 		}
 		pointerSet->stage = 0;

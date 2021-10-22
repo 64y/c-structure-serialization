@@ -2,7 +2,10 @@
 #define _POINTER_SET_H
 
 
-#include "includes.h"
+#include <stdbool.h>
+#include <stddef.h>
+
+#include "_structure/pointer.h"
 
 
 typedef struct PointerSet {

@@ -129,13 +129,13 @@ void generate_source_codes_and_library(ProgramArguments *programArguments) {
 		generate_library_source_codes_for_structure(programArguments->path_to_sources, structure);
 	}
 	
-	char *command_to_create_library = NULL;/* = string_create_by_format(
+	char *command_to_create_library = string_create_by_format(
 		"mkdir -p $(dirname %1$s)\n"
 		"gcc -shared -nostartfiles -fPIC -o %1$s -I %2$s $(find %2$s -type f -name \"*.c\")",
 		programArguments->path_to_library, programArguments->path_to_sources
 	);
 	system(command_to_create_library);
-	*/
+	
 	{
 		Array_free(structures);
 		string_free(command_to_copy);
@@ -213,9 +213,9 @@ void generate_file_structure_info(char *path_to_sources, Array *structures) {
 			fprintf(structures_methods_stream, "\t{\n");
 			for (int j=0; j<structures_size; j++) {
 				Structure *structure = ((Structure *) Array_get(structures, j));
-				fprintf(structures_methods_stream, "\t\t%s_%s%s", structure->name, structures_methods_names[i], (j<structures_methods_names_size-1)?",\n":"\n");
+				fprintf(structures_methods_stream, "\t\t%s_%s%s", structure->name, structures_methods_names[i], (j<structures_size-1)?",\n":"\n");
 			}
-			fprintf(structures_methods_stream, "\t}%s\n", (i<structures_size-1)?",":""); 
+			fprintf(structures_methods_stream, "\t}%s\n", (i<structures_methods_names_size-1)?",":""); 
 		}
 		fprintf(structures_methods_stream, "}");
 		{

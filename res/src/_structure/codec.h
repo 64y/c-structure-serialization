@@ -2,7 +2,9 @@
 #define _CODEC_H
 
 
-#include "includes.h"
+#include "_structure/structure_info.h"
+#include "_structure/pointer.h"
+#include "_utils/data.h"
 
 
 Data * encode(StructureMethod structureMethod, Pointer *pointer);

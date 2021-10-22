@@ -1,4 +1,10 @@
-#include "includes.h"
+#include <stdio.h>
+#include <stdlib.h>
+
+#include "_structure/structure_info.h"
+#include "_structure/pointer.h"
+#include "_utils/data.h"
+#include "_structure/codec.h"
 
 
 Data * encode(StructureMethod structureMethod, Pointer *pointer) {

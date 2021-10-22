@@ -2,7 +2,9 @@
 #define _POINTER_H
 
 
-#include "includes.h"
+#include <stddef.h>
+
+#include "_structure/structure_info.h"
 
 
 typedef struct Pointer {

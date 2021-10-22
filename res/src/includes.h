@@ -12,12 +12,14 @@
 #include "_utils/data.h"
 #include "_utils/base64.h"
 
-#include "_structure/pointer.h"
-#include "_structure/pointer_set.h"
 #include "_structure/structure_info.h"
+#include "_structure/pointer.h"
+#include "_structure/codec.h"
 
 %s
 %s
+
+#include "_structure/pointer_set.h"
 
 void fwrite_uint32_value30bit_size2bit(FILE *stream, uint32_t value) {
 	uint8_t value_size = 0;

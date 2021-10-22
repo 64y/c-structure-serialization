@@ -1,4 +1,8 @@
-#include "includes.h"
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+#include "_structure/pointer.h"
 
 
 Pointer * Pointer_create_by_name_pointer(StructureName name, void *structure) {
