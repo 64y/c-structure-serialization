@@ -15,7 +15,6 @@ void generate_to_string_declaration(FILE *h_stream, Tabs *tabs, Structure *struc
 	fprintf(
 		h_stream,
 		"%1$schar * %2$s_to_string(void *structure);\n"
-		"%1$s\n"
 		"%1$svoid %2$s_to_string_process(FILE *structure_string_stream, PointerSet *pointerSet, Pointer *pointer);",
 		Tabs_get(tabs), structure->name
 	);
@@ -26,14 +25,15 @@ void generate_to_string_definition(FILE *c_stream, Tabs *tabs, Structure *struct
 		c_stream,
 		"%1$schar * %3$s_to_string(void *structure) {\n"
 		"%1$s%2$sData *data = encode(TO_STRING, Pointer_create_by_name_pointer(%4$s, structure));\n"
-		"%1$s%2$sdata->bytes_size = 0;\n"
 		"%1$s%2$schar *structure_string = data->bytes;\n"
 		"%1$s%2$s{\n"
+		"%1$s%2$s%2$sdata->bytes_size = 0;\n"
 		"%1$s%2$s%2$sfree(data);\n"
 		"%1$s%2$s%2$sdata = NULL;\n"
 		"%1$s%2$s}\n"
 		"%1$s%2$sreturn structure_string;\n"
-		"%1$s}",
+		"%1$s}\n"
+		"%1$s\n",
 		Tabs_get(tabs), Tabs_get_tab(tabs), structure->name, structure->name_upper
 	);
 	

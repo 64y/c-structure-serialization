@@ -1,8 +1,4 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-
-#include "_structure/pointer.h"
+#include "includes.h"
 
 
 Pointer * Pointer_create_by_name_pointer(StructureName name, void *structure) {
@@ -34,7 +30,7 @@ Pointer * Pointer_create_by_name_pointer_hashCode(StructureName name, void *stru
 	pointer->pointer = structure;
 	pointer->address = 0;
 	pointer->address_id = 0;
-	sscanf(hashCode, "%[^@]@%lX", &pointer->address);
+	sscanf(hashCode, "%*[^@]@%lX", &pointer->address);
 	pointer->hashCode = (char *)calloc(strlen(hashCode)+1, sizeof(char));
 	strcpy(pointer->hashCode, hashCode);
 	pointer->next = NULL;
@@ -43,10 +39,6 @@ Pointer * Pointer_create_by_name_pointer_hashCode(StructureName name, void *stru
 
 void Pointer_free(Pointer *pointer) {
 	if (pointer!=NULL) {
-		if (pointer->name!=NULL) {
-			free(pointer->name);
-			pointer->name = NULL;
-		}
 		pointer->address = 0;
 		pointer->address_id = 0;
 		if (pointer->hashCode!=NULL) {

@@ -15,8 +15,10 @@
 #include "c_structure_serialization/generate_source_codes/generate_library.h"
 
 
-void generate_file_includes(char *path_to_sources, Array *structures);
 void generate_file_structure_info(char *path_to_sources, Array *structures);
+void generate_file_codec(char *path_to_sources, Array *structures);
+void generate_file_includes(char *path_to_sources, Array *structures);
+
 
 void generate_source_codes_and_library(ProgramArguments *programArguments) {
 	Array *structures = Array_create_for_Structure();
@@ -121,8 +123,9 @@ void generate_source_codes_and_library(ProgramArguments *programArguments) {
 	}
 	system(command_to_copy);
 	
-	generate_file_includes(programArguments->path_to_sources, structures);
 	generate_file_structure_info(programArguments->path_to_sources, structures);
+	generate_file_codec(programArguments->path_to_sources, structures);
+	generate_file_includes(programArguments->path_to_sources, structures);
 	
 	for (int structures_i=0; structures_i<Array_size(structures); structures_i++) {
 		Structure *structure = (Structure *) Array_get(structures, structures_i);
@@ -143,6 +146,84 @@ void generate_source_codes_and_library(ProgramArguments *programArguments) {
 	}
 }
 
+
+void generate_file_structure_info(char *path_to_sources, Array *structures) {
+	size_t structures_size = Array_size(structures);
+	char *enum_structure_name, *enum_structure_name_string;
+	{
+		size_t enum_structure_name_length;
+		FILE *enum_structure_name_stream = open_memstream(&enum_structure_name, &enum_structure_name_length);
+		size_t enum_structure_name_string_length;
+		FILE *enum_structure_name_string_stream = open_memstream(&enum_structure_name_string, &enum_structure_name_string_length);
+		for (int i=0; i<structures_size; i++) {
+			Structure *structure = ((Structure *) Array_get(structures, i));
+			fprintf(enum_structure_name_stream, "%s%s", structure->name_upper, (i<structures_size-1)?",\n\t":"");
+			fprintf(enum_structure_name_string_stream, "\"%s\"%s", structure->name, (i<structures_size-1)?",\n\t":"");
+		}
+		{
+			fclose(enum_structure_name_stream);
+			fclose(enum_structure_name_string_stream);
+		}
+	}
+	char *structure_info_h_path = string_appends(path_to_sources, "/_structure/structure_info.h", NO_MORE_STRINGS);
+	char *structure_info_h_format = file_read(structure_info_h_path);
+	char *structure_info_h_source_code = string_create_by_format(structure_info_h_format, enum_structure_name, structures_size);
+	file_write(structure_info_h_path, structure_info_h_source_code);
+	char *structure_info_c_path = string_appends(path_to_sources, "/_structure/structure_info.c", NO_MORE_STRINGS);
+	char *structure_info_c_format = file_read(structure_info_c_path);
+	char *structure_info_c_source_code = string_create_by_format(structure_info_c_format, structures_size, enum_structure_name_string);
+	file_write(structure_info_c_path, structure_info_c_source_code);
+	{
+		string_free(enum_structure_name);
+		string_free(enum_structure_name_string);
+		string_free(structure_info_h_path);
+		string_free(structure_info_h_format);
+		string_free(structure_info_h_source_code);
+		string_free(structure_info_c_path);
+		string_free(structure_info_c_format);
+		string_free(structure_info_c_source_code);
+	}
+}
+
+void generate_file_codec(char *path_to_sources, Array *structures) {
+	size_t structures_methods_names_size = 5;
+	char *structures_methods_names[] = {
+		"to_string_process",
+		"json_encode_process",
+		"json_decode_process",
+		"byte_encode_process",
+		"byte_decode_process"
+	};
+	size_t structures_size = Array_size(structures);
+	char *structures_methods;
+	{
+		size_t structures_methods_length;
+		FILE *structures_methods_stream = open_memstream(&structures_methods, &structures_methods_length);
+		fprintf(structures_methods_stream, "{\n");
+		for (int i=0; i<structures_methods_names_size; i++) {
+			fprintf(structures_methods_stream, "\t{\n");
+			for (int j=0; j<structures_size; j++) {
+				Structure *structure = ((Structure *) Array_get(structures, j));
+				fprintf(structures_methods_stream, "\t\t%s_%s%s", structure->name, structures_methods_names[i], (j<structures_size-1)?",\n":"\n");
+			}
+			fprintf(structures_methods_stream, "\t}%s\n", (i<structures_methods_names_size-1)?",":""); 
+		}
+		fprintf(structures_methods_stream, "}");
+		{
+			fclose(structures_methods_stream);
+		}
+	}
+	char *codec_c_path = string_appends(path_to_sources, "/_structure/codec.c", NO_MORE_STRINGS);
+	char *codec_c_format = file_read(codec_c_path);
+	char *codec_c_source_code = string_create_by_format(codec_c_format, structures_size, structures_methods);
+	file_write(codec_c_path, codec_c_source_code);
+	{
+		string_free(structures_methods);
+		string_free(codec_c_path);
+		string_free(codec_c_format);
+		string_free(codec_c_source_code);
+	}
+}
 
 void generate_file_includes(char *path_to_sources, Array *structures) {
 	size_t structures_size = Array_size(structures);
@@ -178,67 +259,5 @@ void generate_file_includes(char *path_to_sources, Array *structures) {
 		string_free(structure_includes_h_path);
 		string_free(structure_includes_h_format);
 		string_free(structure_includes_h_source_code);
-	}
-}
-
-void generate_file_structure_info(char *path_to_sources, Array *structures) {
-	size_t structures_methods_names_size = 5;
-	char *structures_methods_names[] = {
-		"to_string_process",
-		"json_encode_process",
-		"json_decode_process",
-		"byte_encode_process",
-		"byte_decode_process"
-	};
-	size_t structures_size = Array_size(structures);
-	char *enum_structure_name, *enum_structure_name_string, *structures_methods;
-	{
-		size_t enum_structure_name_length;
-		FILE *enum_structure_name_stream = open_memstream(&enum_structure_name, &enum_structure_name_length);
-		size_t enum_structure_name_string_length;
-		FILE *enum_structure_name_string_stream = open_memstream(&enum_structure_name_string, &enum_structure_name_string_length);
-		for (int i=0; i<structures_size; i++) {
-			Structure *structure = ((Structure *) Array_get(structures, i));
-			fprintf(enum_structure_name_stream, "%s%s", structure->name_upper, (i<structures_size-1)?",\n\t":"");
-			fprintf(enum_structure_name_string_stream, "\"%s\"%s", structure->name, (i<structures_size-1)?",\n\t":"");
-		}
-		{
-			fclose(enum_structure_name_stream);
-			fclose(enum_structure_name_string_stream);
-		}
-		size_t structures_methods_length;
-		FILE *structures_methods_stream = open_memstream(&structures_methods, &structures_methods_length);
-		fprintf(structures_methods_stream, "{\n");
-		for (int i=0; i<structures_methods_names_size; i++) {
-			fprintf(structures_methods_stream, "\t{\n");
-			for (int j=0; j<structures_size; j++) {
-				Structure *structure = ((Structure *) Array_get(structures, j));
-				fprintf(structures_methods_stream, "\t\t%s_%s%s", structure->name, structures_methods_names[i], (j<structures_size-1)?",\n":"\n");
-			}
-			fprintf(structures_methods_stream, "\t}%s\n", (i<structures_methods_names_size-1)?",":""); 
-		}
-		fprintf(structures_methods_stream, "}");
-		{
-			fclose(structures_methods_stream);
-		}
-	}
-	char *structure_info_h_path = string_appends(path_to_sources, "/_structure/structure_info.h", NO_MORE_STRINGS);
-	char *structure_info_h_format = file_read(structure_info_h_path);
-	char *structure_info_h_source_code = string_create_by_format(structure_info_h_format, enum_structure_name, structures_size);
-	file_write(structure_info_h_path, structure_info_h_source_code);
-	char *structure_info_c_path = string_appends(path_to_sources, "/_structure/structure_info.c", NO_MORE_STRINGS);
-	char *structure_info_c_format = file_read(structure_info_c_path);
-	char *structure_info_c_source_code = string_create_by_format(structure_info_c_format, structures_size, enum_structure_name_string, structures_size, structures_methods);
-	file_write(structure_info_c_path, structure_info_c_source_code);
-	{
-		string_free(enum_structure_name);
-		string_free(enum_structure_name_string);
-		string_free(structures_methods);
-		string_free(structure_info_h_path);
-		string_free(structure_info_h_format);
-		string_free(structure_info_h_source_code);
-		string_free(structure_info_c_path);
-		string_free(structure_info_c_format);
-		string_free(structure_info_c_source_code);
 	}
 }

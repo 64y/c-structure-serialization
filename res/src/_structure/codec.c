@@ -1,11 +1,7 @@
-#include <stdio.h>
-#include <stdlib.h>
+#include "includes.h"
 
-#include "_structure/structure_info.h"
-#include "_structure/pointer.h"
-#include "_utils/data.h"
-#include "_structure/codec.h"
 
+void (*structures_methods[5][%d]) (FILE *structure_codec_stream, PointerSet *pointerSet, Pointer *pointer) = %s;
 
 Data * encode(StructureMethod structureMethod, Pointer *pointer) {
 	Data *structure_data = Data_create_null();

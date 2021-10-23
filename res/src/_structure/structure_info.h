@@ -2,8 +2,7 @@
 #define _STRUCTURE_INFO_H
 
 
-#include "_structure/pointer.h"
-#include "_structure/pointer_set.h"
+#include "includes.h"
 
 
 extern const size_t STRUCTURE_NAME_SIZE;
@@ -22,7 +21,5 @@ typedef enum StructureMethod {
 	BYTE_ENCODE,
 	BYTE_DECODE
 } StructureMethod;
-
-extern void (*structures_methods[5][%d]) (FILE *structure_codec_stream, PointerSet *pointerSet, Pointer *pointer);
 
 #endif

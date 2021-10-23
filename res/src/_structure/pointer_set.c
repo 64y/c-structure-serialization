@@ -1,10 +1,4 @@
-#include <stdbool.h>
-#include <stddef.h>
-#include <stdio.h>
-#include <stdlib.h>
-
-#include "_structure/pointer.h"
-#include "_structure/pointer_set.h"
+#include "includes.h"
 
 
 PointerSet * PointerSet_create(void) {
@@ -71,7 +65,7 @@ char * PointerSet_to_string(PointerSet *pointerSet) {
 
 
 bool PointerSet_add(PointerSet *pointerSet, Pointer *pointer) {
-	if (PointerSet_contains(pointerSet, pointer)) {
+	if (PointerSet_contains_by_hashCode(pointerSet, pointer->hashCode)) {
 		return false;
 	}
 	pointerSet->size = pointerSet->size + 1;

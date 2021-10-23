@@ -8,9 +8,9 @@
 
 int main(int argc, char *argv[]) {
 	int DO_FLAGS = DO_TO_STRING | DO_JSON_ENCODE | DO_JSON_DECODE | DO_BYTE_ENCODE | DO_BYTE_DECODE;
-	size_t examples_size = 8;
+	size_t examples_size = 6;
 	void (*examples[]) (int DO_FLAGS) = {example_of_structure_with_primitives_members, example_of_structure_with_string_member, example_of_structure_with_array, example_of_structure_with_matrix, example_of_structure_with_matrices, example_of_structure_with_matrices_of_strings, example_of_structure_with_structures_and_structures_pointers, example_of_structure_with_matrices_of_structures};
-	for (int i=0; i<examples_size; i++) {
+	for (int i=5; i<examples_size; i++) {
 		examples[i](DO_FLAGS);
 	}
 	return 0;

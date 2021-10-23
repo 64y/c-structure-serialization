@@ -17,7 +17,6 @@ void generate_byte_codec_declaration(FILE *h_stream, Tabs *tabs, Structure *stru
 		h_stream,
 		"%1$sData * %2$s_byte_encode(void *structure);\n"
 		"%1$svoid * %2$s_byte_decode(Data *structure_data);\n"
-		"%1$s\n"
 		"%1$svoid %2$s_byte_encode_process(FILE *structure_byte_stream, PointerSet *pointerSet, Pointer *pointer);\n"
 		"%1$svoid %2$s_byte_decode_process(FILE *structure_byte_stream, PointerSet *pointerSet, Pointer *pointer);",
 		Tabs_get(tabs), structure->name
@@ -83,7 +82,15 @@ void generate_byte_codec_definition(FILE *c_stream, Tabs *tabs, Structure *struc
 		}
 		if (Structure_contains_structure_attributes(structure)) {
 			//encode
-			fprintf(e, "%slong structure_address;\n", Tabs_get(dt));
+			fprintf(
+				e,
+				"%1$sPointer *structure_pointer;\n"
+				"%1$schar *structure_hashCode;\n"
+				"%1$ssize_t structure_hashCode_length;\n"
+				"%1$sFILE *structure_hashCode_stream;\n"
+				"%1$slong structure_address;\n",
+				Tabs_get(et)
+			);
 			//decode
 			fprintf(
 				d,
@@ -224,14 +231,14 @@ void byte_encode_structure(FILE *stream, Tabs *tabs, Attribute *attribute, char 
 		"%1$s%2$s%2$sfclose(structure_hashCode_stream);\n"
 		"%1$s%2$s}\n"
 		"%1$s}\n"
-		"%1$sstructure_pointer = (PointerSet_contains_by_hashCode(pointerSet, structure_hashCode);\n"
+		"%1$sstructure_pointer = PointerSet_get_by_hashCode(pointerSet, structure_hashCode);\n"
 		"%1$sfwrite_uint32_value30bit_size2bit(structure_byte_stream, structure_pointer->address_id);\n",
 		Tabs_get(tabs), Tabs_get_tab(tabs), attribute->data_type, attribute_pointer
 	);
 	if (attribute->type==STRUCTURE || attribute->type==STRUCTURE_ARRAY) {
 		fprintf(stream, "%sPointerSet_add(pointerSet, Pointer_create_by_name_pointer(%s, %s));\n", Tabs_get(tabs), attribute->data_type_upper, attribute_pointer);
 	} else {
-		fprintf(stream, "%1$sif (%4$s!=NULL) {\n%1$s%2$sPointerSet_add(pointerSet, Pointer_create_by_name_pointer(%3$s, %4$s));\n%1$s}", Tabs_get(tabs), Tabs_get_tab(tabs), attribute->data_type_upper, attribute_pointer);
+		fprintf(stream, "%1$sif (%4$s!=NULL) {\n%1$s%2$sPointerSet_add(pointerSet, Pointer_create_by_name_pointer(%3$s, %4$s));\n%1$s}\n", Tabs_get(tabs), Tabs_get_tab(tabs), attribute->data_type_upper, attribute_pointer);
 	}
 }
 
@@ -266,7 +273,7 @@ void byte_decode_string(FILE *stream, Tabs *tabs, Attribute *attribute, char *at
 		fprintf(
 			stream,
 			"%1$sif (string_length!=0) {\n"
-			"%1$s%2$sstrcpy(, string);\n"
+			"%1$s%2$sstrcpy(%3$s, string);\n"
 			"%1$s%2$s{\n"
 			"%1$s%2$s%2$sfree(string);\n"
 			"%1$s%2$s%2$sstring = NULL;\n"
@@ -284,7 +291,7 @@ void byte_decode_structure(FILE *stream, Tabs *tabs, Attribute *attribute, char 
 	fprintf(
 		stream,
 		"%1$sstructure_address = fread_uint32_value30bit_size2bit(structure_byte_stream);\n"
-		"%1$sPointerSet_put(pointerSet, Pointer_create_by_name_pointer_address(%3$s, %4$s, structure_address));\n"
+		"%1$sPointerSet_add(pointerSet, Pointer_create_by_name_pointer_address(%3$s, %4$s, structure_address));\n"
 		"%1$s{\n"
 		"%1$s%2$sstructure_address = 0;\n"
 		"%1$s}\n",
@@ -307,7 +314,8 @@ void byte_decode_structure_pointer(FILE *stream, Tabs *tabs, Attribute *attribut
 		"%1$s%2$s} else {\n"
 		"%1$s%2$s%2$s%5$s = (%3$s *)malloc(sizeof(%3$s));\n"
 		"%1$s%2$s%2$smemset(%5$s, 0x00, sizeof(%3$s));\n"
-		"%1$s%2$s%2$sPointerSet_put(pointerSet, Pointer_create_by_name_pointer_hashCode(%4$s, %5$s, structure_hashCode));\n"
+		"%1$s%2$s%2$sPointerSet_add(pointerSet, Pointer_create_by_name_pointer_hashCode(%4$s, %5$s, structure_hashCode));\n"
+		"%1$s%2$s}\n"
 		"%1$s%2$s{\n"
 		"%1$s%2$s%2$sstructure_address = 0;\n"
 		"%1$s%2$s%2$sfree(structure_hashCode);\n"
