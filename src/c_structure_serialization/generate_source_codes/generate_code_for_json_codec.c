@@ -42,9 +42,9 @@ void generate_json_codec_definition(FILE *c_stream, Tabs *tabs, Structure *struc
 		"%1$s%2$s%3$s *%5$s = (%3$s *)malloc(sizeof(%3$s));\n"
 		"%1$s%2$smemset(%5$s, 0x00, sizeof(%3$s));\n"
 		"%1$s%2$ssize_t structure_hashCode_length = 0;\n"
-		"%1$s%2$ssscanf(structure_json+4, \"%%*[$0-9@A-Z_a-z]%%ln\", &structure_hashCode_length);\n"
+		"%1$s%2$ssscanf(structure_json+1, \"%%*[$0-9@A-Z_a-z]%%ln\", &structure_hashCode_length);\n"
 		"%1$s%2$schar *structure_hashCode = (char *)calloc(structure_hashCode_length+1, sizeof(char));\n"
-		"%1$s%2$ssscanf(structure_json+4, \"%%[$0-9@A-Z_a-z]\", structure_hashCode);\n"
+		"%1$s%2$ssscanf(structure_json+1, \"%%[$0-9@A-Z_a-z]\", structure_hashCode);\n"
 		"%1$s%2$svoid *structure = decode(\n"
 		"%1$s%2$s%2$sJSON_DECODE,\n"
 		"%1$s%2$s%2$sPointer_create_by_name_pointer_hashCode(%4$s, %5$s, structure_hashCode),\n"
@@ -95,7 +95,7 @@ void generate_json_codec_definition(FILE *c_stream, Tabs *tabs, Structure *struc
 				Tabs_get(dt)
 			);
 		}
-		if (Structure_contains_structure_attributes(structure)) {
+		//if (Structure_contains_structure_attributes(structure)) {
 			//encode
 			//decode
 			fprintf(
@@ -105,21 +105,32 @@ void generate_json_codec_definition(FILE *c_stream, Tabs *tabs, Structure *struc
 				"%1$slong structure_address;\n",
 				Tabs_get(dt)
 			);
-		}
+		//}
 		//
 		//       encode
 		fprintf(
 			e,
 			"%1$s%2$s *%3$s = (%4$s *) pointer->pointer;\n"
-			"%1$sfprintf(structure_json_stream, \"{\");\n",
+			"%1$sfprintf(structure_json_stream, \"\\\"%%s\\\": {\", pointer->hashCode);\n",
 			Tabs_get(et), structure->name, structure->shortcut, structure->name
 		);
 		//       decode
 		fprintf(
 			d,
-			"%1$s%2$s *%3$s = (%4$s *) pointer->pointer;\n"
-			"%1$sfscanf(structure_json_stream, \"{\");\n",
-			Tabs_get(dt), structure->name, structure->shortcut, structure->name
+			"%1$s%3$s *%4$s = (%5$s *) pointer->pointer;\n"
+			"%1$sfscanf(structure_json_stream, \"\\\"%%*[^\\\"]%%ln\", &structure_hashCode_length);\n"
+			"%1$sfseek(structure_json_stream, -structure_hashCode_length, SEEK_CUR);\n"
+			"%1$sstructure_hashCode = (char *)calloc(-1+structure_hashCode_length+1, sizeof(char));\n"
+			"%1$sfscanf(structure_json_stream, \"\\\"%%[^\\\"]\\\": {\", structure_hashCode);\n"
+			"%1$sif (strcmp(structure_hashCode, pointer->hashCode)==0) {\n"
+			"%1$s%2$sfree(structure_hashCode);\n"
+			"%1$s%2$sstructure_hashCode = NULL;\n"
+			"%1$s%2$sstructure_hashCode_length = 0;\n"
+			"%1$s} else {\n"
+			"%1$s%2$sfprintf(stderr, \"Wrong order of element \\\'%%s\\\'!=\\\'%%s\\\'!\\n\", structure_hashCode, pointer->hashCode);\n"
+			"%1$s%2$sexit(1);\n"
+			"%1$s}\n",
+			Tabs_get(dt), Tabs_get_tab(tabs), structure->name, structure->shortcut, structure->name
 		);
 		// structure
 		for (Attribute *attribute=structure->head; attribute!=NULL; attribute=attribute->next) {
@@ -248,10 +259,10 @@ void generate_json_codec_definition(FILE *c_stream, Tabs *tabs, Structure *struc
 		}
 		// end
 		//     encode
-		fprintf(e, "%sfprintf(structure_json_stream, \"\\n}\");\n", Tabs_get(et)); Tabs_decrement(et);
+		fprintf(e, "%sfprintf(structure_json_stream, \"\\n}%%s\", (pointer->next!=NULL)?\",\\n\":\"\");\n", Tabs_get(et)); Tabs_decrement(et);
 		fprintf(e, "%s}", Tabs_get(et));
 		//     decode
-		fprintf(d, "%sfscanf(structure_json_stream, \"\\n}\");\n", Tabs_get(dt)); Tabs_decrement(dt);
+		fprintf(d, "%sfscanf(structure_json_stream, \"\\n},\\n\");\n", Tabs_get(dt)); Tabs_decrement(dt);
 		fprintf(d, "%s}", Tabs_get(dt));
 		{
 			Tabs_free(et);

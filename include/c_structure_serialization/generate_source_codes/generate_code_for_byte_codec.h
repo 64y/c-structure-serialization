@@ -15,6 +15,7 @@ void generate_byte_codec_definition(FILE *c_stream, Tabs *tabs, Structure *struc
 void byte_encode_primitive(FILE *stream, Tabs *tabs, Attribute *attribute, char *attribute_pointer);
 void byte_encode_string(FILE *stream, Tabs *tabs, Attribute *attribute, char *attribute_pointer);
 void byte_encode_structure(FILE *stream, Tabs *tabs, Attribute *attribute, char *attribute_pointer);
+void byte_encode_structure_pointer(FILE *stream, Tabs *tabs, Attribute *attribute, char *attribute_pointer);
 void byte_decode_primitive(FILE *stream, Tabs *tabs, Attribute *attribute, char *attribute_pointer);
 void byte_decode_string(FILE *stream, Tabs *tabs, Attribute *attribute, char *attribute_pointer);
 void byte_decode_structure(FILE *stream, Tabs *tabs, Attribute *attribute, char *attribute_pointer);

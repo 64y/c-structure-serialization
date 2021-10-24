@@ -4,9 +4,9 @@ It can be used to get the string representation of structure and serialize/deser
 ## Proposed Solution
 The only true solution is to implement your own codecs by yourself for each structure you need according to your tasks. Also you have to edit your codec each time your structure is edited. But it is boring and annoying to write the almost same code for each structure separately. It is very common and cycled process, that's why it should be automated.
 
-You can `fwrite`/`fread` whole structure if each of its structure member is static allocated. For example you want to collect a matrix of Points (x, y coordinated) in structure, and this matrix can be 5x5, 100x100 or even 10^5x10^5. Then you are able to serialize it only if matrix is staticly allocated for size 10^5x10^5. And each time you want to serialize/deserialize matrix of Points, it would be performed for its max dimensions, which is a wastage of memory and bandwich.
+You can `fwrite`/`fread` whole structure if each of its structure member is allocated in static declarations. For example you want to collect a matrix of Points (x, y coordinated) in structure, and this matrix can be 5x5, 100x100 or even 10^5x10^5. Then you are able to serialize it only if matrix is staticly allocated for size 10^5x10^5. And each time you want to serialize/deserialize matrix of Points, it would be performed for its max dimensions, which is a wastage of memory and bandwich.
 
-In theory you are able to extract information about any structure during program execution, but only via `type Structure` in `gdb` or parsing DWARF in `objdump` (as I know) and if this program was compiled with `-g` flag yo provide elf info.
+In theory you are able to extract information about any structure during program execution, with `type Structure` in `gdb` or parsing DWARF in `objdump` but when program was compiled with `-g` flag only.
 
 Proposed solution consits of two parts:
 1. Program to generate sources and create a library of methods for each structure in specified folder;
@@ -176,6 +176,13 @@ make example;cd bin;./example;cd ../;
 ```
 
 ## Future Improvements
+* Find another way to get structure details. It should be more beautiful and effective;
+* Rework code to generalize it structure;
+* Json Codec add extra braces and tabs;
+* Byte Codec add compression;
+* Write test for all functionallity;
+* Write more comples examples;
+* Write more codecs.
 
 ## Make Your Own Codec
 

@@ -58,6 +58,15 @@ void generate_to_string_definition(FILE *c_stream, Tabs *tabs, Structure *struct
 			Tabs_get(tabs)
 		);
 	}
+	
+	fprintf(
+		c_stream,
+		"%1$sif (pointer!=pointerSet->head) {\n"
+		"%1$s%2$sfprintf(structure_string_stream, \"\\n  |_\");\n"
+		"%1$s}\n"
+		"%1$sfprintf(structure_string_stream, \"%%s@%%lX\", \"%3$s\", pointer->address);\n",
+		Tabs_get(tabs), Tabs_get_tab(tabs), structure->name
+	);
 	for (Attribute *attribute=structure->head; attribute!=NULL; attribute=attribute->next) {
 		fprintf(
 			c_stream,

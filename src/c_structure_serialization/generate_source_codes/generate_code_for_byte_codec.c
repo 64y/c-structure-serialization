@@ -53,8 +53,8 @@ void generate_byte_codec_definition(FILE *c_stream, Tabs *tabs, Structure *struc
 	);
 	// BYTE_CODEC
 	void (*byte_encode_methods[]) (FILE *, Tabs *, Attribute *, char *) = { NULL,
-		byte_encode_primitive, byte_encode_string, byte_encode_structure, byte_encode_structure,
-		byte_encode_primitive, byte_encode_string, byte_encode_structure, byte_encode_structure
+		byte_encode_primitive, byte_encode_string, byte_encode_structure, byte_encode_structure_pointer,
+		byte_encode_primitive, byte_encode_string, byte_encode_structure, byte_encode_structure_pointer
 	};
 	void (*byte_decode_methods[]) (FILE *, Tabs *, Attribute *, char *) = { NULL,
 		byte_decode_primitive, byte_decode_string, byte_decode_structure, byte_decode_structure_pointer,
@@ -87,8 +87,7 @@ void generate_byte_codec_definition(FILE *c_stream, Tabs *tabs, Structure *struc
 				"%1$sPointer *structure_pointer;\n"
 				"%1$schar *structure_hashCode;\n"
 				"%1$ssize_t structure_hashCode_length;\n"
-				"%1$sFILE *structure_hashCode_stream;\n"
-				"%1$slong structure_address;\n",
+				"%1$sFILE *structure_hashCode_stream;\n",
 				Tabs_get(et)
 			);
 			//decode
@@ -96,18 +95,46 @@ void generate_byte_codec_definition(FILE *c_stream, Tabs *tabs, Structure *struc
 				d,
 				"%1$schar *structure_hashCode;\n"
 				"%1$ssize_t structure_hashCode_length;\n"
-				"%1$sFILE *structure_hashCode_stream;\n"
-				"%1$slong structure_address;\n",
+				"%1$sFILE *structure_hashCode_stream;\n",
 				Tabs_get(dt)
 			);
 		}
 		// encode
-		fprintf(e, "%1$s%2$s *%3$s = (%2$s *) pointer->pointer;\n", Tabs_get(et), structure->name, structure->shortcut);
+		fprintf(
+			e,
+			"%1$slong structure_address;\n"
+			"%1$s%2$s *%3$s = (%2$s *) pointer->pointer;\n"
+			"%1$sfwrite_uint32_value30bit_size2bit(structure_byte_stream, pointer->address_id);\n",
+			Tabs_get(et), structure->name, structure->shortcut
+		);
 		// decode
-		fprintf(d, "%1$s%2$s *%3$s = (%2$s *) pointer->pointer;\n", Tabs_get(dt), structure->name, structure->shortcut);
+		fprintf(
+			d,
+			"%1$slong structure_address;\n"
+			"%1$s%3$s *%4$s = (%3$s *) pointer->pointer;\n"
+			"%1$sstructure_address = fread_uint32_value30bit_size2bit(structure_byte_stream);\n"
+			"%1$sif (structure_address!=pointer->address_id) {\n"
+			"%1$s%2$sfprintf(stderr, \"Wrong order of element %%lX!=%%X!\\n\", structure_address, pointer->address_id);\n"
+			"%1$s%2$sexit(1);\n"
+			"%1$s}\n",
+			Tabs_get(dt), Tabs_get_tab(tabs), structure->name, structure->shortcut
+		);
 		for (Attribute *attribute=structure->head; attribute!=NULL; attribute=attribute->next) {
 			void (*byte_encode_method) (FILE *, Tabs *, Attribute *, char *) = byte_encode_methods[attribute->type];
 			void (*byte_decode_method) (FILE *, Tabs *, Attribute *, char *) = byte_decode_methods[attribute->type];
+			// encode
+			fprintf(
+				e,
+				"%1$s// attribute \\\'%2$s\\\'\n",
+				Tabs_get(et), attribute->name
+			);
+			// decode
+			fprintf(
+				d,
+				"%1$s// attribute \\\'%2$s\\\'s\n",
+				Tabs_get(dt), attribute->name
+			);
+			//
 			switch (attribute->type) {
 				case PRIMITIVE: case STRING: case STRUCTURE: case STRUCTURE_POINTER: {
 					char *attribute_pointer = generate_attribute_pointer(structure, attribute, NULL);
@@ -210,12 +237,11 @@ void byte_encode_string(FILE *stream, Tabs *tabs, Attribute *attribute, char *at
 	fprintf(
 		stream,
 		"%1$sif (%3$s==NULL) {\n"
-		"%1$s%2$sstring_length = 0;\n"
-		"%1$s%2$sfwrite(&string_length, sizeof(size_t), 1, structure_byte_stream);\n"
+		"%1$s%2$sfwrite_uint32_value30bit_size2bit(structure_byte_stream, 0);\n"
 		"%1$s} else {\n"
 		"%1$s%2$sstring_length = strlen(%3$s);\n"
-		"%1$s%2$sfwrite(&string_length, sizeof(size_t), 1, structure_byte_stream);\n"
-		"%1$s%2$sfwrite(%3$s, sizeof(char), strlen(%3$s), structure_byte_stream);\n"
+		"%1$s%2$sfwrite_uint32_value30bit_size2bit(structure_byte_stream, string_length);\n"
+		"%1$s%2$sfwrite(%3$s, sizeof(char), string_length, structure_byte_stream);\n"
 		"%1$s}\n",
 		Tabs_get(tabs), Tabs_get_tab(tabs), attribute_pointer
 	);
@@ -224,22 +250,48 @@ void byte_encode_string(FILE *stream, Tabs *tabs, Attribute *attribute, char *at
 void byte_encode_structure(FILE *stream, Tabs *tabs, Attribute *attribute, char *attribute_pointer) {
 	fprintf(
 		stream,
+		"%1$sstructure_pointer = Pointer_create_by_name_pointer(%3$s, %4$s);\n"
+		"%1$sPointerSet_add(pointerSet, structure_pointer);\n"
+		"%1$sfwrite_uint32_value30bit_size2bit(structure_byte_stream, structure_pointer->address_id);\n"
 		"%1$s{\n"
-		"%1$s%2$sstructure_hashCode_stream = open_memstream(&structure_hashCode, &structure_hashCode_length);\n"
-		"%1$s%2$sfprintf(structure_hashCode_stream, \"%%s@%%lX\", \"%3$s\", (long)(void *)%4$s);\n"
-		"%1$s%2$s{\n"
-		"%1$s%2$s%2$sfclose(structure_hashCode_stream);\n"
-		"%1$s%2$s}\n"
-		"%1$s}\n"
-		"%1$sstructure_pointer = PointerSet_get_by_hashCode(pointerSet, structure_hashCode);\n"
-		"%1$sfwrite_uint32_value30bit_size2bit(structure_byte_stream, structure_pointer->address_id);\n",
-		Tabs_get(tabs), Tabs_get_tab(tabs), attribute->data_type, attribute_pointer
+		"%1$s%2$sstructure_pointer = NULL;\n"
+		"%1$s}\n",
+		Tabs_get(tabs), Tabs_get_tab(tabs), attribute->data_type_upper, attribute_pointer
 	);
-	if (attribute->type==STRUCTURE || attribute->type==STRUCTURE_ARRAY) {
-		fprintf(stream, "%sPointerSet_add(pointerSet, Pointer_create_by_name_pointer(%s, %s));\n", Tabs_get(tabs), attribute->data_type_upper, attribute_pointer);
-	} else {
-		fprintf(stream, "%1$sif (%4$s!=NULL) {\n%1$s%2$sPointerSet_add(pointerSet, Pointer_create_by_name_pointer(%3$s, %4$s));\n%1$s}\n", Tabs_get(tabs), Tabs_get_tab(tabs), attribute->data_type_upper, attribute_pointer);
-	}
+}
+
+
+void byte_encode_structure_pointer(FILE *stream, Tabs *tabs, Attribute *attribute, char *attribute_pointer) {
+	fprintf(
+		stream,
+		"%1$sif (%5$s!=NULL) {\n"
+		"%1$s%2$s{\n"
+		"%1$s%2$s%2$sstructure_hashCode_stream = open_memstream(&structure_hashCode, &structure_hashCode_length);\n"
+		"%1$s%2$s%2$sfprintf(structure_hashCode_stream, \"%%s@%%lX\", \"%3$s\", (long)(void *)%5$s);\n"
+		"%1$s%2$s%2$s{\n"
+		"%1$s%2$s%2$s%2$sfclose(structure_hashCode_stream);\n"
+		"%1$s%2$s%2$s}\n"
+		"%1$s%2$s}\n"
+		"%1$s%2$sstructure_pointer = PointerSet_get_by_hashCode(pointerSet, structure_hashCode);\n"
+		"%1$s%2$sif (structure_pointer==NULL) {\n"
+		"%1$s%2$s%2$sstructure_pointer = Pointer_create_by_name_pointer(%4$s, %5$s);\n"
+		"%1$s%2$s%2$sPointerSet_add(pointerSet, structure_pointer);\n"
+		"%1$s%2$s%1$sfwrite_uint32_value30bit_size2bit(structure_byte_stream, structure_pointer->address_id);\n"
+		// "%1$s%1$sfree(structure_pointer);\n"
+		"%1$s%2$s} else {\n"
+		"%1$s%2$s%1$sfwrite_uint32_value30bit_size2bit(structure_byte_stream, structure_pointer->address_id);\n"
+		"%1$s%2$s}\n"
+		"%1$s%2$s{\n"
+		"%1$s%2$s%2$sfree(structure_hashCode);\n"
+		"%1$s%2$s%2$sstructure_hashCode = NULL;\n"
+		"%1$s%2$s%2$sstructure_hashCode_length = 0;\n"
+		"%1$s%2$s%2$sstructure_pointer = NULL;\n"
+		"%1$s%2$s}\n"
+		"%1$s} else {\n"
+		"%1$s%2$sfwrite_uint32_value30bit_size2bit(structure_byte_stream, 0);\n"
+		"%1$s}\n",
+		Tabs_get(tabs), Tabs_get_tab(tabs), attribute->data_type, attribute->data_type_upper, attribute_pointer
+	);
 }
 
 void byte_decode_primitive(FILE *stream, Tabs *tabs, Attribute *attribute, char *attribute_pointer) {
@@ -253,17 +305,15 @@ void byte_decode_primitive(FILE *stream, Tabs *tabs, Attribute *attribute, char 
 void byte_decode_string(FILE *stream, Tabs *tabs, Attribute *attribute, char *attribute_pointer) {
 	fprintf(
 		stream,
-		"%sfread(&string_length, sizeof(size_t), 1, structure_byte_stream);\n",
+		"%sstring_length = fread_uint32_value30bit_size2bit(structure_byte_stream);\n",
 		Tabs_get(tabs)
 	);
-	
-	if (attribute->dimension==NULL || (attribute->dimension!=NULL && attribute->dimension->dynamic_size_source>0)) {
+	if (attribute->dimension==NULL || attribute->dimension->dynamic_size_source>0) {
 		fprintf(
 			stream,
 			"%1$sif (string_length!=0) {\n"
-			"%1$s%2$sstring = (char *)calloc(string_length+1, sizeof(char));\n"
-			"%1$s%2$sfread(string, sizeof(char), string_length, structure_byte_stream);\n"
-			"%1$s%2$s%3$s = string;\n"
+			"%1$s%2$s%3$s = (char *)calloc(string_length+1, sizeof(char));\n"
+			"%1$s%2$sfread(%3$s, sizeof(char), string_length, structure_byte_stream);\n"
 			"%1$s} else {\n"
 			"%1$s%2$s%3$s = NULL;\n"
 			"%1$s}\n",
@@ -273,11 +323,7 @@ void byte_decode_string(FILE *stream, Tabs *tabs, Attribute *attribute, char *at
 		fprintf(
 			stream,
 			"%1$sif (string_length!=0) {\n"
-			"%1$s%2$sstrcpy(%3$s, string);\n"
-			"%1$s%2$s{\n"
-			"%1$s%2$s%2$sfree(string);\n"
-			"%1$s%2$s%2$sstring = NULL;\n"
-			"%1$s%2$s}\n"
+			"%1$s%2$sfread(%3$s, sizeof(char), string_length, structure_byte_stream);\n"
 			"%1$s} else {\n"
 			"%1$s%2$smemset(%3$s, 0x00, %4$s);\n"
 			"%1$s}\n",
