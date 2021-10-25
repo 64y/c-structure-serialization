@@ -14,7 +14,200 @@ Proposed solution consits of two parts:
 
 All you need is Linux/shell/bash/make/gcc.
 
-## Structure Definition Limits
+## Example
+There is an example of creating library for structure and using this library by `Serializer` to get the output from `to_string` method.
+
+0. Lets say the structure of project is looks as follow:
+```bash
+src/
+└ structures
+    └ parrot.h
+  └ main.c
+```
+
+1. In `main.c`:
+```C
+#include <stdio.h>
+#include <stdlib.h>
+
+#include "pets/parrot.h"
+#include <c_structure_serialization/serializer.h>
+
+
+int main(int argc, char *argv[]) {
+	Parrot parrot = {"Tom", 5};
+	
+	Serializer *parrot_serializer = Serializer_create("./parrot_library", "Parrot");
+	char *parrot_string = parrot_serializer->to_string(&parrot);
+	puts(parrot_string);
+	{
+		Serializer_free(parrot_serializer);
+		free(parrot_string);
+	}
+	return 0;
+}
+```
+
+Include the header file of structure you want to use:
+```C
+#include "structures/parrot.h"
+```
+
+Include the  **C Structure Serialization** serializer:
+```C
+#include <c_structure_serialization/serializer.h>
+```
+
+Create an instance of structure:
+```C
+Parrot parrot = {"Tom", 5};
+```
+
+Create a serializer for structure by calling `Serializer_create` method, there you need to pass path to library file and structure name.
+```C
+Serializer *parrot_serializer = Serializer_create("./parrot_library", "Parrot");
+```
+
+Then call method `to_string` for `parrot`:
+```C
+char *parrot_string = parrot_serializer->to_string(&parrot);
+```
+
+Output the `parrot`'s string:
+```C
+puts(parrot_string);
+```
+
+Destroy serializer and free memory:
+```C
+Serializer_free(parrot_serializer);
+free(parrot_string);
+```
+
+2. Create `./parrot_library` library for files in `project/structures` directory:
+```bash
+> mkdir bin
+> $C_STRUCTURE_SERIALIZATION_HOME/generate_source_codes_and_library path_to_project=src path_to_library=bin/parrot_library
+```
+
+You need to pass three arguments into `generate_library` program: path to project, path to structures in project's path, path to created library.
+
+3. Compile program by:
+```bash
+> gcc src/main.c -o bin/main -I src -I $C_STRUCTURE_SERIALIZATION_HOME/include -L $C_STRUCTURE_SERIALIZATION_HOME -lcstructureserialization -ldl
+```
+
+4. Run program `./main`:
+```bash
+cd bin;./main;cd ../;
+```
+
+If you want to call `bin/main` you need to use "./bin/parrot_library" library path in `main.c`.
+
+There are several examples for different structures - [EXAMPLES](EXAMPLES.md).
+```bash
+make example;cd bin;./example;cd ../;
+```
+
+## Project
+
+### Short Description of Files
+```
+c_structure_serialization - directory of main program;
+ utils - contains helpful structures and methods;
+  data.h data.c - `Data` structure is byte array and its size;
+  array.h array.c - `Array` structure is an abstract array;
+  string.h string.c - utilities to work with strings;
+  files.h files.c - utilities to work with files;
+  program_arguments.h program_arguments.c - `ProgramArguments` structure is a parsed program args;
+  tabs.h tabs.c - `Tabs` structure helps to control tabs in the begining of each line of created source codes;
+ data_types - contains structures to parse source code and create a representaion of each structure in program;
+  attribute_type.h attribute_type.c - `AttributeType` enum;
+  basic_type.h basic_type.c - `BasicType` structure to describe primitive types;
+  dimension.h dimension.c - `Dimension` structure contains dimension sizes and variables of array in structure;
+  attribute.h attribute.c - `Attribute` structure represents attribute of structure;
+  structure.h structure.c - `Structure` structure parse lines of source codes to extract attributes;
+  structure_regular_expressions.h structure_regular_expressions.c - `RegularExpression` structure, `StructureRegularExpressions` - regex for structure;
+ generate_source_codes - directory of methods to generate source code for future library;
+ 	generate_sources.h generate_sources.c - contains method to parse files for structures use ProgramArgument to generate source codes and compile dynamic shared library file;
+  generate_library.h generate_library.c - contains method to generate source codes for each structure in dynamic library;
+  generate_code_for_to_string.h generate_code_for_to_string.c - methods to generate `to_string` method source code;
+  generate_code_for_json_codec.h generate_code_for_json_codec.c - methods to generate json codec source code;
+  generate_code_for_byte_codec.h generate_code_for_byte_codec.c - methods to generate byte codec source code;
+ serializer.h serializer.c - `Serializer` structure created based on library file and structure names;
+main.c - main for `generate_source_codes_and_library` program - Target to build.
+
+res/src - directory of sources to used in creating library;
+ _structure
+  pointer.h pointer.c - `Pointer` structure;
+  pointer_set.h pointer_set.c - `PointerSet` structure;
+  structure_info.h structure_info.c - `StructureName` enum and `StructureMethods` enum;
+  codec.h codec.c - `methods` matrix and basic codecs methods;
+ _utils
+  data.h data.c - `Data` structure - duplicate;
+  base64.h base64.c - methods to use base64 algorithm for bytes and strings;
+  write_read_uint32.h write_read_uint32.c - method to write/read uint32 (30 bit value, 2 bit size) value;
+includes.h - header for all sources.
+
+example
+ examples - directory of examples for structures;
+ structures - directory of structures headers;
+ main.c - main for `example program`.
+
+install_and_uninstall.sh - a install/uninstall script.
+
+Makefile - a makefile.
+
+documentation.doxygen - a config file to generate doxygen documentation.
+
+README.md - this readme file;
+EXAMPLES.md - files of examples for different structure;
+EXAMPLES_OUTPUT.md - files of examples output.
+```
+
+### Makefile
+Makefile contains several rules:
+- `build` - to build program `generate_library` and compile library `libcstructureserialization.a`. Program and library have different source files;
+- `clean` - remove `bin`, `lib`, `obj` directories;
+- `example` - create example from `example/main.c`;
+- `library` - to compile library only;
+- `test` - create test  from `tests/main.c` for source code `*/utils` and `*/data_types`.
+
+### Install and Uninstall
+To install and uninstall **C Structure Serialization** methods `install` and `uninstall` from [`install_and_uninstall.sh`](install_and_uninstall.sh) file can be used.
+
+#### Install
+1. First of all get sources files:
+```bash
+git clone https://github.com/64y/c-structure-serialization
+```
+2. Then install **C Structure Serialization**:
+```bash
+source install_and_uninstall.sh && install
+```
+
+Installation:
+- builds the project with ```make build``` rule from [`Makefile`](Makefile);
+- creates directory `~/.c_structure_serialization`;
+- adds environment variable **C_STRUCTURE_SERIALIZATION_HOME=** `~/.c_structure_serialization` by adding aproppriate line into `~/.bashrc` file and executing `source ~/.bashrc`;
+- copies files into project home directory:
+	- `bin/generate_source_codes_and_library` file;
+	- `lib/libcstructureserialization.a` file;
+	- `res` dictionary;
+	- `serializer.h` and `data.h` files into `include` folder with saved paths.
+- cleans the project with ```make clean``` rule.
+
+#### Uninstall
+To uninstall:
+```bash
+source install_and_uninstall.sh && uninstall
+```
+
+Uninstallation:
+- removes project home directory with all files;
+- removes project home directory exporting line from `~/.bashrc` and `source ~/.bashrc`.
+
+### Structure Definition Limits
 There are several requirements for structure definition:
 - allowed letters in names: 0-9, a-z, A-Z, '_';
 - structure name should starts with capital letter, because of `shortcut` in `Structure` structure;
@@ -67,179 +260,18 @@ char **stre[5];
 ```
 - structure, structure pointer and matrices from them.
 
-## Install and Uninstall
-To install and uninstall **C Structure Serialization** methods `install` and `uninstall` from [`install_and_uninstall.sh`](install_and_uninstall.sh) file can be used.
-
-### Install
-1. First of all get sources files:
-```bash
-git clone https://github.com/64y/c-structure-serialization
-```
-2. Then install **C Structure Serialization**:
-```bash
-source install_and_uninstall.sh && install
-```
-
-Installation:
-- builds the project with ```make build``` rule from [`Makefile`](Makefile);
-- creates directory `~/.c_structure_serialization`;
-- adds environment variable **C_STRUCTURE_SERIALIZATION_HOME=** `~/.c_structure_serialization` by adding aproppriate line into `~/.bashrc` file and executing `source ~/.bashrc`;
-- copies files into project home directory:
-	- `bin/generate_library` file;
-	- `lib/libcstructureserialization.a` file;
-	- `res` dictionary;
-	- `serializer.h` and `data.h` files into `include` folder with saved paths.
-- cleans the project with ```make clean``` rule.
-
-### Uninstall
-To uninstall:
-```bash
-source install_and_uninstall.sh && uninstall
-```
-
-Uninstallation:
-- removes project home directory with all files;
-- removes project home directory exporting line from `~/.bashrc` and `source ~/.bashrc`.
-
-## Example
-There is an example of creating library for structure and using this library by `Serializer` to get the output from `to_string` method.
-
-0. Lets say the structure of project is looks as follow:
-```bash
-src/
-└ structures
-    └ parrot.h
-└ main.c
-```
-
-1. In `main.c`:
-
-Include the header file of structure you want to use:
-```C
-#include "structures/parrot.h"
-```
-
-Include the  **C Structure Serialization** serializer:
-```C
-#include <c_structure_serialization/serializer.h>
-```
-
-Create an instance of structure:
-```C
-Parrot parrot = {"Tom", 5};
-```
-
-Create a serializer for structure by calling `Serializer_create` method, there you need to pass path to library file and structure name.
-```C
-Serializer *parrot_serializer = Serializer_create("./my_lib", "Parrot");
-```
-
-Then call method `to_string` for `parrot`:
-```C
-char *parrot_string = parrot_serializer->to_string(&parrot);
-```
-
-Output the `parrot`'s string:
-```C
-puts(parrot_string);
-```
-
-Destroy serializer and free memory:
-```C
-Serializer_free(parrot_serializer);
-free(parrot_string);
-```
-
-2. Create `./my_lib` library for files in `project/structures` directory:
-```bash
-> mkdir bin
-> $C_STRUCTURE_SERIALIZATION_HOME/generate_library "src" "structures" "bin/my_lib"
-```
-
-You need to pass three arguments into `generate_library` program: path to project, path to structures in project's path, path to created library.
-
-3. Compile program by:
-```bash
-> gcc src/main.c -o bin/main -I program -I $C_STRUCTURE_SERIALIZATION_HOME/include -L $C_STRUCTURE_SERIALIZATION_HOME -lcstructureserialization -ldl
-```
-
-4. Run program `./main`:
-```bash
-cd bin;./main;cd ../;
-```
-
-If you want to call `bin/main` you need to use "./bin/my_lib" library path in `main.c`.
-
-There are several examples for different structures - [EXAMPLES](EXAMPLES.md).
-```bash
-make example;cd bin;./example;cd ../;
-```
-
 ## Future Improvements
+* Add Smart walk though pointer in codec: exclude if attribute->datatype==structure->datatype);
 * Find another way to get structure details. It should be more beautiful and effective;
 * Rework code to generalize it structure;
 * Json Codec add extra braces and tabs;
 * Byte Codec add compression;
 * Write test for all functionallity;
 * Write more comples examples;
-* Write another codecs.
+* Write another codecs;
+* Develop Object structure in C.
 
-## Make Your Own Codec
-
-### Short Description of Files
-```
-c_structure_serialization - directory of main program;
- utils - contains helpful structures and methods;
-  boolean.h boolean.c - `Boolean` enum for `true` and `false`;
-  data.h data.c - `Data` structure is byte array and its size;
-  array.h array.c - `Array` structure is an abstract array;
-  string.h string.c - utilities to work with strings;
-  files.h files.c - utilities to work with files;
-  tabs.h tabs.c - `Tabs` structure helps to control tabs in the begining of each line of created source codes;
- data_types - contains structures to parse source code and create a representaion of each structure in program;
-  attribute_type.h attribute_type.c - `AttributeType` enum;
-  basic_type.h basic_type.c - `BasicType` structure to describe primitive types;
-  dimension.h dimension.c - `Dimension` structure contains dimension sizes and variables of array in structure;
-  attribute.h attribute.c - `Attribute` structure represents attribute of structure;
-  structure.h structure.c - `Structure` structure parse lines of source codes to extract attributes;
-  structure_regular_expressions.h structure_regular_expressions.c - `RegularExpression` structure, `StructureRegularExpressions` - regex for structure;
- generate_source_codes - directory of methods to generate source code for future library;
- generate_library.h generate_library.c - contains method to parse files for structures and modify `structure_name`, `structure_methods`, `includes.h` in `res` directory;
-  generate_to_string.h generate_to_string.c - methods to generate `to_string` method;
-  generate_json_codec.h generate_json_codec.c - methods to generate json codec;
-  generate_byte_codec.h generate_byte_codec.c - methods to generate byte codec;
-  serializer.h serializer.c - `Serializer` structure created based on library file and structure names;
-main.c - main for `generate_library` program - Target of build.
-
-res/src - directory of sources to used in creating library;
- _structure
-  pointer.h pointer.c - `Pointer` structure;
-  pointer_dictionary.h pointer_dictionary.c - `PointerDictionary` structure;
-  structure_name.h structure_name.c - `StructureName` enum;
-  structure_methods.h structure_methods.c - `StructureMethods` enum and `methods` matrix;
- _utils
-  boolean.h - `Boolean` enum;
-  data.h data.c - `Data` structure - duplicate;
-  base64.h base64.c - methods to use base64 algorithm for bytes and strings;
-includes.h - header for all sources.
-
-example
- examples - directory of examples for structures;
- structures - directory of structures headers;
- main.c - main for `example program`.
-```
-
-### Makefile
-Makefile contains several rules:
-- `build` - to build program `generate_library` and compile library `libcstructureserialization.a`. Program and library have different source files;
-- `clean` - remove `bin`, `lib`, `obj` directories;
-- `example` - create example from `example/main.c`;
-- `library` - to compile library only;
-- `test` - create test  from `tests/main.c` for source code `*/utils` and `*/data_types`.
-
-### Tutorial
-
-## My *C* Preferences
+## My C Preferences
 You might find 'em in source codes:
 - camel case for names and underscore for functions;
 - method should return single instance of data instead of pointers in arguments;
