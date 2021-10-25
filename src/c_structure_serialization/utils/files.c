@@ -41,21 +41,6 @@ char * file_read(char *file_path) {
 	return string;
 }
 
-char * file_get_directory_path(char *file_path) {
-	ssize_t directory_path_length;
-	for (directory_path_length=strlen(file_path)-1; directory_path_length>=0; directory_path_length--) {
-		if (file_path[directory_path_length]=='/') {
-			break;
-		}
-	}
-	if (directory_path_length==-1) {
-		return NULL;
-	}
-	char *directory_path = (char *)calloc(directory_path_length+1, sizeof(char));
-	strncpy(directory_path, file_path, directory_path_length);
-	return directory_path;
-}
-
 Array * directory_path_scan_for_h_files(char *directory_path) {
 	Array *h_files = Array_create_for_string();
 	{

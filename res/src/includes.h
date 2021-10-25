@@ -1,3 +1,5 @@
+/** @file
+@brief Includes everything in dynamic library file source code directory. */
 #ifndef _INCLUDES_H
 #define _INCLUDES_H
 

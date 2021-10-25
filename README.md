@@ -182,7 +182,7 @@ make example;cd bin;./example;cd ../;
 * Byte Codec add compression;
 * Write test for all functionallity;
 * Write more comples examples;
-* Write more codecs.
+* Write another codecs.
 
 ## Make Your Own Codec
 

@@ -1,3 +1,5 @@
+/** @file
+@brief An example of codecs for Parrot structure. */
 #ifndef $1_STRING_H
 #define $1_STRING_H
 

@@ -63,7 +63,7 @@ $(OBJECT_DIR)/%.o: $(SOURCE_DIR)/%.c
 
 example:
 	@mkdir -p $(TARGET_DIR)
-	@valgrind --leak-check=full $$C_STRUCTURE_SERIALIZATION_HOME/$(TARGET) path_to_project=example path_to_library=bin/my_lib remove_sources=no
+	@$$C_STRUCTURE_SERIALIZATION_HOME/$(TARGET) path_to_project=example path_to_library=bin/my_lib remove_sources=no
 	@$(CC) $(shell find $(EXAMPLE_DIR) -type f -name "*.c") -o $(TARGET_DIR)/$(EXAMPLE_TARGET) -I $(EXAMPLE_DIR) -I $$C_STRUCTURE_SERIALIZATION_HOME/include -L $$C_STRUCTURE_SERIALIZATION_HOME -lcstructureserialization -ldl -g
 
 test:
