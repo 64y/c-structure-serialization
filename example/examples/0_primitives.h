@@ -1,3 +1,5 @@
+/** @file
+@brief An example of codecs for AllPrimitives structure. */
 #ifndef $0_PRIMITIVES_H
 #define $0_PRIMITIVES_H
 

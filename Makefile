@@ -13,7 +13,7 @@ CFLAGS := -Wall -g
 LFLAGS := 
 INC := -I $(INCLUDE_DIR)
 INC_DEP := -I $(INCLUDE_DIR)
-TARGET := generate_library
+TARGET := generate_source_codes_and_library
 
 LIBRARY_SOURCES := $(shell find $(SOURCE_DIR) -type f -name "serializer.c" -o -name "data.c")
 LIBRARY_OBJECTS := $(patsubst $(SOURCE_DIR)/%, $(OBJECT_DIR)/%, $(LIBRARY_SOURCES:.c=.o))
@@ -63,8 +63,8 @@ $(OBJECT_DIR)/%.o: $(SOURCE_DIR)/%.c
 
 example:
 	@mkdir -p $(TARGET_DIR)
-	@$$C_STRUCTURE_SERIALIZATION_HOME/generate_library $(EXAMPLE_DIR) "structures" $(TARGET_DIR)/$(EXAMPLE_LIBRARY_NAME)
-	@$(CC) $(shell find $(EXAMPLE_DIR) -type f -name "*.c") -o $(TARGET_DIR)/$(EXAMPLE_TARGET) -I $(EXAMPLE_DIR) -I $$C_STRUCTURE_SERIALIZATION_HOME/include -L $$C_STRUCTURE_SERIALIZATION_HOME -lcstructureserialization -ldl
+	@$$C_STRUCTURE_SERIALIZATION_HOME/$(TARGET) path_to_project=example path_to_library=bin/my_lib remove_sources=no
+	@$(CC) $(shell find $(EXAMPLE_DIR) -type f -name "*.c") -o $(TARGET_DIR)/$(EXAMPLE_TARGET) -I $(EXAMPLE_DIR) -I $$C_STRUCTURE_SERIALIZATION_HOME/include -L $$C_STRUCTURE_SERIALIZATION_HOME -lcstructureserialization -ldl -g
 
 test:
 	@mkdir -p $(TARGET_DIR)

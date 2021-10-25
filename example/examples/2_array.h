@@ -1,3 +1,5 @@
+/** @file
+@brief An example of codecs for Array structure. */
 #ifndef $2_ARRAY_H
 #define $2_ARRAY_H
 

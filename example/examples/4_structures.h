@@ -1,3 +1,5 @@
+/** @file
+@brief An example of codecs for Pets (PetsSize, Cat, Dog) structure. */
 #ifndef $4_STRUCTURES_H
 #define $4_STRUCTURES_H
 

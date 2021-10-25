@@ -1,3 +1,5 @@
+/** @file
+@brief An example of codecs for Figures structure. */
 #ifndef $5_MATRICES_OF_STRUCTURES_H
 #define $5_MATRICES_OF_STRUCTURES_H
 

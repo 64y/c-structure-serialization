@@ -1,3 +1,4 @@
+#include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -5,7 +6,7 @@
 
 
 Array * Array_create(
-	void * (*element_create) (void *element_create_arguments),
+	void * (*element_create) (va_list element_arguments),
 	void (*element_free) (void *element),
 	char * (*element_to_string) (void *element)
 ) {
@@ -67,10 +68,20 @@ char * Array_to_string(Array *array) {
 }
 
 
-void Array_add(Array *array, void *element_create_arguments) {
+void Array_add(Array *array, ...) {
+	va_list element_arguments;
+	va_start(element_arguments, array);
 	array->elements = (void **)realloc(array->elements, (array->size+1)*sizeof(void *));
-	array->elements[array->size] = array->element_create(element_create_arguments);
+	array->elements[array->size] = array->element_create(element_arguments);
 	array->size = array->size+1;
+	va_end(element_arguments);
+}
+
+void Array_put(Array *array, void *element) {
+	array->elements = (void **)realloc(array->elements, (array->size+1)*sizeof(void *));
+	array->elements[array->size] = element;
+	array->size = array->size+1;
+	
 }
 
 void * Array_get(Array *array, int index) {

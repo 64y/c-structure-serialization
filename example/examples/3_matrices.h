@@ -1,3 +1,5 @@
+/** @file
+@brief An example of codecs for Matrix3D, Arrays and Strings structures. */
 #ifndef $3_MATRICES_H
 #define $3_MATRICES_H
 

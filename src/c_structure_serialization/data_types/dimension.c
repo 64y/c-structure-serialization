@@ -21,8 +21,7 @@ void Dimension_free(Dimension *dimension) {
 		if (dimension->dimensions!=NULL) {
 			for (int i=0; i<dimension->size; i++) {
 				if (dimension->dimensions[i]!=NULL) {
-					free(dimension->dimensions[i]);
-					dimension->dimensions[i] = NULL;
+					string_free(dimension->dimensions[i]);
 				}
 			}
 			free(dimension->dimensions);
@@ -40,7 +39,7 @@ void Dimension_free(Dimension *dimension) {
 
 char * Dimension_to_string(Dimension *dimension) {
 	if (dimension==NULL) {
-		return string_copy("The attribute has no dimensions.");
+		return string_create("The attribute has no dimensions.");
 	}
 	char *dimension_string;
 	{
@@ -73,8 +72,7 @@ char * Dimension_to_string(Dimension *dimension) {
 
 void Dimension_set_dimension(Dimension *dimension, int index, char *value) {
 	if (dimension->dimensions[index]!=NULL) {
-		free(dimension->dimensions[index]);
-		dimension->dimensions[index] = NULL;
+		string_free(dimension->dimensions[index]);
 	}
 	dimension->dimensions[index] = string_copy(value);
 }

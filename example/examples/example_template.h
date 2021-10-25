@@ -1,3 +1,5 @@
+/** @file
+@brief A definition and declaration of example template method. */
 #ifndef EXAMPLE_H
 #define EXAMPLE_H
 
@@ -10,13 +12,21 @@
 #include <c_structure_serialization/utils/data.h>
 
 
-#define DO_TO_STRING		0b00001
-#define DO_JSON_ENCODE	0b00010
-#define DO_JSON_DECODE	0b00100
-#define DO_BYTE_ENCODE	0b01000
-#define DO_BYTE_DECODE	0b10000
+#define DO_TO_STRING		0b00001 ///< DO_FLAG for to_string
+#define DO_JSON_ENCODE	0b00010 ///< DO_FLAG for json_encode
+#define DO_JSON_DECODE	0b00100 ///< DO_FLAG for json_decode
+#define DO_BYTE_ENCODE	0b01000 ///< DO_FLAG for byte_encode
+#define DO_BYTE_DECODE	0b10000 ///< DO_FLAG for byte_decode
 
 
+/** @brief A template example method.
+@details Method create a Serializer for Structure structure_name by loading codecs from file with path library_path. Method demostrates the codec performance for each codec if DO_FLAG variable. Method uses structure_generate and structure_free methods to create and to free an instance of Structure with name structure_name.
+@param example_name Example message string;
+@param library_path The path of library file;
+@param structure_name The name of Structure;
+@param structure_generate A pointer to method to create an instance of Structure;
+@param structure_free A pointer to method to free allocated memory for an instance of Structure;
+@param DO_FLAG Actions to be performed upon generated Structure. */
 void example (
 	char *example_name,
 	char *library_path,

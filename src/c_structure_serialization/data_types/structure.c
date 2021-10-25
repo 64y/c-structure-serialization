@@ -1,8 +1,10 @@
+#include <stdarg.h>
+#include <stdbool.h>
+#include <stddef.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
-#include "c_structure_serialization/utils/boolean.h"
 #include "c_structure_serialization/utils/array.h"
 #include "c_structure_serialization/utils/strings.h"
 #include "c_structure_serialization/data_types/attribute_type.h"
@@ -53,9 +55,9 @@ Structure * Structure_create_by_file_path_and_source_code(char *file_path, Array
 		}
 		structure_struct_name = string_copy(structure_name_first);
 		{
-			free(structure_name_typedef);
-			free(structure_name_first);
-			free(structure_name_second);
+			string_free(structure_name_typedef);
+			string_free(structure_name_first);
+			string_free(structure_name_second);
 		}
 	}
 	structure->name = structure_name;
@@ -102,8 +104,8 @@ Structure * Structure_create_by_file_path_and_source_code(char *file_path, Array
 				}
 			}
 
-			Boolean attribute_is_primitive = (BasicType_get_by_name(attribute_data_type)!=NULL)?true:false;
-			Boolean attribute_is_char = string_equals(attribute_data_type, "char");
+			bool attribute_is_primitive = (BasicType_get_by_name(attribute_data_type)!=NULL)?true:false;
+			bool attribute_is_char = string_equals(attribute_data_type, "char");
 			
 			if (
 				attribute_static_sizes==0 && attribute_dynamic_sizes==0
@@ -167,7 +169,7 @@ Structure * Structure_create_by_file_path_and_source_code(char *file_path, Array
 						Dimension_set_dimension(dimension, attribute_static_index, buff);
 					}
 					{
-						free(buff);
+						string_free(buff);
 					}
 				}
 				int index=((attribute_static_sizes>0 && attribute_dynamic_sizes==0 && attribute_sizes_names==attribute_static_sizes)||(attribute_static_sizes>0 && attribute_dynamic_sizes>0 && attribute_sizes_names==attribute_static_sizes+attribute_dynamic_sizes))?0:attribute_static_sizes;
@@ -183,11 +185,11 @@ Structure * Structure_create_by_file_path_and_source_code(char *file_path, Array
 				}
 				for (int j=dimension->static_size; j<dimension->size; j++) {
 					char *dimension_old = dimension->dimensions[j];
-					char *dimension_new = string_appends((char *[]) {structure->shortcut, "->", dimension_old, NULL});
+					char *dimension_new = string_appends(structure->shortcut, "->", dimension_old, NO_MORE_STRINGS);
 					Dimension_set_dimension(dimension, j, dimension_new);
 					{
 						dimension_old = NULL;
-						free(dimension_new);
+						string_free(dimension_new);
 					}
 				}
 			} else {
@@ -204,8 +206,7 @@ Structure * Structure_create_by_file_path_and_source_code(char *file_path, Array
 				attribute_static_sizes_string = NULL;
 				for (int matches_i=0; matches_i<num_matches; matches_i++) {
 					if (matches[matches_i]!=NULL) {
-						free(matches[matches_i]);
-						matches[matches_i] = NULL;
+						string_free(matches[matches_i]);
 					}
 				}
 				free(matches);
@@ -214,7 +215,7 @@ Structure * Structure_create_by_file_path_and_source_code(char *file_path, Array
 		}
 	}
 	{
-		free(structure_struct_name);
+		string_free(structure_struct_name);
 	}
 	return structure;
 }
@@ -222,24 +223,19 @@ Structure * Structure_create_by_file_path_and_source_code(char *file_path, Array
 void Structure_free(Structure *structure) {
 	if (structure!=NULL) {
 		if (structure->file_path!=NULL) {
-			free(structure->file_path);
-			structure->file_path = NULL;
+			string_free(structure->file_path);
 		}
 		if (structure->name!=NULL) {
-			free(structure->name);
-			structure->name = NULL;
+			string_free(structure->name);
 		}
 		if (structure->name_lower!=NULL) {
-			free(structure->name_lower);
-			structure->name_lower = NULL;
+			string_free(structure->name_lower);
 		}
 		if (structure->name_upper!=NULL) {
-			free(structure->name_upper);
-			structure->name_upper = NULL;
+			string_free(structure->name_upper);
 		}
 		if (structure->shortcut!=NULL) {
-			free(structure->shortcut);
-			structure->shortcut = NULL;
+			string_free(structure->shortcut);
 		}
 		for (Attribute *curr=structure->head; structure->head!=NULL; curr=structure->head) {
 			structure->head = structure->head->next;
@@ -270,7 +266,7 @@ char * Structure_to_string(Structure *structure) {
 		for (Attribute *curr=structure->head; curr!=NULL; curr=curr->next) {
 			char *attribute_string = Attribute_to_string(curr);
 			fprintf(structure_string_stream, "\n|_ %s", attribute_string);
-			free(attribute_string);
+			string_free(attribute_string);
 		}
 		fprintf(structure_string_stream, "\n");
 		fclose(structure_string_stream);
@@ -293,7 +289,7 @@ void Structure_add(Structure *structure, Attribute *attribute) {
 	}
 }
 
-Boolean Structure_delete(Structure *structure, Attribute *attribute) {
+bool Structure_delete(Structure *structure, Attribute *attribute) {
 	if (structure->head==NULL || attribute==NULL) {
 		return false;
 	}
@@ -319,24 +315,24 @@ Boolean Structure_delete(Structure *structure, Attribute *attribute) {
 	return false;
 }
 
-Boolean Structure_contains_string_attributes(Structure *structure) {
-	Boolean does = false;
+bool Structure_contains_string_attributes(Structure *structure) {
+	bool does = false;
 	for (Attribute *curr=structure->head; curr!=NULL; curr=curr->next) {
 		does |= curr->type==STRING || curr->type==STRING_ARRAY;
 	}
 	return does;
 }
 
-Boolean Structure_contains_array_attributes(Structure *structure) {
-	Boolean does = false;
+bool Structure_contains_array_attributes(Structure *structure) {
+	bool does = false;
 	for (Attribute *curr=structure->head; curr!=NULL; curr=curr->next) {
 		does |= curr->type==PRIMITIVE_ARRAY || curr->type==STRING_ARRAY || curr->type==STRUCTURE_ARRAY || curr->type==STRUCTURE_POINTER_ARRAY;
 	}
 	return does;
 }
 
-Boolean Structure_contains_structure_attributes(Structure *structure) {
-	Boolean does = false;
+bool Structure_contains_structure_attributes(Structure *structure) {
+	bool does = false;
 	for (Attribute *curr=structure->head; curr!=NULL; curr=curr->next) {
 		does |= curr->type==STRUCTURE || curr->type==STRUCTURE_POINTER || curr->type==STRUCTURE_ARRAY || curr->type==STRUCTURE_POINTER_ARRAY;
 	}
@@ -344,26 +340,18 @@ Boolean Structure_contains_structure_attributes(Structure *structure) {
 }
 
 
-void * array_Structure_create_pack_arguments(char *file_path, Array *source_code) {
-	void **args = (void **)calloc(2, sizeof(void *));
-	args[0] = file_path;
-	args[1] = source_code;
-	return args;
+void * array_Structure_create(va_list structure_arguments) {
+	char *file_path = va_arg(structure_arguments, char *);
+	Array *source_code = va_arg(structure_arguments, Array *);
+	return Structure_create_by_file_path_and_source_code(file_path, source_code);
 }
 
-void * array_Structure_create(void *element) {
-	void **args = (void **) element;
-	Structure *structure = Structure_create_by_file_path_and_source_code((char *)args[0], (Array *) args[1]);
-	free(args);
-	return structure;
+void array_Structure_free(void *structure) {
+	Structure_free((Structure *) structure);
 }
 
-void array_Structure_free(void *element) {
-	Structure_free((Structure *) element);
-}
-
-char * array_Structure_to_string(void *element) {
-	return Structure_to_string((Structure *) element);
+char * array_Structure_to_string(void *structure) {
+	return Structure_to_string((Structure *) structure);
 }
 
 Array * Array_create_for_Structure() {
